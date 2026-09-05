@@ -7,8 +7,8 @@
 bin/
 coverage.out
 *.test
-shieldwardd
-shieldwardd.exe
+/shieldwardd
+/shieldwardd.exe
 
 # TypeScript and Node output
 edge/node_modules/

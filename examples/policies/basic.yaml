@@ -1,0 +1,36 @@
+apiVersion: shieldward.dev/v1alpha1
+kind: SecurityPolicy
+
+metadata:
+  name: orders-api
+
+spec:
+  defaultDecision: deny
+
+  routes:
+    - id: orders-read
+      match:
+        methods:
+          - GET
+        path: /v1/orders/:id
+
+      upstream: http://127.0.0.1:9000
+
+      jwt:
+        required: true
+        issuer: https://identity.example.com/
+        audience:
+          - orders-api
+        jwksUrl: https://identity.example.com/.well-known/jwks.json
+
+      rateLimit:
+        requests: 0
+        window: 1m
+        key: jwt.sub
+
+      waf:
+        - id: block-path-traversal
+          target: path
+          pattern: '(\.\./|%2e%2e)'
+          flags: i
+          action: block
