@@ -1,0 +1,28 @@
+# ShieldWard local signing material
+.shieldward/
+*.pem
+*.key
+
+# Go build and test output
+bin/
+coverage.out
+*.test
+shieldwardd
+shieldwardd.exe
+
+# TypeScript and Node output
+edge/node_modules/
+edge/dist/
+edge/coverage/
+edge/.vite/
+
+# Local environment configuration
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
