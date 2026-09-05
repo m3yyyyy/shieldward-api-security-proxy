@@ -2,12 +2,12 @@ package compiler
 
 import (
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/m3yyyyy/shieldward-api-security-proxy/internal/canonicaljson"
 	"github.com/m3yyyyy/shieldward-api-security-proxy/internal/policy"
 )
 
@@ -67,9 +67,9 @@ func Compile(document policy.Document) (Bundle, error) {
 		Routes:          routes,
 	}
 
-	canonical, err := json.Marshal(bundle)
+	canonical, err := canonicaljson.Marshal(bundle)
 	if err != nil {
-		return Bundle{}, fmt.Errorf("encode canonical bundle: %w", err)
+		return Bundle{}, fmt.Errorf("canonicalize bundle: %w", err)
 	}
 
 	digest := sha256.Sum256(canonical)

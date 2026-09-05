@@ -19,6 +19,7 @@
   "type": "module",
   "dependencies": {
     "@hono/node-server": "2.1.1",
+    "canonicalize": "4.0.0",
     "hono": "4.13.7",
     "jose": "6.2.12"
   },

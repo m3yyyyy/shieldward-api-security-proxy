@@ -1,6 +1,7 @@
 # ShieldWard local signing material
 .shieldward/
 *.pem
+!edge/tests/fixtures/go-public.pem
 *.key
 
 # Go build and test output

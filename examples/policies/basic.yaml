@@ -24,7 +24,7 @@ spec:
         jwksUrl: https://identity.example.com/.well-known/jwks.json
 
       rateLimit:
-        requests: 0
+        requests: 120
         window: 1m
         key: jwt.sub
 

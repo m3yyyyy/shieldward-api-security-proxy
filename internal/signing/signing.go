@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
+	"github.com/m3yyyyy/shieldward-api-security-proxy/internal/canonicaljson"
 	"github.com/m3yyyyy/shieldward-api-security-proxy/internal/compiler"
 )
 
@@ -41,9 +41,12 @@ func Sign(
 		return Envelope{}, err
 	}
 
-	payload, err := json.Marshal(bundle)
+	payload, err := canonicaljson.Marshal(bundle)
 	if err != nil {
-		return Envelope{}, fmt.Errorf("encode bundle for signing: %w", err)
+		return Envelope{}, fmt.Errorf(
+			"canonicalize bundle for signing: %w",
+			err,
+		)
 	}
 
 	signature := ed25519.Sign(privateKey, payload)
@@ -100,9 +103,12 @@ func Verify(
 		)
 	}
 
-	payload, err := json.Marshal(envelope.Bundle)
+	payload, err := canonicaljson.Marshal(envelope.Bundle)
 	if err != nil {
-		return fmt.Errorf("encode bundle for verification: %w", err)
+		return fmt.Errorf(
+			"canonicalize bundle for verification: %w",
+			err,
+		)
 	}
 
 	if !ed25519.Verify(publicKey, payload, signature) {
@@ -136,9 +142,12 @@ func validateBundleVersion(bundle compiler.Bundle) error {
 	actualVersion := bundle.Version
 	bundle.Version = ""
 
-	canonical, err := json.Marshal(bundle)
+	canonical, err := canonicaljson.Marshal(bundle)
 	if err != nil {
-		return fmt.Errorf("encode bundle version payload: %w", err)
+		return fmt.Errorf(
+			"canonicalize bundle version payload: %w",
+			err,
+		)
 	}
 
 	digest := sha256.Sum256(canonical)
