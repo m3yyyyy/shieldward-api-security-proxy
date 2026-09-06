@@ -65,6 +65,10 @@ describe('upstream proxy', () => {
         ).toBe('203.0.113.10')
 
         expect(
+          request.headers.get('x-request-id'),
+        ).toBe('trusted-request-id')
+
+        expect(
           request.headers.get('connection'),
         ).toBeNull()
 
@@ -99,6 +103,7 @@ describe('upstream proxy', () => {
           'x-forwarded-host': 'spoofed.example',
           'x-forwarded-proto': 'http',
           'x-real-ip': 'spoofed',
+          'x-request-id': 'spoofed-request-id',
         },
         body: 'original',
       },
@@ -109,6 +114,7 @@ describe('upstream proxy', () => {
       route,
       body: encodeBody('hello'),
       clientIp: '203.0.113.10',
+      requestId: 'trusted-request-id',
       fetcher,
     })
 

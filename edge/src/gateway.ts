@@ -1,3 +1,8 @@
+import {
+  createRequestId,
+  type SecurityAuditLogger,
+  type SecurityAuditOutcome,
+} from './audit.js'
 import type {
   PolicyDecision,
   PolicyRequest,
@@ -14,12 +19,16 @@ export interface PolicyEvaluator {
   evaluate(
     request: PolicyRequest,
   ): Promise<PolicyDecision>
+  activeVersion?(): string | undefined
 }
 
 export interface GatewayOptions {
   readonly policyEvaluator: PolicyEvaluator
   readonly fetcher?: UpstreamFetch
   readonly maxRequestBodyBytes?: number
+  readonly auditLogger?: SecurityAuditLogger
+  readonly requestIdFactory?: () => string
+  readonly nowMilliseconds?: () => number
 }
 
 interface BufferedBody {
@@ -27,14 +36,30 @@ interface BufferedBody {
   readonly text: string | undefined
 }
 
+interface AuditCompletion {
+  readonly outcome: SecurityAuditOutcome
+  readonly reason?: string
+  readonly routeId?: string
+  readonly upstreamStatus?: number
+}
+
 export class Gateway {
   readonly #policyEvaluator: PolicyEvaluator
   readonly #fetcher: UpstreamFetch | undefined
   readonly #maxRequestBodyBytes: number
+  readonly #auditLogger: SecurityAuditLogger | undefined
+  readonly #requestIdFactory: () => string
+  readonly #nowMilliseconds: () => number
 
   constructor(options: GatewayOptions) {
     this.#policyEvaluator = options.policyEvaluator
     this.#fetcher = options.fetcher
+    this.#auditLogger = options.auditLogger
+    this.#requestIdFactory =
+      options.requestIdFactory ?? createRequestId
+    this.#nowMilliseconds =
+      options.nowMilliseconds ??
+      (() => performance.now())
     this.#maxRequestBodyBytes =
       options.maxRequestBodyBytes ??
       DEFAULT_MAX_REQUEST_BODY_BYTES
@@ -55,6 +80,8 @@ export class Gateway {
     request: Request,
     clientIp?: string,
   ): Promise<Response> {
+    const requestId = this.#requestIdFactory()
+    const startedAt = this.#nowMilliseconds()
     let body: BufferedBody
 
     try {
@@ -64,15 +91,33 @@ export class Gateway {
       )
     } catch (error) {
       if (error instanceof GatewayRequestError) {
-        return errorResponse(
-          error.status,
-          error.code,
+        return this.#complete(
+          request,
+          requestId,
+          startedAt,
+          errorResponse(
+            error.status,
+            error.code,
+          ),
+          {
+            outcome: 'denied',
+            reason: error.code,
+          },
         )
       }
 
-      return errorResponse(
-        400,
-        'request_body_unreadable',
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          400,
+          'request_body_unreadable',
+        ),
+        {
+          outcome: 'error',
+          reason: 'request_body_unreadable',
+        },
       )
     }
 
@@ -96,28 +141,61 @@ export class Gateway {
               }),
         })
     } catch {
-      return errorResponse(
-        503,
-        'policy_evaluation_failed',
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          503,
+          'policy_evaluation_failed',
+        ),
+        {
+          outcome: 'error',
+          reason: 'policy_evaluation_failed',
+        },
       )
     }
 
     if (!decision.allowed) {
-      return deniedResponse(decision)
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        deniedResponse(decision),
+        {
+          outcome: 'denied',
+          reason: decision.code,
+          ...(decision.route === undefined
+            ? {}
+            : {
+                routeId: decision.route.id,
+              }),
+        },
+      )
     }
 
     if (decision.route === undefined) {
-      return errorResponse(
-        404,
-        'route_not_found',
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          404,
+          'route_not_found',
+        ),
+        {
+          outcome: 'denied',
+          reason: 'route_not_found',
+        },
       )
     }
 
     try {
-      return await proxyToUpstream({
+      const response = await proxyToUpstream({
         request,
         route: decision.route,
         body: body.bytes,
+        requestId,
         ...(clientIp === undefined
           ? {}
           : {
@@ -129,12 +207,86 @@ export class Gateway {
               fetcher: this.#fetcher,
             }),
       })
+
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        response,
+        {
+          outcome: 'allowed',
+          routeId: decision.route.id,
+          upstreamStatus: response.status,
+        },
+      )
     } catch {
-      return errorResponse(
-        502,
-        'upstream_unavailable',
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          502,
+          'upstream_unavailable',
+        ),
+        {
+          outcome: 'error',
+          reason: 'upstream_unavailable',
+          routeId: decision.route.id,
+        },
       )
     }
+  }
+
+  #complete(
+    request: Request,
+    requestId: string,
+    startedAt: number,
+    response: Response,
+    completion: AuditCompletion,
+  ): Response {
+    response.headers.set('x-request-id', requestId)
+
+    try {
+      const policyVersion =
+        this.#policyEvaluator.activeVersion?.()
+
+      this.#auditLogger?.record({
+        requestId,
+        method: request.method.toUpperCase(),
+        path: new URL(request.url).pathname,
+        outcome: completion.outcome,
+        status: response.status,
+        durationMs: Math.max(
+          0,
+          this.#nowMilliseconds() - startedAt,
+        ),
+        ...(policyVersion === undefined
+          ? {}
+          : {
+              policyVersion,
+            }),
+        ...(completion.routeId === undefined
+          ? {}
+          : {
+              routeId: completion.routeId,
+            }),
+        ...(completion.reason === undefined
+          ? {}
+          : {
+              reason: completion.reason,
+            }),
+        ...(completion.upstreamStatus === undefined
+          ? {}
+          : {
+              upstreamStatus:
+                completion.upstreamStatus,
+            }),
+      })
+    } catch {
+      // Audit failures must not alter the request outcome.
+    }
+
+    return response
   }
 }
 

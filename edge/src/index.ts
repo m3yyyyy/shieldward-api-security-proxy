@@ -7,6 +7,7 @@ import {
 import { getConnInfo } from '@hono/node-server/conninfo'
 
 import { createApp } from './app.js'
+import { JsonSecurityAuditLogger } from './audit.js'
 import { ConfigurationClient } from './config-client.js'
 import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
@@ -31,12 +32,23 @@ async function main(): Promise<void> {
     baseUrl: runtime.controlPlaneUrl,
     trustedKeys,
   })
+  const auditLogger = new JsonSecurityAuditLogger()
 
   const synchronizer =
     new ConfigurationSynchronizer({
       baseUrl: runtime.controlPlaneUrl,
       client: configuration,
       onError: (error) => {
+        try {
+          auditLogger.recordSystem({
+            component: 'configuration_sync',
+            outcome: 'error',
+            reason: 'configuration_sync_failed',
+          })
+        } catch {
+          // Audit failures must not stop synchronization.
+        }
+
         console.error(
           `Configuration synchronization error: ${errorMessage(error)}`,
         )
@@ -51,6 +63,7 @@ async function main(): Promise<void> {
 
   const gateway = new Gateway({
     policyEvaluator,
+    auditLogger,
     maxRequestBodyBytes:
       runtime.maxRequestBodyBytes,
   })

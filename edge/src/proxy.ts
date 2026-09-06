@@ -23,6 +23,7 @@ export interface UpstreamProxyRequest {
   readonly route: Readonly<CompiledRoute>
   readonly body: ArrayBuffer | undefined
   readonly clientIp?: string
+  readonly requestId?: string
   readonly fetcher?: UpstreamFetch
 }
 
@@ -39,6 +40,7 @@ export async function proxyToUpstream(
     input.request.headers,
     incomingUrl,
     input.clientIp,
+    input.requestId,
   )
 
   const requestInit: RequestInit = {
@@ -109,6 +111,7 @@ function createUpstreamHeaders(
   source: Headers,
   incomingUrl: URL,
   clientIp: string | undefined,
+  requestId: string | undefined,
 ): Headers {
   const headers = sanitizeHeaders(source)
 
@@ -120,6 +123,7 @@ function createUpstreamHeaders(
   headers.delete('x-forwarded-host')
   headers.delete('x-forwarded-proto')
   headers.delete('x-real-ip')
+  headers.delete('x-request-id')
 
   headers.set('x-forwarded-host', incomingUrl.host)
   headers.set(
@@ -133,6 +137,10 @@ function createUpstreamHeaders(
   ) {
     headers.set('x-forwarded-for', clientIp)
     headers.set('x-real-ip', clientIp)
+  }
+
+  if (requestId !== undefined) {
+    headers.set('x-request-id', requestId)
   }
 
   return headers
