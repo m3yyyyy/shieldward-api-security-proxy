@@ -1,4 +1,5 @@
 import type { CompiledRoute } from './bundle.js'
+import { usesSecureTransport } from './transport.js'
 
 const HOP_BY_HOP_HEADERS = [
   'connection',
@@ -91,6 +92,12 @@ export function buildUpstreamUrl(
   ) {
     throw new Error(
       'upstream must not contain credentials',
+    )
+  }
+
+  if (!usesSecureTransport(targetUrl)) {
+    throw new Error(
+      'upstream must use HTTPS unless it targets loopback',
     )
   }
 

@@ -176,5 +176,14 @@ describe('upstream proxy', () => {
         incomingUrl,
       ),
     ).toThrow('upstream must not contain credentials')
+
+    expect(() =>
+      buildUpstreamUrl(
+        'http://api.internal',
+        incomingUrl,
+      ),
+    ).toThrow(
+      'upstream must use HTTPS unless it targets loopback',
+    )
   })
 })

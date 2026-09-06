@@ -50,6 +50,14 @@ func TestValidateRejectsUnsafePolicies(t *testing.T) {
 			wantErr: "must use HTTPS",
 		},
 		{
+			name: "insecure remote upstream URL",
+			mutate: func(document *Document) {
+				document.Spec.Routes[0].Upstream =
+					"http://orders.internal"
+			},
+			wantErr: "must use HTTPS unless it targets loopback",
+		},
+		{
 			name: "JWT rate-limit key without JWT",
 			mutate: func(document *Document) {
 				document.Spec.Routes[0].JWT = nil

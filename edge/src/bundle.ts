@@ -1,3 +1,5 @@
+import { usesSecureTransport } from './transport.js'
+
 export const BUNDLE_SCHEMA_VERSION =
   'shieldward.bundle/v1alpha1' as const
 
@@ -527,8 +529,19 @@ function expectHttpUrl(
     fail(path, 'must use HTTP or HTTPS')
   }
 
+  if (url.username !== '' || url.password !== '') {
+    fail(path, 'must not contain embedded credentials')
+  }
+
   if (requireHttps && url.protocol !== 'https:') {
     fail(path, 'must use HTTPS')
+  }
+
+  if (!requireHttps && !usesSecureTransport(url)) {
+    fail(
+      path,
+      'must use HTTPS unless it targets loopback',
+    )
   }
 
   return text

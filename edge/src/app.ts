@@ -24,12 +24,27 @@ export interface ApplicationOptions {
   readonly gateway?: GatewayHandler
   readonly configuration?: ConfigurationStatus
   readonly resolveClientIp?: ClientIpResolver
+  readonly secureTransport?: boolean
 }
 
 export function createApp(
   options: ApplicationOptions = {},
 ): Hono {
   const application = new Hono()
+
+  application.use('*', async (context, next) => {
+    await next()
+
+    context.header('X-Content-Type-Options', 'nosniff')
+    context.header('Referrer-Policy', 'no-referrer')
+
+    if (options.secureTransport === true) {
+      context.header(
+        'Strict-Transport-Security',
+        'max-age=31536000',
+      )
+    }
+  })
 
   application.get('/healthz', (context) =>
     context.json({

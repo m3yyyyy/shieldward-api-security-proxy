@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises'
+import { createServer as createHttpsServer } from 'node:https'
 
 import {
   serve,
@@ -13,6 +14,7 @@ import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
 import { LivePolicyEvaluator } from './live-policy.js'
 import { readRuntimeConfiguration } from './runtime-config.js'
+import { loadTlsMaterial } from './tls.js'
 import { createTrustedKeyring } from './trusted-keys.js'
 
 const MAX_PUBLIC_KEY_FILE_BYTES = 16 * 1024
@@ -23,6 +25,10 @@ async function main(): Promise<void> {
   const publicKeyPem = await loadPublicKey(
     runtime.publicKeyFile,
   )
+  const tlsMaterial =
+    runtime.tls === undefined
+      ? undefined
+      : await loadTlsMaterial(runtime.tls)
 
   const trustedKeys = createTrustedKeyring([
     publicKeyPem,
@@ -71,6 +77,7 @@ async function main(): Promise<void> {
   const application = createApp({
     gateway,
     configuration,
+    secureTransport: tlsMaterial !== undefined,
     resolveClientIp: (context) =>
       getConnInfo(context).remote.address,
   })
@@ -80,10 +87,20 @@ async function main(): Promise<void> {
       fetch: application.fetch,
       hostname: runtime.hostname,
       port: runtime.port,
+      ...(tlsMaterial === undefined
+        ? {}
+        : {
+            createServer: createHttpsServer,
+            serverOptions: {
+              cert: tlsMaterial.certificate,
+              key: tlsMaterial.privateKey,
+              minVersion: 'TLSv1.2' as const,
+            },
+          }),
     },
     ({ port }) => {
       console.log(
-        `ShieldWard edge listening on http://${runtime.hostname}:${port}`,
+        `ShieldWard edge listening on ${tlsMaterial === undefined ? 'http' : 'https'}://${runtime.hostname}:${port}`,
       )
       console.log(
         `Verified policy ${initial.snapshot.bundle.version}`,

@@ -181,7 +181,7 @@ func writeUsage(writer io.Writer) {
 
 Usage:
   shieldwardd validate -policy <path>
-    shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>]
+  shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>] [-tls-cert <path> -tls-key <path>]
   shieldwardd version
   shieldwardd help`)
 }

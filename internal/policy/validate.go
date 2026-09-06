@@ -2,6 +2,7 @@ package policy
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"strings"
@@ -206,5 +207,18 @@ func validateHTTPURL(rawURL string, requireHTTPS bool) error {
 		return fmt.Errorf("must use HTTP or HTTPS")
 	}
 
+	if parsed.Scheme == "http" && !isLoopbackHostname(parsed.Hostname()) {
+		return fmt.Errorf("must use HTTPS unless it targets loopback")
+	}
+
 	return nil
+}
+
+func isLoopbackHostname(hostname string) bool {
+	if strings.EqualFold(strings.TrimSuffix(hostname, "."), "localhost") {
+		return true
+	}
+
+	ip := net.ParseIP(hostname)
+	return ip != nil && ip.IsLoopback()
 }

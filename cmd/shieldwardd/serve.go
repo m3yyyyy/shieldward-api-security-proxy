@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"flag"
 	"fmt"
@@ -29,7 +30,7 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	flagSet.Usage = func() {
 		_, _ = fmt.Fprintln(
 			stderr,
-			"Usage: shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>]",
+			"Usage: shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>] [-tls-cert <path> -tls-key <path>]",
 		)
 	}
 
@@ -47,6 +48,16 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 		"listen",
 		"127.0.0.1:8080",
 		"control-plane listening address",
+	)
+	tlsCertificatePath := flagSet.String(
+		"tls-cert",
+		"",
+		"path to the PEM TLS certificate chain",
+	)
+	tlsPrivateKeyPath := flagSet.String(
+		"tls-key",
+		"",
+		"path to the PEM TLS private key",
 	)
 
 	if err := flagSet.Parse(args); err != nil {
@@ -69,6 +80,27 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	}
 	if strings.TrimSpace(*listenAddress) == "" {
 		return fmt.Errorf("serve requires a non-empty listen address")
+	}
+
+	tlsEnabled, err := validateServeTransport(
+		*listenAddress,
+		*tlsCertificatePath,
+		*tlsPrivateKeyPath,
+	)
+	if err != nil {
+		return err
+	}
+
+	var tlsCertificate *tls.Certificate
+	if tlsEnabled {
+		certificate, err := tls.LoadX509KeyPair(
+			strings.TrimSpace(*tlsCertificatePath),
+			strings.TrimSpace(*tlsPrivateKeyPath),
+		)
+		if err != nil {
+			return fmt.Errorf("load TLS certificate and key: %w", err)
+		}
+		tlsCertificate = &certificate
 	}
 
 	envelope, err := loadSignedEnvelope(
@@ -100,12 +132,20 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	}
 	defer listener.Close()
 
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+	if tlsCertificate != nil {
+		tlsConfig.Certificates = []tls.Certificate{*tlsCertificate}
+	}
+
 	httpServer := &http.Server{
 		Handler:           controlserver.NewHandler(store),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    1 << 20,
+		TLSConfig:         tlsConfig,
 		ErrorLog:          log.New(stderr, "shieldwardd: ", log.LstdFlags),
 		BaseContext: func(net.Listener) context.Context {
 			return processContext
@@ -123,16 +163,31 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 
 	serveResult := make(chan error, 1)
 	go func() {
+		if tlsEnabled {
+			serveResult <- httpServer.ServeTLS(
+				listener,
+				"",
+				"",
+			)
+			return
+		}
+
 		serveResult <- httpServer.Serve(listener)
 	}()
 
+	transport := "http"
+	if tlsEnabled {
+		transport = "https"
+	}
+
 	_, _ = fmt.Fprintf(
 		stdout,
-		"serving policy=%q version=%q key-id=%q listen=%q\n",
+		"serving policy=%q version=%q key-id=%q listen=%q transport=%q\n",
 		envelope.Bundle.PolicyName,
 		envelope.Bundle.Version,
 		envelope.KeyID,
 		listener.Addr().String(),
+		transport,
 	)
 
 	select {
@@ -164,6 +219,43 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 		_, _ = fmt.Fprintln(stdout, "shutdown complete")
 		return nil
 	}
+}
+
+func validateServeTransport(
+	listenAddress string,
+	certificatePath string,
+	privateKeyPath string,
+) (bool, error) {
+	certificateConfigured := strings.TrimSpace(certificatePath) != ""
+	privateKeyConfigured := strings.TrimSpace(privateKeyPath) != ""
+
+	if certificateConfigured != privateKeyConfigured {
+		return false, fmt.Errorf("tls-cert and tls-key must be configured together")
+	}
+
+	if certificateConfigured {
+		return true, nil
+	}
+
+	host, _, err := net.SplitHostPort(strings.TrimSpace(listenAddress))
+	if err != nil {
+		return false, fmt.Errorf("parse listen address: %w", err)
+	}
+
+	if !isLoopbackListenHost(host) {
+		return false, fmt.Errorf("TLS certificate and key are required when listening on a non-loopback address")
+	}
+
+	return false, nil
+}
+
+func isLoopbackListenHost(host string) bool {
+	if strings.EqualFold(strings.TrimSuffix(host, "."), "localhost") {
+		return true
+	}
+
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 func loadSignedEnvelope(

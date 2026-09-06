@@ -103,6 +103,28 @@ describe('bundle envelope parser', () => {
     )
   })
 
+  it('rejects insecure remote upstream URLs', () => {
+    const envelope = validEnvelope()
+
+    envelope.bundle.routes[0]!.upstream =
+      'http://orders.internal'
+
+    expect(() => parseBundleEnvelope(envelope)).toThrow(
+      'envelope.bundle.routes[0].upstream must use HTTPS unless it targets loopback',
+    )
+  })
+
+  it('rejects URLs containing credentials', () => {
+    const envelope = validEnvelope()
+
+    envelope.bundle.routes[0]!.upstream =
+      'https://user:password@orders.internal'
+
+    expect(() => parseBundleEnvelope(envelope)).toThrow(
+      'envelope.bundle.routes[0].upstream must not contain embedded credentials',
+    )
+  })
+
   it('rejects malformed signatures', () => {
     const envelope = {
       ...validEnvelope(),

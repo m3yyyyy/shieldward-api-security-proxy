@@ -26,6 +26,7 @@ describe('runtime configuration', () => {
     expect(
       configuration.maxRequestBodyBytes,
     ).toBe(1024 * 1024)
+    expect(configuration.tls).toBeUndefined()
 
     expect(
       isAbsolute(configuration.publicKeyFile),
@@ -48,6 +49,10 @@ describe('runtime configuration', () => {
         SHIELDWARD_PUBLIC_KEY_FILE:
           'keys/public.pem',
         MAX_REQUEST_BODY_BYTES: '2048',
+        SHIELDWARD_TLS_CERT_FILE:
+          'keys/tls-cert.pem',
+        SHIELDWARD_TLS_KEY_FILE:
+          'keys/tls-key.pem',
       })
 
     expect(configuration).toEqual({
@@ -59,6 +64,14 @@ describe('runtime configuration', () => {
         'keys/public.pem',
       ),
       maxRequestBodyBytes: 2048,
+      tls: {
+        certificateFile: resolve(
+          'keys/tls-cert.pem',
+        ),
+        privateKeyFile: resolve(
+          'keys/tls-key.pem',
+        ),
+      },
     })
   })
 
@@ -103,6 +116,46 @@ describe('runtime configuration', () => {
       }),
     ).toThrow(
       'CONTROL_PLANE_URL must not contain credentials',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        CONTROL_PLANE_URL:
+          'http://control.example',
+      }),
+    ).toThrow(
+      'CONTROL_PLANE_URL must use HTTPS unless it targets loopback',
+    )
+  })
+
+  it('requires TLS when listening beyond loopback', () => {
+    expect(() =>
+      readRuntimeConfiguration({
+        HOST: '0.0.0.0',
+      }),
+    ).toThrow(
+      'TLS certificate and key are required when HOST is not loopback',
+    )
+  })
+
+  it('requires both TLS files together', () => {
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_TLS_CERT_FILE:
+          'keys/tls-cert.pem',
+      }),
+    ).toThrow(
+      'SHIELDWARD_TLS_CERT_FILE and SHIELDWARD_TLS_KEY_FILE must be configured together',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_TLS_CERT_FILE: '   ',
+        SHIELDWARD_TLS_KEY_FILE:
+          'keys/tls-key.pem',
+      }),
+    ).toThrow(
+      'SHIELDWARD_TLS_CERT_FILE must not be empty',
     )
   })
 
