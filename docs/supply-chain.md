@@ -1,7 +1,11 @@
 # CI and release security
 
-ShieldWard uses three GitHub Actions workflows. Every third-party action is
+ShieldWard uses four GitHub Actions workflows. Every third-party action is
 pinned to a full commit SHA, and Dependabot proposes updates to those pins.
+
+The `Containers` workflow builds and scans the hardened images,
+smoke-tests the TLS Compose topology, and publishes multi-platform images for
+semantic-version tags.
 
 ## Continuous integration
 
@@ -65,6 +69,10 @@ The workflow reruns verification and publishes:
 - an SPDX JSON software bill of materials (SBOM)
 - `SHA256SUMS`
 - build-provenance and SBOM attestations when GitHub supports them
+
+The `Containers` workflow also publishes versioned control-plane and Edge images
+to GitHub Container Registry. The images carry OCI provenance and SBOMs and are
+tagged with both the release version and source commit.
 
 Go binaries are built without CGO, local paths, or a random Go build ID. The Edge
 archive has sorted entries, normalized ownership, and a fixed timestamp.

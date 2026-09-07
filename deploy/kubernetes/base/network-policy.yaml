@@ -1,0 +1,72 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: shieldward-control-plane
+  namespace: shieldward
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: shieldward
+      app.kubernetes.io/component: control-plane
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: shieldward
+              app.kubernetes.io/component: edge
+      ports:
+        - protocol: TCP
+          port: 18080
+  egress: []
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: shieldward-edge
+  namespace: shieldward
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: shieldward
+      app.kubernetes.io/component: edge
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              shieldward.dev/edge-access: allowed
+      ports:
+        - protocol: TCP
+          port: 8787
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: shieldward
+              app.kubernetes.io/component: control-plane
+      ports:
+        - protocol: TCP
+          port: 18080
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

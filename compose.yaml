@@ -1,0 +1,123 @@
+name: shieldward
+
+services:
+  control-plane:
+    image: shieldward/control-plane:dev
+    build:
+      context: .
+      dockerfile: deploy/docker/control-plane.Dockerfile
+      args:
+        VERSION: 0.1.0-dev
+        REVISION: local
+    command:
+      - serve
+      - -policy
+      - /etc/shieldward/policy.yaml
+      - -private-key
+      - /run/secrets/signing-key.pem
+      - -listen
+      - 0.0.0.0:18080
+      - -tls-cert
+      - /run/secrets/tls-cert.pem
+      - -tls-key
+      - /run/secrets/tls-key.pem
+    environment:
+      SHIELDWARD_HEALTHCHECK_URL: https://127.0.0.1:18080/readyz
+      SHIELDWARD_HEALTHCHECK_CA_FILE: /run/secrets/tls-ca.pem
+    volumes:
+      - type: bind
+        source: ./examples/policies/basic.yaml
+        target: /etc/shieldward/policy.yaml
+        read_only: true
+      - type: bind
+        source: ./.shieldward/private.pem
+        target: /run/secrets/signing-key.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/control-plane-cert.pem
+        target: /run/secrets/tls-cert.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/control-plane-key.pem
+        target: /run/secrets/tls-key.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/ca.pem
+        target: /run/secrets/tls-ca.pem
+        read_only: true
+    ports:
+      - 127.0.0.1:18080:18080
+    networks:
+      - control
+    read_only: true
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 128m
+    cpus: 1.0
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+  edge:
+    image: shieldward/edge:dev
+    build:
+      context: .
+      dockerfile: deploy/docker/edge.Dockerfile
+      args:
+        VERSION: 0.1.0-dev
+        REVISION: local
+    depends_on:
+      control-plane:
+        condition: service_healthy
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8787"
+      CONTROL_PLANE_URL: https://control-plane:18080
+      SHIELDWARD_PUBLIC_KEY_FILE: /run/secrets/control-plane-public.pem
+      SHIELDWARD_TLS_CERT_FILE: /run/secrets/tls-cert.pem
+      SHIELDWARD_TLS_KEY_FILE: /run/secrets/tls-key.pem
+      NODE_EXTRA_CA_CERTS: /run/secrets/control-plane-ca.pem
+      SHIELDWARD_HEALTHCHECK_URL: https://127.0.0.1:8787/readyz
+    volumes:
+      - type: bind
+        source: ./.shieldward/public.pem
+        target: /run/secrets/control-plane-public.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/ca.pem
+        target: /run/secrets/control-plane-ca.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/edge-cert.pem
+        target: /run/secrets/tls-cert.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/edge-key.pem
+        target: /run/secrets/tls-key.pem
+        read_only: true
+    ports:
+      - 127.0.0.1:8787:8787
+    networks:
+      - control
+      - egress
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 1.0
+    restart: unless-stopped
+    stop_grace_period: 15s
+
+networks:
+  control:
+    internal: true
+  egress:

@@ -13,7 +13,7 @@ import (
 	"github.com/m3yyyyy/shieldward-api-security-proxy/internal/signing"
 )
 
-const version = "0.1.0-dev"
+var version = "0.1.0-dev"
 
 func main() {
 	if err := run(os.Args[1:], os.Stdout, os.Stderr); err != nil {
@@ -37,6 +37,9 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 	case "serve":
 		return runServe(args[1:], stdout, stderr)
+
+	case "probe":
+		return runProbe(args[1:], stdout, stderr)
 
 	case "version", "--version", "-version":
 		_, err := fmt.Fprintln(stdout, version)
@@ -182,6 +185,7 @@ func writeUsage(writer io.Writer) {
 Usage:
   shieldwardd validate -policy <path>
   shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>] [-tls-cert <path> -tls-key <path>]
+  shieldwardd probe [-url <health-url>] [-ca <ca-certificate>]
   shieldwardd version
   shieldwardd help`)
 }

@@ -136,6 +136,52 @@ try {
             $findings.Add("Checkout credentials are not explicitly disabled: $normalizedPath")
         }
     }
+
+    $dockerFiles = @(
+        $trackedFiles | Where-Object { $_.Replace('\', '/') -match '(^|/)Dockerfile$|\.Dockerfile$' }
+    )
+    foreach ($dockerFile in $dockerFiles) {
+        $normalizedPath = $dockerFile.Replace('\', '/')
+        $dockerText = [System.IO.File]::ReadAllText((Join-Path $repoRoot $dockerFile))
+        $fromMatches = [regex]::Matches(
+            $dockerText,
+            '(?im)^\s*FROM\s+(?:--platform=\S+\s+)?(\S+)'
+        )
+        foreach ($fromMatch in $fromMatches) {
+            $baseImage = $fromMatch.Groups[1].Value
+            if ($baseImage -eq 'scratch') {
+                continue
+            }
+            if ($baseImage -notmatch '@sha256:[0-9a-f]{64}$') {
+                $findings.Add("Unpinned Docker base image '$baseImage': $normalizedPath")
+            }
+        }
+
+        if ($dockerText -match '(?im)^\s*COPY\s+(?:--\S+\s+)*\.\s+\.\s*$') {
+            $findings.Add("Broad COPY of the repository root: $normalizedPath")
+        }
+        if ($dockerText -match '(?im)^\s*ADD\s+') {
+            $findings.Add("Docker ADD instruction is not allowed: $normalizedPath")
+        }
+        if ($dockerText -match '(?im)^\s*USER\s+(?:root|0(?::0)?)\s*$') {
+            $findings.Add("Docker image explicitly selects root: $normalizedPath")
+        }
+    }
+
+    $kubernetesFiles = @(
+        $trackedFiles | Where-Object { $_.Replace('\', '/') -match '^deploy/kubernetes/.+\.ya?ml$' }
+    )
+    foreach ($kubernetesFile in $kubernetesFiles) {
+        $normalizedPath = $kubernetesFile.Replace('\', '/')
+        $manifestText = [System.IO.File]::ReadAllText((Join-Path $repoRoot $kubernetesFile))
+
+        if ($manifestText -match '(?im)^\s*image:\s*\S+:latest(?:\s|$)') {
+            $findings.Add("Kubernetes image uses the mutable latest tag: $normalizedPath")
+        }
+        if ($manifestText -match '(?im)^\s*kind:\s*Secret\s*$') {
+            $findings.Add("Kubernetes Secret manifests must not be committed: $normalizedPath")
+        }
+    }
 }
 finally {
     Pop-Location
