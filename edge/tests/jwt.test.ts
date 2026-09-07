@@ -187,9 +187,9 @@ describe('JWT verifier', () => {
     const signature = parts[2]!
 
     parts[2] =
-      signature.at(-1) === 'A'
-        ? `${signature.slice(0, -1)}B`
-        : `${signature.slice(0, -1)}A`
+      signature.startsWith('A')
+        ? `B${signature.slice(1)}`
+        : `A${signature.slice(1)}`
 
     await expect(
       verifier.verifyAuthorization(
