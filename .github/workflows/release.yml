@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and attest release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      attestations: write
+      artifact-metadata: write
+      contents: write
+      id-token: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: edge/package-lock.json
+      - name: Validate release tag
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tags must use semantic versioning, for example v1.0.0." >&2
+            exit 1
+          fi
+      - name: Check tracked files and workflow policy
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+      - name: Verify Go
+        run: |
+          go test -count=1 ./...
+          go vet ./...
+      - name: Install Edge dependencies
+        run: npm --prefix edge ci
+      - name: Verify Edge
+        run: |
+          npm --prefix edge test
+          npm --prefix edge run typecheck
+          npm --prefix edge run build
+      - name: Build release archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist release-stage/edge
+
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags="-s -w -buildid=" -o dist/shieldwardd-linux-amd64 ./cmd/shieldwardd
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -buildvcs=true -ldflags="-s -w -buildid=" -o dist/shieldwardd-linux-arm64 ./cmd/shieldwardd
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -buildvcs=true -ldflags="-s -w -buildid=" -o dist/shieldwardd-windows-amd64.exe ./cmd/shieldwardd
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -buildvcs=true -ldflags="-s -w -buildid=" -o dist/shieldwardd-windows-arm64.exe ./cmd/shieldwardd
+
+          cp -R edge/dist release-stage/edge/dist
+          cp edge/package.json edge/package-lock.json release-stage/edge/
+          version="${GITHUB_REF_NAME#v}"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -C release-stage edge \
+            | gzip -n > "dist/shieldward-edge-${version}.tar.gz"
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          path: .
+          format: spdx-json
+          output-file: dist/shieldward-source.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Generate SHA-256 checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\0' \
+            | sort -z \
+            | xargs -0 sha256sum > SHA256SUMS
+          sha256sum --check SHA256SUMS
+      - name: Attest release checksums
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: dist/SHA256SUMS
+      - name: Attest release SBOM
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            dist/shieldwardd-*
+            dist/shieldward-edge-*.tar.gz
+          sbom-path: dist/shieldward-source.spdx.json
+      - name: Upload release bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: shieldward-${{ github.ref_name }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish immutable GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes --title "ShieldWard $GITHUB_REF_NAME"

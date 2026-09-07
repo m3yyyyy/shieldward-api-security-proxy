@@ -10,6 +10,8 @@ coverage.out
 *.test
 /shieldwardd
 /shieldwardd.exe
+/dist/
+/release-stage/
 
 # TypeScript and Node output
 edge/node_modules/
