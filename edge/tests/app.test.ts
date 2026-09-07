@@ -6,6 +6,7 @@ import {
   type GatewayHandler,
 } from '../src/app.js'
 import type { ConfigurationSnapshot } from '../src/config-client.js'
+import { PrometheusMetrics } from '../src/metrics.js'
 
 const POLICY_VERSION =
   `sha256:${'a'.repeat(64)}`
@@ -84,6 +85,51 @@ describe('ShieldWard edge application', () => {
       service: 'shieldward-edge',
       status: 'ready',
       policyVersion: POLICY_VERSION,
+    })
+  })
+
+  it('serves privacy-safe metrics only to loopback clients', async () => {
+    const metrics = new PrometheusMetrics({
+      now: () => 2_000,
+    })
+    const configuration = {
+      current: () => createSnapshot(),
+    }
+
+    const localApplication = createApp({
+      configuration,
+      metrics,
+      resolveClientIp: () => '::ffff:127.0.0.1',
+    })
+
+    const localResponse =
+      await localApplication.request('/metrics')
+
+    expect(localResponse.status).toBe(200)
+    expect(
+      localResponse.headers.get('content-type'),
+    ).toBe(
+      'text/plain; version=0.0.4; charset=utf-8',
+    )
+    expect(
+      localResponse.headers.get('cache-control'),
+    ).toBe('no-store')
+    expect(await localResponse.text()).toContain(
+      'shieldward_edge_ready 1',
+    )
+
+    const remoteApplication = createApp({
+      configuration,
+      metrics,
+      resolveClientIp: () => '203.0.113.10',
+    })
+
+    const remoteResponse =
+      await remoteApplication.request('/metrics')
+
+    expect(remoteResponse.status).toBe(404)
+    await expect(remoteResponse.json()).resolves.toEqual({
+      error: 'route_not_found',
     })
   })
 

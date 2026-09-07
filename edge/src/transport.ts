@@ -9,6 +9,12 @@ export function isLoopbackHostname(
     .replace(/^\[|\]$/g, '')
     .replace(/\.$/, '')
 
+  if (normalized.startsWith('::ffff:')) {
+    return isLoopbackHostname(
+      normalized.slice('::ffff:'.length),
+    )
+  }
+
   if (normalized === 'localhost') {
     return true
   }

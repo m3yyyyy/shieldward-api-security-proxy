@@ -11,23 +11,61 @@ import (
 const streamKeepAliveInterval = 15 * time.Second
 
 type API struct {
-	store *Store
+	store   *Store
+	metrics *Metrics
 }
 
 func NewHandler(store *Store) http.Handler {
+	return NewHandlerWithMetrics(store, NewMetrics())
+}
+
+func NewHandlerWithMetrics(
+	store *Store,
+	metrics *Metrics,
+) http.Handler {
 	if store == nil {
 		panic("server: store must not be nil")
 	}
+	if metrics == nil {
+		panic("server: metrics must not be nil")
+	}
 
-	api := &API{store: store}
+	api := &API{
+		store:   store,
+		metrics: metrics,
+	}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", api.health)
 	mux.HandleFunc("GET /readyz", api.ready)
+	mux.HandleFunc("GET /metrics", api.serveMetrics)
 	mux.HandleFunc("GET /v1/bundle", api.bundle)
 	mux.HandleFunc("GET /v1/events", api.events)
 
-	return mux
+	return metrics.wrap(mux)
+}
+
+func (api *API) serveMetrics(
+	writer http.ResponseWriter,
+	request *http.Request,
+) {
+	if !isLoopbackRemoteAddress(request.RemoteAddr) {
+		writeJSON(writer, http.StatusNotFound, map[string]string{
+			"error": "route_not_found",
+		})
+		return
+	}
+
+	_, ready := api.store.Current()
+
+	writer.Header().Set("Cache-Control", "no-store")
+	writer.Header().Set(
+		"Content-Type",
+		"text/plain; version=0.0.4; charset=utf-8",
+	)
+	writer.Header().Set("X-Content-Type-Options", "nosniff")
+	writer.WriteHeader(http.StatusOK)
+	_, _ = writer.Write([]byte(api.metrics.render(ready)))
 }
 
 func (api *API) health(
@@ -100,6 +138,8 @@ func (api *API) events(
 
 	updates, cancel := api.store.Subscribe()
 	defer cancel()
+	finishMetrics := api.metrics.beginEventStream()
+	defer finishMetrics()
 
 	writer.Header().Set("Cache-Control", "no-cache, no-transform")
 	writer.Header().Set("Content-Type", "text/event-stream")

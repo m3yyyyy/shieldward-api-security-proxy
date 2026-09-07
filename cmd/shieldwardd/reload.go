@@ -23,6 +23,7 @@ func watchPolicy(
 	policyPath string,
 	privateKeyPath string,
 	store *controlserver.Store,
+	metrics *controlserver.Metrics,
 	stdout io.Writer,
 	stderr io.Writer,
 ) {
@@ -48,6 +49,9 @@ func watchPolicy(
 			lastObservation = observation
 
 			if observation.errorText != "" {
+				metrics.RecordPolicyReload(
+					controlserver.PolicyReloadRejected,
+				)
 				_, _ = fmt.Fprintf(
 					stderr,
 					"policy reload skipped: %s\n",
@@ -61,6 +65,9 @@ func watchPolicy(
 				privateKeyPath,
 			)
 			if err != nil {
+				metrics.RecordPolicyReload(
+					controlserver.PolicyReloadRejected,
+				)
 				_, _ = fmt.Fprintf(
 					stderr,
 					"policy reload rejected: %v\n",
@@ -76,6 +83,9 @@ func watchPolicy(
 			}
 
 			if err := store.Publish(envelope); err != nil {
+				metrics.RecordPolicyReload(
+					controlserver.PolicyReloadRejected,
+				)
 				_, _ = fmt.Fprintf(
 					stderr,
 					"policy reload publish failed: %v\n",
@@ -83,6 +93,10 @@ func watchPolicy(
 				)
 				continue
 			}
+
+			metrics.RecordPolicyReload(
+				controlserver.PolicyReloadUpdated,
+			)
 
 			_, _ = fmt.Fprintf(
 				stdout,

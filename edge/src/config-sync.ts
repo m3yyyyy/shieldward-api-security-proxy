@@ -17,6 +17,7 @@ export interface ConfigurationSyncOptions {
   readonly pollIntervalMs?: number
   readonly reconnectDelayMs?: number
   readonly onError?: (error: unknown) => void
+  readonly onRefresh?: (result: RefreshResult) => void
 }
 
 export class ConfigurationSyncError extends Error {
@@ -34,6 +35,9 @@ export class ConfigurationSynchronizer {
   readonly #reconnectDelayMs: number
   readonly #onError:
     | ((error: unknown) => void)
+    | undefined
+  readonly #onRefresh:
+    | ((result: RefreshResult) => void)
     | undefined
 
   #controller: AbortController | undefined
@@ -77,6 +81,7 @@ export class ConfigurationSynchronizer {
     this.#fetchImpl =
       options.fetchImpl ?? globalThis.fetch
     this.#onError = options.onError
+    this.#onRefresh = options.onRefresh
   }
 
   running(): boolean {
@@ -96,7 +101,7 @@ export class ConfigurationSynchronizer {
     let initialResult: RefreshResult
 
     try {
-      initialResult = await this.#client.refresh(
+      initialResult = await this.#refresh(
         controller.signal,
       )
     } catch (error) {
@@ -190,7 +195,7 @@ export class ConfigurationSynchronizer {
       }
 
       try {
-        await this.#client.refresh(signal)
+        await this.#refresh(signal)
       } catch (error) {
         if (!signal.aborted) {
           this.#report(error)
@@ -300,7 +305,7 @@ export class ConfigurationSynchronizer {
           this.#client.current()?.bundle.version
 
         if (announcedVersion !== currentVersion) {
-          await this.#client.refresh(signal)
+          await this.#refresh(signal)
         }
       } catch (error) {
         if (!signal.aborted) {
@@ -320,6 +325,22 @@ export class ConfigurationSynchronizer {
     } catch {
       // Error observers must never terminate synchronization.
     }
+  }
+
+  async #refresh(
+    signal: AbortSignal,
+  ): Promise<RefreshResult> {
+    const result = await this.#client.refresh(signal)
+
+    if (this.#onRefresh !== undefined) {
+      try {
+        this.#onRefresh(result)
+      } catch {
+        // Refresh observers must never terminate synchronization.
+      }
+    }
+
+    return result
   }
 }
 

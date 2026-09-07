@@ -7,6 +7,7 @@ import type {
   PolicyDecision,
   PolicyRequest,
 } from './policy-engine.js'
+import type { OperationalMetrics } from './metrics.js'
 import {
   proxyToUpstream,
   type UpstreamFetch,
@@ -29,6 +30,7 @@ export interface GatewayOptions {
   readonly auditLogger?: SecurityAuditLogger
   readonly requestIdFactory?: () => string
   readonly nowMilliseconds?: () => number
+  readonly metrics?: OperationalMetrics
 }
 
 interface BufferedBody {
@@ -50,6 +52,7 @@ export class Gateway {
   readonly #auditLogger: SecurityAuditLogger | undefined
   readonly #requestIdFactory: () => string
   readonly #nowMilliseconds: () => number
+  readonly #metrics: OperationalMetrics | undefined
 
   constructor(options: GatewayOptions) {
     this.#policyEvaluator = options.policyEvaluator
@@ -60,6 +63,7 @@ export class Gateway {
     this.#nowMilliseconds =
       options.nowMilliseconds ??
       (() => performance.now())
+    this.#metrics = options.metrics
     this.#maxRequestBodyBytes =
       options.maxRequestBodyBytes ??
       DEFAULT_MAX_REQUEST_BODY_BYTES
@@ -245,6 +249,10 @@ export class Gateway {
     completion: AuditCompletion,
   ): Response {
     response.headers.set('x-request-id', requestId)
+    const durationMs = Math.max(
+      0,
+      this.#nowMilliseconds() - startedAt,
+    )
 
     try {
       const policyVersion =
@@ -256,10 +264,7 @@ export class Gateway {
         path: new URL(request.url).pathname,
         outcome: completion.outcome,
         status: response.status,
-        durationMs: Math.max(
-          0,
-          this.#nowMilliseconds() - startedAt,
-        ),
+        durationMs,
         ...(policyVersion === undefined
           ? {}
           : {
@@ -284,6 +289,16 @@ export class Gateway {
       })
     } catch {
       // Audit failures must not alter the request outcome.
+    }
+
+    try {
+      this.#metrics?.recordGatewayRequest({
+        outcome: completion.outcome,
+        status: response.status,
+        durationMs,
+      })
+    } catch {
+      // Metrics failures must not alter the request outcome.
     }
 
     return response

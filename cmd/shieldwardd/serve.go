@@ -115,6 +115,7 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	if err := store.Publish(envelope); err != nil {
 		return fmt.Errorf("publish initial bundle: %w", err)
 	}
+	metrics := controlserver.NewMetrics()
 
 	processContext, stopSignals := signal.NotifyContext(
 		context.Background(),
@@ -140,7 +141,10 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	}
 
 	httpServer := &http.Server{
-		Handler:           controlserver.NewHandler(store),
+		Handler: controlserver.NewHandlerWithMetrics(
+			store,
+			metrics,
+		),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		IdleTimeout:       60 * time.Second,
@@ -157,6 +161,7 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 		*policyPath,
 		*privateKeyPath,
 		store,
+		metrics,
 		stdout,
 		stderr,
 	)

@@ -13,6 +13,7 @@ import { ConfigurationClient } from './config-client.js'
 import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
 import { LivePolicyEvaluator } from './live-policy.js'
+import { PrometheusMetrics } from './metrics.js'
 import { readRuntimeConfiguration } from './runtime-config.js'
 import { loadTlsMaterial } from './tls.js'
 import { createTrustedKeyring } from './trusted-keys.js'
@@ -39,12 +40,15 @@ async function main(): Promise<void> {
     trustedKeys,
   })
   const auditLogger = new JsonSecurityAuditLogger()
+  const metrics = new PrometheusMetrics()
 
   const synchronizer =
     new ConfigurationSynchronizer({
       baseUrl: runtime.controlPlaneUrl,
       client: configuration,
       onError: (error) => {
+        metrics.recordConfigurationSyncError()
+
         try {
           auditLogger.recordSystem({
             component: 'configuration_sync',
@@ -59,6 +63,11 @@ async function main(): Promise<void> {
           `Configuration synchronization error: ${errorMessage(error)}`,
         )
       },
+      onRefresh: (result) => {
+        metrics.recordConfigurationRefresh(
+          result.status,
+        )
+      },
     })
 
   const initial = await synchronizer.start()
@@ -70,6 +79,7 @@ async function main(): Promise<void> {
   const gateway = new Gateway({
     policyEvaluator,
     auditLogger,
+    metrics,
     maxRequestBodyBytes:
       runtime.maxRequestBodyBytes,
   })
@@ -77,6 +87,7 @@ async function main(): Promise<void> {
   const application = createApp({
     gateway,
     configuration,
+    metrics,
     secureTransport: tlsMaterial !== undefined,
     resolveClientIp: (context) =>
       getConnInfo(context).remote.address,

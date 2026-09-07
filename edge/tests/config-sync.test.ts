@@ -131,6 +131,7 @@ describe('configuration synchronizer', () => {
   it('refreshes when SSE announces a new bundle', async () => {
     const { client, refresh } = createClient()
     const events = createEventStream()
+    const onRefresh = vi.fn()
 
     const synchronizer =
       new ConfigurationSynchronizer({
@@ -139,12 +140,18 @@ describe('configuration synchronizer', () => {
         fetchImpl: events.fetchImpl,
         pollIntervalMs: 60_000,
         reconnectDelayMs: 60_000,
+        onRefresh,
       })
 
     await synchronizer.start()
 
     expect(synchronizer.running()).toBe(true)
     expect(refresh).toHaveBeenCalledTimes(1)
+    expect(onRefresh).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'unchanged',
+      }),
+    )
 
     events.write(
       `event: bundle\ndata: {"version":"${NEXT_VERSION}"}\n\n`,
@@ -155,6 +162,7 @@ describe('configuration synchronizer', () => {
     })
 
     expect(events.fetchImpl).toHaveBeenCalledTimes(1)
+    expect(onRefresh).toHaveBeenCalledTimes(2)
 
     await synchronizer.stop()
 
@@ -227,5 +235,30 @@ describe('configuration synchronizer', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  it('contains failures from refresh observers', async () => {
+    const { client } = createClient()
+    const events = createEventStream()
+
+    const synchronizer =
+      new ConfigurationSynchronizer({
+        baseUrl: 'http://control-plane.test:18080',
+        client,
+        fetchImpl: events.fetchImpl,
+        pollIntervalMs: 60_000,
+        reconnectDelayMs: 60_000,
+        onRefresh: () => {
+          throw new Error('observer failed')
+        },
+      })
+
+    await expect(synchronizer.start()).resolves.toEqual(
+      expect.objectContaining({
+        status: 'unchanged',
+      }),
+    )
+
+    await synchronizer.stop()
   })
 })

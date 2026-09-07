@@ -12,6 +12,9 @@ describe('transport security', () => {
     expect(isLoopbackHostname('127.0.0.1')).toBe(true)
     expect(isLoopbackHostname('127.0.0.2')).toBe(true)
     expect(isLoopbackHostname('[::1]')).toBe(true)
+    expect(
+      isLoopbackHostname('::ffff:127.0.0.1'),
+    ).toBe(true)
 
     expect(isLoopbackHostname('0.0.0.0')).toBe(false)
     expect(

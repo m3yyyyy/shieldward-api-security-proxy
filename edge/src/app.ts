@@ -4,6 +4,8 @@ import {
 } from 'hono'
 
 import type { ConfigurationSnapshot } from './config-client.js'
+import type { OperationalMetrics } from './metrics.js'
+import { isLoopbackHostname } from './transport.js'
 
 export interface GatewayHandler {
   handle(
@@ -25,6 +27,7 @@ export interface ApplicationOptions {
   readonly configuration?: ConfigurationStatus
   readonly resolveClientIp?: ClientIpResolver
   readonly secureTransport?: boolean
+  readonly metrics?: OperationalMetrics
 }
 
 export function createApp(
@@ -75,6 +78,46 @@ export function createApp(
     })
   })
 
+  application.get('/metrics', (context) => {
+    const clientIp = resolveClientIp(
+      context,
+      options.resolveClientIp,
+    )
+
+    if (
+      options.metrics === undefined ||
+      clientIp === undefined ||
+      !isLoopbackHostname(clientIp)
+    ) {
+      return context.json(
+        {
+          error: 'route_not_found',
+        },
+        404,
+      )
+    }
+
+    const snapshot = options.configuration?.current()
+
+    context.header('Cache-Control', 'no-store')
+    context.header(
+      'Content-Type',
+      'text/plain; version=0.0.4; charset=utf-8',
+    )
+
+    return context.body(
+      options.metrics.render({
+        ready: snapshot !== undefined,
+        ...(snapshot === undefined
+          ? {}
+          : {
+              policyLoadedAtMilliseconds:
+                snapshot.loadedAt,
+            }),
+      }),
+    )
+  })
+
   application.all('*', async (context) => {
     if (options.gateway === undefined) {
       return context.json(
@@ -85,14 +128,10 @@ export function createApp(
       )
     }
 
-    let clientIp: string | undefined
-
-    try {
-      clientIp =
-        options.resolveClientIp?.(context)
-    } catch {
-      clientIp = undefined
-    }
+    const clientIp = resolveClientIp(
+      context,
+      options.resolveClientIp,
+    )
 
     return options.gateway.handle(
       context.req.raw,
@@ -124,3 +163,14 @@ export function createApp(
 }
 
 export const app = createApp()
+
+function resolveClientIp(
+  context: Context,
+  resolver: ClientIpResolver | undefined,
+): string | undefined {
+  try {
+    return resolver?.(context)
+  } catch {
+    return undefined
+  }
+}
