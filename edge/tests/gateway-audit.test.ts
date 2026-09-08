@@ -229,6 +229,49 @@ describe('gateway security auditing', () => {
     )
   })
 
+  it('audits upstream deadline expiration', async () => {
+    const record = vi.fn<
+      SecurityAuditLogger['record']
+    >()
+    const gateway = new Gateway({
+      ...gatewayOptions(
+        evaluator({
+          allowed: true,
+          route,
+          jwt: undefined,
+          rateLimit: undefined,
+          wafMatches: [],
+        }),
+        { record },
+      ),
+      fetcher: (request) =>
+        new Promise((_resolve, reject) => {
+          request.signal.addEventListener(
+            'abort',
+            () => reject(request.signal.reason),
+            { once: true },
+          )
+        }),
+      upstreamTimeoutMs: 10,
+    })
+
+    const response = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+      ),
+    )
+
+    expect(response.status).toBe(504)
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: 'error',
+        status: 504,
+        reason: 'upstream_timeout',
+        routeId: 'orders-read',
+      }),
+    )
+  })
+
   it('does not change responses when auditing fails', async () => {
     const gateway = new Gateway(
       gatewayOptions(

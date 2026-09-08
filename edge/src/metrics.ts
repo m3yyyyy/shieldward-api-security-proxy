@@ -32,6 +32,9 @@ export interface OperationalMetrics {
     outcome: ConfigurationRefreshOutcome,
   ): void
   recordConfigurationSyncError(): void
+  recordGatewayRequestStarted(): void
+  recordGatewayRequestFinished(): void
+  recordGatewayOverload(): void
   recordRateLimitCheck(
     backend: RateLimitBackend,
     outcome: RateLimitMetricOutcome,
@@ -88,6 +91,8 @@ export class PrometheusMetrics
 
   #scrapes = 0
   #configurationSyncErrors = 0
+  #activeGatewayRequests = 0
+  #gatewayOverloadRejections = 0
 
   constructor(
     options: PrometheusMetricsOptions = {},
@@ -144,6 +149,21 @@ export class PrometheusMetrics
     this.#configurationSyncErrors += 1
   }
 
+  recordGatewayRequestStarted(): void {
+    this.#activeGatewayRequests += 1
+  }
+
+  recordGatewayRequestFinished(): void {
+    this.#activeGatewayRequests = Math.max(
+      0,
+      this.#activeGatewayRequests - 1,
+    )
+  }
+
+  recordGatewayOverload(): void {
+    this.#gatewayOverloadRejections += 1
+  }
+
   recordRateLimitCheck(
     backend: RateLimitBackend,
     outcome: RateLimitMetricOutcome,
@@ -180,6 +200,12 @@ export class PrometheusMetrics
       '# HELP shieldward_edge_rate_limiter_ready Whether the configured rate-limit backend is ready.',
       '# TYPE shieldward_edge_rate_limiter_ready gauge',
       `shieldward_edge_rate_limiter_ready ${snapshot.rateLimiterReady === false ? 0 : 1}`,
+      '# HELP shieldward_edge_gateway_active_requests Requests admitted and not yet completed or cancelled.',
+      '# TYPE shieldward_edge_gateway_active_requests gauge',
+      `shieldward_edge_gateway_active_requests ${this.#activeGatewayRequests}`,
+      '# HELP shieldward_edge_gateway_overload_rejections_total Requests rejected because the in-flight limit was reached.',
+      '# TYPE shieldward_edge_gateway_overload_rejections_total counter',
+      `shieldward_edge_gateway_overload_rejections_total ${this.#gatewayOverloadRejections}`,
       '# HELP shieldward_edge_policy_age_seconds Age of the active verified policy.',
       '# TYPE shieldward_edge_policy_age_seconds gauge',
       `shieldward_edge_policy_age_seconds ${formatNumber(policyAgeSeconds(snapshot, now))}`,

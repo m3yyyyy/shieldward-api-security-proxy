@@ -16,6 +16,9 @@ const DEFAULT_PUBLIC_KEY_FILE = fileURLToPath(
 const DEFAULT_MAX_REQUEST_BODY_BYTES =
   1024 * 1024
 
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000
+const DEFAULT_MAX_IN_FLIGHT_REQUESTS = 1_024
+
 const DEFAULT_REDIS_KEY_PREFIX =
   'shieldward:rate-limit:v1'
 
@@ -39,6 +42,8 @@ export interface RuntimeConfiguration {
   readonly controlPlaneUrl: string
   readonly publicKeyFile: string
   readonly maxRequestBodyBytes: number
+  readonly upstreamTimeoutMs: number
+  readonly maxInFlightRequests: number
   readonly tls: TlsRuntimeConfiguration | undefined
   readonly rateLimit: RateLimitRuntimeConfiguration
 }
@@ -117,6 +122,20 @@ export function readRuntimeConfiguration(
       Number.MAX_SAFE_INTEGER,
     )
 
+  const upstreamTimeoutMs = parsePositiveInteger(
+    environment.SHIELDWARD_UPSTREAM_TIMEOUT_MS,
+    DEFAULT_UPSTREAM_TIMEOUT_MS,
+    'SHIELDWARD_UPSTREAM_TIMEOUT_MS',
+    120_000,
+  )
+
+  const maxInFlightRequests = parsePositiveInteger(
+    environment.SHIELDWARD_MAX_IN_FLIGHT_REQUESTS,
+    DEFAULT_MAX_IN_FLIGHT_REQUESTS,
+    'SHIELDWARD_MAX_IN_FLIGHT_REQUESTS',
+    100_000,
+  )
+
   const rateLimit = parseRateLimitConfiguration(
     environment,
   )
@@ -127,6 +146,8 @@ export function readRuntimeConfiguration(
     controlPlaneUrl,
     publicKeyFile,
     maxRequestBodyBytes,
+    upstreamTimeoutMs,
+    maxInFlightRequests,
     tls,
     rateLimit,
   }

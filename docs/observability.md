@@ -20,6 +20,8 @@ The edge service reports:
 - process start time and uptime;
 - whether a verified policy is ready;
 - whether the configured rate-limit backend is ready;
+- current admitted requests that have not completed or been cancelled;
+- cumulative requests rejected at the in-flight admission limit;
 - age of the active verified policy;
 - gateway request counts by the bounded `outcome` and `status` labels;
 - request-duration count and sum by outcome;
@@ -67,6 +69,10 @@ Alert when any of these conditions persist:
 - `shieldward_edge_policy_age_seconds` exceeds the expected reload interval;
 - configuration refresh or policy reload rejection counters increase;
 - the edge `error` outcome rate or upstream `502` response rate increases;
+- upstream `504` responses or
+  `shieldward_edge_gateway_overload_rejections_total` increase;
+- `shieldward_edge_gateway_active_requests` remains near its configured
+  maximum;
 - no metric scrapes arrive within the collector's expected interval.
 
 Counter increases should be evaluated with a rate or increase function rather

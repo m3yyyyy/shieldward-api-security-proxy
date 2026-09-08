@@ -105,6 +105,10 @@ async function main(): Promise<void> {
     metrics,
     maxRequestBodyBytes:
       runtime.maxRequestBodyBytes,
+    upstreamTimeoutMs:
+      runtime.upstreamTimeoutMs,
+    maxInFlightRequests:
+      runtime.maxInFlightRequests,
   })
 
   const application = createApp({

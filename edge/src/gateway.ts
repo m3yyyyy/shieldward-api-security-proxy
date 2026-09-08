@@ -10,11 +10,14 @@ import type {
 import type { OperationalMetrics } from './metrics.js'
 import {
   proxyToUpstream,
+  UpstreamTimeoutError,
   type UpstreamFetch,
 } from './proxy.js'
 
 const DEFAULT_MAX_REQUEST_BODY_BYTES =
   1024 * 1024
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000
+const DEFAULT_MAX_IN_FLIGHT_REQUESTS = 1_024
 
 export interface PolicyEvaluator {
   evaluate(
@@ -31,6 +34,8 @@ export interface GatewayOptions {
   readonly requestIdFactory?: () => string
   readonly nowMilliseconds?: () => number
   readonly metrics?: OperationalMetrics
+  readonly upstreamTimeoutMs?: number
+  readonly maxInFlightRequests?: number
 }
 
 interface BufferedBody {
@@ -53,6 +58,8 @@ export class Gateway {
   readonly #requestIdFactory: () => string
   readonly #nowMilliseconds: () => number
   readonly #metrics: OperationalMetrics | undefined
+  readonly #upstreamTimeoutMs: number
+  readonly #admissionGate: AdmissionGate
 
   constructor(options: GatewayOptions) {
     this.#policyEvaluator = options.policyEvaluator
@@ -67,6 +74,13 @@ export class Gateway {
     this.#maxRequestBodyBytes =
       options.maxRequestBodyBytes ??
       DEFAULT_MAX_REQUEST_BODY_BYTES
+    this.#upstreamTimeoutMs =
+      options.upstreamTimeoutMs ??
+      DEFAULT_UPSTREAM_TIMEOUT_MS
+    this.#admissionGate = new AdmissionGate(
+      options.maxInFlightRequests ??
+        DEFAULT_MAX_IN_FLIGHT_REQUESTS,
+    )
 
     if (
       !Number.isSafeInteger(
@@ -78,6 +92,17 @@ export class Gateway {
         'maximum request body size must be a positive integer',
       )
     }
+
+    if (
+      !Number.isSafeInteger(
+        this.#upstreamTimeoutMs,
+      ) ||
+      this.#upstreamTimeoutMs <= 0
+    ) {
+      throw new Error(
+        'upstream timeout must be a positive integer',
+      )
+    }
   }
 
   async handle(
@@ -86,6 +111,66 @@ export class Gateway {
   ): Promise<Response> {
     const requestId = this.#requestIdFactory()
     const startedAt = this.#nowMilliseconds()
+    const release = this.#admissionGate.tryAcquire()
+
+    if (release === undefined) {
+      this.#recordOverload()
+
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          503,
+          'gateway_overloaded',
+          {
+            'retry-after': '1',
+          },
+        ),
+        {
+          outcome: 'error',
+          reason: 'gateway_overloaded',
+        },
+      )
+    }
+
+    this.#recordRequestStarted()
+
+    let requestReleased = false
+    const releaseRequest = (): void => {
+      if (requestReleased) {
+        return
+      }
+
+      requestReleased = true
+      release()
+      this.#recordRequestFinished()
+    }
+
+    try {
+      const response = await this.#handleAdmitted(
+        request,
+        clientIp,
+        requestId,
+        startedAt,
+      )
+
+      return releaseWhenConsumed(
+        response,
+        releaseRequest,
+      )
+    } catch (error) {
+      releaseRequest()
+      throw error
+    }
+  }
+
+  async #handleAdmitted(
+    request: Request,
+    clientIp: string | undefined,
+    requestId: string,
+    startedAt: number,
+  ): Promise<Response> {
     let body: BufferedBody
 
     try {
@@ -200,6 +285,7 @@ export class Gateway {
         route: decision.route,
         body: body.bytes,
         requestId,
+        timeoutMs: this.#upstreamTimeoutMs,
         ...(clientIp === undefined
           ? {}
           : {
@@ -223,7 +309,28 @@ export class Gateway {
           upstreamStatus: response.status,
         },
       )
-    } catch {
+    } catch (error) {
+      if (request.signal.aborted) {
+        throw error
+      }
+
+      if (error instanceof UpstreamTimeoutError) {
+        return this.#complete(
+          request,
+          requestId,
+          startedAt,
+          errorResponse(
+            504,
+            'upstream_timeout',
+          ),
+          {
+            outcome: 'error',
+            reason: 'upstream_timeout',
+            routeId: decision.route.id,
+          },
+        )
+      }
+
       return this.#complete(
         request,
         requestId,
@@ -303,6 +410,109 @@ export class Gateway {
 
     return response
   }
+
+  #recordRequestStarted(): void {
+    try {
+      this.#metrics?.recordGatewayRequestStarted()
+    } catch {
+      // Metrics failures must not alter admission.
+    }
+  }
+
+  #recordRequestFinished(): void {
+    try {
+      this.#metrics?.recordGatewayRequestFinished()
+    } catch {
+      // Metrics failures must not alter completion.
+    }
+  }
+
+  #recordOverload(): void {
+    try {
+      this.#metrics?.recordGatewayOverload()
+    } catch {
+      // Metrics failures must not alter load shedding.
+    }
+  }
+}
+
+class AdmissionGate {
+  readonly #maximum: number
+  #active = 0
+
+  constructor(maximum: number) {
+    if (
+      !Number.isSafeInteger(maximum) ||
+      maximum <= 0
+    ) {
+      throw new Error(
+        'maximum in-flight request count must be a positive integer',
+      )
+    }
+
+    this.#maximum = maximum
+  }
+
+  tryAcquire(): (() => void) | undefined {
+    if (this.#active >= this.#maximum) {
+      return undefined
+    }
+
+    this.#active += 1
+    let released = false
+
+    return () => {
+      if (released) {
+        return
+      }
+
+      released = true
+      this.#active -= 1
+    }
+  }
+}
+
+function releaseWhenConsumed(
+  response: Response,
+  release: () => void,
+): Response {
+  if (response.body === null) {
+    release()
+    return response
+  }
+
+  const reader = response.body.getReader()
+  const body = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const result = await reader.read()
+
+        if (result.done) {
+          release()
+          controller.close()
+          return
+        }
+
+        controller.enqueue(result.value)
+      } catch (error) {
+        release()
+        controller.error(error)
+      }
+    },
+    async cancel(reason) {
+      try {
+        await reader.cancel(reason)
+      } finally {
+        release()
+      }
+    },
+  })
+
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  })
 }
 
 class GatewayRequestError extends Error {

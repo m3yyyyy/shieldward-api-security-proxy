@@ -15,6 +15,8 @@ const HOP_BY_HOP_HEADERS = [
 const HEADER_NAME_PATTERN =
   /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/
 
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000
+
 export type UpstreamFetch = (
   request: Request,
 ) => Promise<Response>
@@ -26,6 +28,14 @@ export interface UpstreamProxyRequest {
   readonly clientIp?: string
   readonly requestId?: string
   readonly fetcher?: UpstreamFetch
+  readonly timeoutMs?: number
+}
+
+export class UpstreamTimeoutError extends Error {
+  constructor() {
+    super('upstream request timed out')
+    this.name = 'UpstreamTimeoutError'
+  }
 }
 
 export async function proxyToUpstream(
@@ -43,12 +53,29 @@ export async function proxyToUpstream(
     input.clientIp,
     input.requestId,
   )
+  const timeoutMs =
+    input.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS
+
+  if (
+    !Number.isSafeInteger(timeoutMs) ||
+    timeoutMs <= 0
+  ) {
+    throw new Error(
+      'upstream timeout must be a positive integer',
+    )
+  }
+
+  const timeoutSignal = AbortSignal.timeout(timeoutMs)
+  const signal = AbortSignal.any([
+    input.request.signal,
+    timeoutSignal,
+  ])
 
   const requestInit: RequestInit = {
     method: input.request.method,
     headers,
     redirect: 'manual',
-    signal: input.request.signal,
+    signal,
   }
 
   if (
@@ -65,8 +92,20 @@ export async function proxyToUpstream(
   )
 
   const fetcher = input.fetcher ?? globalThis.fetch
-  const upstreamResponse =
-    await fetcher(upstreamRequest)
+  let upstreamResponse: Response
+
+  try {
+    upstreamResponse = await fetcher(upstreamRequest)
+  } catch (error) {
+    if (
+      timeoutSignal.aborted &&
+      !input.request.signal.aborted
+    ) {
+      throw new UpstreamTimeoutError()
+    }
+
+    throw error
+  }
 
   return createClientResponse(upstreamResponse)
 }

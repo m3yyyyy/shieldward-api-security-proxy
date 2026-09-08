@@ -57,6 +57,11 @@ external network, while Edge has a separate egress network for HTTPS identity
 and upstream calls. Both services drop Linux capabilities, prevent privilege
 escalation, limit processes and memory, and mount credentials read-only.
 
+The supplied Compose and Kubernetes configurations also set a 10-second
+upstream deadline and a maximum of 1,024 concurrent admitted Edge requests.
+Tune these values for measured upstream latency and instance capacity using
+the guidance in `docs/upstream-resilience.md`.
+
 ## Kubernetes prerequisites
 
 The base manifests under `deploy/kubernetes/base` are secure starting points,
@@ -70,6 +75,8 @@ not a complete environment-specific deployment. Before applying them:
 4. Replace both example image tags with immutable image digests.
 5. Review resource limits and NetworkPolicies against the real upstreams, DNS
    service labels, ingress controller, and CNI implementation.
+6. Load-test the upstream deadline and in-flight request limit before exposing
+   the Edge service to production traffic.
 
 Create the namespace first:
 

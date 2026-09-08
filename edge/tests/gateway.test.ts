@@ -303,4 +303,180 @@ describe('gateway', () => {
       error: 'upstream_unavailable',
     })
   })
+
+  it('returns a gateway timeout when the upstream deadline expires', async () => {
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher: (request) =>
+        new Promise((_resolve, reject) => {
+          request.signal.addEventListener(
+            'abort',
+            () => reject(request.signal.reason),
+            { once: true },
+          )
+        }),
+      upstreamTimeoutMs: 10,
+    })
+
+    const response = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+        {
+          method: 'POST',
+          body: 'hello',
+        },
+      ),
+    )
+
+    expect(response.status).toBe(504)
+
+    await expect(response.json()).resolves.toEqual({
+      error: 'upstream_timeout',
+    })
+  })
+
+  it('preserves client cancellation and releases its admission slot', async () => {
+    const controller = new AbortController()
+    const cancellation = new Error(
+      'client disconnected',
+    )
+    let fetchCount = 0
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher: (request) => {
+        fetchCount += 1
+
+        if (fetchCount > 1) {
+          return Promise.resolve(new Response('ok'))
+        }
+
+        return new Promise((_resolve, reject) => {
+          const rejectCancellation = (): void =>
+            reject(request.signal.reason)
+
+          if (request.signal.aborted) {
+            rejectCancellation()
+            return
+          }
+
+          request.signal.addEventListener(
+            'abort',
+            rejectCancellation,
+            { once: true },
+          )
+        })
+      },
+      maxInFlightRequests: 1,
+    })
+
+    const interrupted = gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+        {
+          signal: controller.signal,
+        },
+      ),
+    )
+
+    controller.abort(cancellation)
+
+    await expect(interrupted).rejects.toBe(cancellation)
+
+    const recovered = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+      ),
+    )
+
+    expect(recovered.status).toBe(200)
+    await expect(recovered.text()).resolves.toBe('ok')
+  })
+
+  it('sheds excess load until a streaming response is consumed', async () => {
+    let closeStream = (): void => undefined
+    const fetcher = vi.fn<UpstreamFetch>(
+      async () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              closeStream = () => controller.close()
+            },
+          }),
+        ),
+    )
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher,
+      maxInFlightRequests: 1,
+    })
+    const createRequest = (): Request =>
+      new Request(
+        'https://edge.example/v1/orders/42',
+        {
+          method: 'POST',
+          body: 'hello',
+        },
+      )
+
+    const firstResponse = await gateway.handle(
+      createRequest(),
+    )
+    const overloadedResponse = await gateway.handle(
+      createRequest(),
+    )
+
+    expect(overloadedResponse.status).toBe(503)
+    expect(
+      overloadedResponse.headers.get('retry-after'),
+    ).toBe('1')
+    await expect(
+      overloadedResponse.json(),
+    ).resolves.toEqual({
+      error: 'gateway_overloaded',
+    })
+    expect(fetcher).toHaveBeenCalledOnce()
+
+    closeStream()
+    await expect(firstResponse.text()).resolves.toBe('')
+
+    const recoveredResponse = await gateway.handle(
+      createRequest(),
+    )
+
+    expect(recoveredResponse.status).toBe(200)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    await recoveredResponse.body?.cancel()
+  })
+
+  it('rejects invalid resilience limits', () => {
+    const policyEvaluator = {
+      evaluate: async () => allowedDecision(),
+    }
+
+    expect(
+      () =>
+        new Gateway({
+          policyEvaluator,
+          upstreamTimeoutMs: 0,
+        }),
+    ).toThrow(
+      'upstream timeout must be a positive integer',
+    )
+
+    expect(
+      () =>
+        new Gateway({
+          policyEvaluator,
+          maxInFlightRequests: 0,
+        }),
+    ).toThrow(
+      'maximum in-flight request count must be a positive integer',
+    )
+  })
 })

@@ -129,6 +129,45 @@ func TestRedisIntegrationWorkflowPinsServiceImage(t *testing.T) {
 	}
 }
 
+func TestEdgeDeploymentsSetResilienceBudgets(t *testing.T) {
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("..", "..", "compose.yaml"),
+			expected: []string{
+				`SHIELDWARD_UPSTREAM_TIMEOUT_MS: "10000"`,
+				`SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: "1024"`,
+			},
+		},
+		{
+			path: filepath.Join("..", "..", "deploy", "kubernetes", "base", "edge.yaml"),
+			expected: []string{
+				"SHIELDWARD_UPSTREAM_TIMEOUT_MS",
+				"SHIELDWARD_MAX_IN_FLIGHT_REQUESTS",
+				`value: "10000"`,
+				`value: "1024"`,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(filepath.Base(test.path), func(t *testing.T) {
+			contents, err := os.ReadFile(test.path)
+			if err != nil {
+				t.Fatalf("read deployment: %v", err)
+			}
+
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("deployment does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestComposeServicesUseRuntimeHardening(t *testing.T) {
 	contents, err := os.ReadFile(filepath.Join("..", "..", "compose.yaml"))
 	if err != nil {

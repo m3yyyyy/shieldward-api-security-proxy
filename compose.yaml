@@ -81,6 +81,8 @@ services:
       SHIELDWARD_TLS_KEY_FILE: /run/secrets/tls-key.pem
       NODE_EXTRA_CA_CERTS: /run/secrets/control-plane-ca.pem
       SHIELDWARD_HEALTHCHECK_URL: https://127.0.0.1:8787/readyz
+      SHIELDWARD_UPSTREAM_TIMEOUT_MS: "10000"
+      SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: "1024"
     volumes:
       - type: bind
         source: ./.shieldward/public.pem

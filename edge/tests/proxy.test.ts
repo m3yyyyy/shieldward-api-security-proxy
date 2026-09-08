@@ -4,6 +4,7 @@ import type { CompiledRoute } from '../src/bundle.js'
 import {
   buildUpstreamUrl,
   proxyToUpstream,
+  UpstreamTimeoutError,
   type UpstreamFetch,
 } from '../src/proxy.js'
 
@@ -159,6 +160,61 @@ describe('upstream proxy', () => {
     expect(response.headers.get('x-upstream')).toBe(
       'preserved',
     )
+  })
+
+  it('classifies an expired upstream deadline', async () => {
+    const fetcher: UpstreamFetch = (request) =>
+      new Promise((_resolve, reject) => {
+        request.signal.addEventListener(
+          'abort',
+          () => reject(request.signal.reason),
+          { once: true },
+        )
+      })
+
+    await expect(
+      proxyToUpstream({
+        request: new Request(
+          'https://edge.example/v1/orders/42',
+        ),
+        route,
+        body: undefined,
+        fetcher,
+        timeoutMs: 10,
+      }),
+    ).rejects.toBeInstanceOf(UpstreamTimeoutError)
+  })
+
+  it('preserves incoming request cancellation', async () => {
+    const controller = new AbortController()
+    const cancellation = new Error(
+      'client disconnected',
+    )
+    const fetcher: UpstreamFetch = (request) =>
+      new Promise((_resolve, reject) => {
+        request.signal.addEventListener(
+          'abort',
+          () => reject(request.signal.reason),
+          { once: true },
+        )
+      })
+
+    const result = proxyToUpstream({
+      request: new Request(
+        'https://edge.example/v1/orders/42',
+        {
+          signal: controller.signal,
+        },
+      ),
+      route,
+      body: undefined,
+      fetcher,
+      timeoutMs: 1_000,
+    }).catch((error: unknown) => error)
+
+    controller.abort(cancellation)
+
+    await expect(result).resolves.toBe(cancellation)
   })
 
   it('rejects unsafe upstream URLs', () => {

@@ -22,6 +22,10 @@ describe('Prometheus operational metrics', () => {
     metrics.recordConfigurationRefresh('updated')
     metrics.recordConfigurationSyncError()
     metrics.recordRateLimitCheck('redis', 'allowed')
+    metrics.recordGatewayRequestStarted()
+    metrics.recordGatewayRequestStarted()
+    metrics.recordGatewayRequestFinished()
+    metrics.recordGatewayOverload()
 
     now = 6_000
 
@@ -38,6 +42,12 @@ describe('Prometheus operational metrics', () => {
     )
     expect(output).toContain(
       'shieldward_edge_rate_limiter_ready 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_gateway_active_requests 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_gateway_overload_rejections_total 1',
     )
     expect(output).toContain(
       'shieldward_edge_policy_age_seconds 2',

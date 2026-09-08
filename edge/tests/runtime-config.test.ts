@@ -26,6 +26,12 @@ describe('runtime configuration', () => {
     expect(
       configuration.maxRequestBodyBytes,
     ).toBe(1024 * 1024)
+    expect(configuration.upstreamTimeoutMs).toBe(
+      10_000,
+    )
+    expect(
+      configuration.maxInFlightRequests,
+    ).toBe(1_024)
     expect(configuration.tls).toBeUndefined()
     expect(configuration.rateLimit).toEqual({
       backend: 'memory',
@@ -52,6 +58,8 @@ describe('runtime configuration', () => {
         SHIELDWARD_PUBLIC_KEY_FILE:
           'keys/public.pem',
         MAX_REQUEST_BODY_BYTES: '2048',
+        SHIELDWARD_UPSTREAM_TIMEOUT_MS: '25000',
+        SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: '200',
         SHIELDWARD_TLS_CERT_FILE:
           'keys/tls-cert.pem',
         SHIELDWARD_TLS_KEY_FILE:
@@ -67,6 +75,8 @@ describe('runtime configuration', () => {
         'keys/public.pem',
       ),
       maxRequestBodyBytes: 2048,
+      upstreamTimeoutMs: 25_000,
+      maxInFlightRequests: 200,
       tls: {
         certificateFile: resolve(
           'keys/tls-cert.pem',
@@ -200,6 +210,22 @@ describe('runtime configuration', () => {
       }),
     ).toThrow(
       'MAX_REQUEST_BODY_BYTES must be a positive integer',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_UPSTREAM_TIMEOUT_MS: '120001',
+      }),
+    ).toThrow(
+      'SHIELDWARD_UPSTREAM_TIMEOUT_MS must be between 1 and 120000',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: '0',
+      }),
+    ).toThrow(
+      'SHIELDWARD_MAX_IN_FLIGHT_REQUESTS must be between 1 and 100000',
     )
   })
 
