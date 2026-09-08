@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.20
 
-FROM node:24.20.0-alpine3.24@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS build
+FROM node:26.8.1-alpine3.24@sha256:2d984a15c9b54fd0aeb608b8e0d0d83529eb34d2966db27a1fb4f1edc3d298a3 AS build
 
 WORKDIR /build
 
@@ -14,7 +14,7 @@ COPY edge/src ./src
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:24.20.0-alpine3.24@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS runtime
+FROM node:26.8.1-alpine3.24@sha256:2d984a15c9b54fd0aeb608b8e0d0d83529eb34d2966db27a1fb4f1edc3d298a3 AS runtime
 
 RUN apk upgrade --no-cache \
     && rm -rf \
