@@ -17,9 +17,14 @@ func TestDeploymentYAMLParses(t *testing.T) {
 	repositoryRoot := filepath.Join("..", "..")
 
 	assertYAMLDocuments(t, filepath.Join(repositoryRoot, "compose.yaml"), false)
+	assertYAMLDocuments(
+		t,
+		filepath.Join(repositoryRoot, ".github", "workflows", "ci.yml"),
+		false,
+	)
 
 	manifestPaths, err := filepath.Glob(
-		filepath.Join(repositoryRoot, "deploy", "kubernetes", "base", "*.yaml"),
+		filepath.Join(repositoryRoot, "deploy", "kubernetes", "*", "*.yaml"),
 	)
 	if err != nil {
 		t.Fatalf("glob Kubernetes manifests: %v", err)
@@ -33,27 +38,93 @@ func TestDeploymentYAMLParses(t *testing.T) {
 	}
 }
 
-func TestKustomizationReferencesExistingFiles(t *testing.T) {
-	baseDirectory := filepath.Join("..", "..", "deploy", "kubernetes", "base")
-	contents, err := os.ReadFile(filepath.Join(baseDirectory, "kustomization.yaml"))
+func TestKustomizationsReferenceExistingFiles(t *testing.T) {
+	root := filepath.Join("..", "..", "deploy", "kubernetes")
+	directories := []string{
+		filepath.Join(root, "base"),
+		filepath.Join(root, "redis-rate-limit"),
+	}
+
+	for _, directory := range directories {
+		t.Run(filepath.Base(directory), func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(directory, "kustomization.yaml"))
+			if err != nil {
+				t.Fatalf("read kustomization: %v", err)
+			}
+
+			var kustomization struct {
+				Resources []string `yaml:"resources"`
+				Patches   []struct {
+					Path string `yaml:"path"`
+				} `yaml:"patches"`
+			}
+			if err := yaml.Unmarshal(contents, &kustomization); err != nil {
+				t.Fatalf("decode kustomization: %v", err)
+			}
+			if len(kustomization.Resources) == 0 {
+				t.Fatal("kustomization has no resources")
+			}
+
+			for _, resource := range kustomization.Resources {
+				assertPathExists(t, directory, resource)
+			}
+			for _, patch := range kustomization.Patches {
+				if patch.Path != "" {
+					assertPathExists(t, directory, patch.Path)
+				}
+			}
+		})
+	}
+}
+
+func TestRedisRateLimitOverlayUsesTLSSecretsAndNarrowEgress(t *testing.T) {
+	directory := filepath.Join("..", "..", "deploy", "kubernetes", "redis-rate-limit")
+	deployment, err := os.ReadFile(filepath.Join(directory, "edge-rate-limit.yaml"))
 	if err != nil {
-		t.Fatalf("read kustomization: %v", err)
+		t.Fatalf("read Redis deployment patch: %v", err)
+	}
+	kustomization, err := os.ReadFile(filepath.Join(directory, "kustomization.yaml"))
+	if err != nil {
+		t.Fatalf("read Redis kustomization: %v", err)
 	}
 
-	var kustomization struct {
-		Resources []string `yaml:"resources"`
-	}
-	if err := yaml.Unmarshal(contents, &kustomization); err != nil {
-		t.Fatalf("decode kustomization: %v", err)
-	}
-	if len(kustomization.Resources) == 0 {
-		t.Fatal("kustomization has no resources")
+	for _, expected := range []string{
+		"replicas: 2",
+		"SHIELDWARD_RATE_LIMIT_BACKEND",
+		"rediss://",
+		"SHIELDWARD_REDIS_PASSWORD_FILE",
+		"SHIELDWARD_REDIS_CA_FILE",
+	} {
+		if !strings.Contains(string(deployment), expected) {
+			t.Errorf("Redis deployment patch does not contain %q", expected)
+		}
 	}
 
-	for _, resource := range kustomization.Resources {
-		resourcePath := filepath.Join(baseDirectory, resource)
-		if _, err := os.Stat(resourcePath); err != nil {
-			t.Errorf("kustomization resource %q: %v", resource, err)
+	for _, expected := range []string{
+		"app.kubernetes.io/component: rate-limit-store",
+		"port: 6379",
+	} {
+		if !strings.Contains(string(kustomization), expected) {
+			t.Errorf("Redis NetworkPolicy patch does not contain %q", expected)
+		}
+	}
+}
+
+func TestRedisIntegrationWorkflowPinsServiceImage(t *testing.T) {
+	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read CI workflow: %v", err)
+	}
+
+	text := string(contents)
+	for _, expected := range []string{
+		"distributed-rate-limit:",
+		"redis:8.10.1-alpine@sha256:",
+		"TEST_REDIS_URL: redis://127.0.0.1:6379",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Errorf("CI workflow does not contain %q", expected)
 		}
 	}
 }
@@ -193,4 +264,12 @@ func contains(values []string, expected string) bool {
 		}
 	}
 	return false
+}
+
+func assertPathExists(t *testing.T, directory, path string) {
+	t.Helper()
+
+	if _, err := os.Stat(filepath.Join(directory, path)); err != nil {
+		t.Errorf("kustomization path %q: %v", path, err)
+	}
 }

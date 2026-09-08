@@ -1,3 +1,8 @@
+import type {
+  RateLimitBackend,
+  RateLimitMetricOutcome,
+} from './rate-limit.js'
+
 export type GatewayMetricOutcome =
   | 'allowed'
   | 'denied'
@@ -15,6 +20,7 @@ export interface GatewayMetricRecord {
 
 export interface MetricsSnapshot {
   readonly ready: boolean
+  readonly rateLimiterReady?: boolean
   readonly policyLoadedAtMilliseconds?: number
 }
 
@@ -26,6 +32,10 @@ export interface OperationalMetrics {
     outcome: ConfigurationRefreshOutcome,
   ): void
   recordConfigurationSyncError(): void
+  recordRateLimitCheck(
+    backend: RateLimitBackend,
+    outcome: RateLimitMetricOutcome,
+  ): void
   render(snapshot: MetricsSnapshot): string
 }
 
@@ -49,6 +59,17 @@ const REFRESH_OUTCOMES: readonly ConfigurationRefreshOutcome[] = [
   'unchanged',
 ]
 
+const RATE_LIMIT_BACKENDS: readonly RateLimitBackend[] = [
+  'memory',
+  'redis',
+]
+
+const RATE_LIMIT_OUTCOMES: readonly RateLimitMetricOutcome[] = [
+  'allowed',
+  'limited',
+  'error',
+]
+
 export class PrometheusMetrics
   implements OperationalMetrics
 {
@@ -63,6 +84,7 @@ export class PrometheusMetrics
     ConfigurationRefreshOutcome,
     number
   >()
+  readonly #rateLimitChecks = new Map<string, number>()
 
   #scrapes = 0
   #configurationSyncErrors = 0
@@ -122,6 +144,25 @@ export class PrometheusMetrics
     this.#configurationSyncErrors += 1
   }
 
+  recordRateLimitCheck(
+    backend: RateLimitBackend,
+    outcome: RateLimitMetricOutcome,
+  ): void {
+    if (
+      !RATE_LIMIT_BACKENDS.includes(backend) ||
+      !RATE_LIMIT_OUTCOMES.includes(outcome)
+    ) {
+      return
+    }
+
+    const key = `${backend}\u0000${outcome}`
+
+    this.#rateLimitChecks.set(
+      key,
+      (this.#rateLimitChecks.get(key) ?? 0) + 1,
+    )
+  }
+
   render(snapshot: MetricsSnapshot): string {
     this.#scrapes += 1
 
@@ -136,6 +177,9 @@ export class PrometheusMetrics
       '# HELP shieldward_edge_ready Whether a verified policy is ready for evaluation.',
       '# TYPE shieldward_edge_ready gauge',
       `shieldward_edge_ready ${snapshot.ready ? 1 : 0}`,
+      '# HELP shieldward_edge_rate_limiter_ready Whether the configured rate-limit backend is ready.',
+      '# TYPE shieldward_edge_rate_limiter_ready gauge',
+      `shieldward_edge_rate_limiter_ready ${snapshot.rateLimiterReady === false ? 0 : 1}`,
       '# HELP shieldward_edge_policy_age_seconds Age of the active verified policy.',
       '# TYPE shieldward_edge_policy_age_seconds gauge',
       `shieldward_edge_policy_age_seconds ${formatNumber(policyAgeSeconds(snapshot, now))}`,
@@ -165,6 +209,21 @@ export class PrometheusMetrics
         `shieldward_edge_gateway_request_duration_seconds_count{outcome="${outcome}"} ${aggregate.count}`,
         `shieldward_edge_gateway_request_duration_seconds_sum{outcome="${outcome}"} ${formatNumber(aggregate.sumSeconds)}`,
       )
+    }
+
+    lines.push(
+      '# HELP shieldward_edge_rate_limit_checks_total Rate-limit checks grouped by bounded backend and result.',
+      '# TYPE shieldward_edge_rate_limit_checks_total counter',
+    )
+
+    for (const backend of RATE_LIMIT_BACKENDS) {
+      for (const outcome of RATE_LIMIT_OUTCOMES) {
+        const key = `${backend}\u0000${outcome}`
+
+        lines.push(
+          `shieldward_edge_rate_limit_checks_total{backend="${backend}",result="${outcome}"} ${this.#rateLimitChecks.get(key) ?? 0}`,
+        )
+      }
     }
 
     lines.push(

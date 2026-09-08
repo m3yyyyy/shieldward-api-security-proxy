@@ -11,6 +11,7 @@ function createMetrics(
     recordGatewayRequest,
     recordConfigurationRefresh: () => undefined,
     recordConfigurationSyncError: () => undefined,
+    recordRateLimitCheck: () => undefined,
     render: () => '',
   }
 }

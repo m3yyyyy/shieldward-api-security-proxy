@@ -120,6 +120,44 @@ describe('live policy evaluator', () => {
     )
   })
 
+  it('shares an injected rate limiter with generated policy engines', async () => {
+    const bundle = createBundle('c')
+
+    bundle.routes[0]!.rateLimit = {
+      requests: 2,
+      window: '1m',
+      key: 'client-ip',
+    }
+
+    const check = vi.fn(async () => ({
+      allowed: true,
+      limit: 2,
+      remaining: 1,
+      resetAt: 60_000,
+      retryAfterSeconds: 60,
+    }))
+    const evaluator = new LivePolicyEvaluator({
+      configuration: {
+        current: () => createSnapshot(bundle),
+      },
+      rateLimiter: {
+        check,
+      },
+    })
+
+    const decision = await evaluator.evaluate({
+      ...request,
+      clientIp: '203.0.113.10',
+    })
+
+    expect(decision.allowed).toBe(true)
+    expect(check).toHaveBeenCalledWith(
+      'orders-read',
+      '203.0.113.10',
+      bundle.routes[0]!.rateLimit,
+    )
+  })
+
   it('switches evaluators when the verified bundle changes', async () => {
     const firstSnapshot = createSnapshot(
       createBundle('a'),

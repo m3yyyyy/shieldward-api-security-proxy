@@ -14,6 +14,11 @@ import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
 import { LivePolicyEvaluator } from './live-policy.js'
 import { PrometheusMetrics } from './metrics.js'
+import { MeasuredRateLimiter } from './rate-limit.js'
+import {
+  createRateLimitRuntime,
+  type RateLimitRuntime,
+} from './rate-limit-runtime.js'
 import { readRuntimeConfiguration } from './runtime-config.js'
 import { loadTlsMaterial } from './tls.js'
 import { createTrustedKeyring } from './trusted-keys.js'
@@ -41,6 +46,10 @@ async function main(): Promise<void> {
   })
   const auditLogger = new JsonSecurityAuditLogger()
   const metrics = new PrometheusMetrics()
+  const rateLimitRuntime =
+    await createRateLimitRuntime(
+      runtime.rateLimit,
+    )
 
   const synchronizer =
     new ConfigurationSynchronizer({
@@ -70,10 +79,24 @@ async function main(): Promise<void> {
       },
     })
 
-  const initial = await synchronizer.start()
+  let initial: Awaited<
+    ReturnType<ConfigurationSynchronizer['start']>
+  >
+
+  try {
+    initial = await synchronizer.start()
+  } catch (error) {
+    await rateLimitRuntime.close()
+    throw error
+  }
 
   const policyEvaluator = new LivePolicyEvaluator({
     configuration,
+    rateLimiter: new MeasuredRateLimiter(
+      rateLimitRuntime.limiter,
+      rateLimitRuntime.backend,
+      metrics,
+    ),
   })
 
   const gateway = new Gateway({
@@ -88,6 +111,7 @@ async function main(): Promise<void> {
     gateway,
     configuration,
     metrics,
+    rateLimiter: rateLimitRuntime,
     secureTransport: tlsMaterial !== undefined,
     resolveClientIp: (context) =>
       getConnInfo(context).remote.address,
@@ -119,12 +143,16 @@ async function main(): Promise<void> {
       console.log(
         `Trusted key ${Array.from(trustedKeys.keys()).join(', ')}`,
       )
+      console.log(
+        `Rate-limit backend ${rateLimitRuntime.backend}`,
+      )
     },
   )
 
   installShutdownHandlers(
     server,
     synchronizer,
+    rateLimitRuntime,
   )
 }
 
@@ -156,6 +184,7 @@ async function loadPublicKey(
 function installShutdownHandlers(
   server: ServerType,
   synchronizer: ConfigurationSynchronizer,
+  rateLimitRuntime: RateLimitRuntime,
 ): void {
   let shuttingDown = false
 
@@ -172,7 +201,10 @@ function installShutdownHandlers(
       `Received ${signal}; shutting down`,
     )
 
-    await synchronizer.stop()
+    await stopDependencies(
+      synchronizer,
+      rateLimitRuntime,
+    )
 
     server.close((error) => {
       if (error !== undefined) {
@@ -206,8 +238,28 @@ function installShutdownHandlers(
       `ShieldWard edge server error: ${error.message}`,
     )
     process.exitCode = 1
-    void synchronizer.stop()
+    void stopDependencies(
+      synchronizer,
+      rateLimitRuntime,
+    )
   })
+}
+
+async function stopDependencies(
+  synchronizer: ConfigurationSynchronizer,
+  rateLimitRuntime: RateLimitRuntime,
+): Promise<void> {
+  const results = await Promise.allSettled([
+    synchronizer.stop(),
+    rateLimitRuntime.close(),
+  ])
+
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.error(errorMessage(result.reason))
+      process.exitCode = 1
+    }
+  }
 }
 
 function errorMessage(error: unknown): string {

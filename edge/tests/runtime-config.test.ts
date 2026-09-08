@@ -27,6 +27,9 @@ describe('runtime configuration', () => {
       configuration.maxRequestBodyBytes,
     ).toBe(1024 * 1024)
     expect(configuration.tls).toBeUndefined()
+    expect(configuration.rateLimit).toEqual({
+      backend: 'memory',
+    })
 
     expect(
       isAbsolute(configuration.publicKeyFile),
@@ -72,7 +75,108 @@ describe('runtime configuration', () => {
           'keys/tls-key.pem',
         ),
       },
+      rateLimit: {
+        backend: 'memory',
+      },
     })
+  })
+
+  it('accepts secure Redis rate-limit settings', () => {
+    const configuration =
+      readRuntimeConfiguration({
+        SHIELDWARD_RATE_LIMIT_BACKEND: 'redis',
+        SHIELDWARD_REDIS_URL:
+          'rediss://redis.example:6380/2',
+        SHIELDWARD_REDIS_USERNAME: 'edge',
+        SHIELDWARD_REDIS_PASSWORD_FILE:
+          'secrets/redis-password',
+        SHIELDWARD_REDIS_CA_FILE:
+          'secrets/redis-ca.pem',
+        SHIELDWARD_REDIS_PREFIX:
+          'shieldward:test',
+        SHIELDWARD_REDIS_CONNECT_TIMEOUT_MS:
+          '2500',
+        SHIELDWARD_REDIS_COMMAND_TIMEOUT_MS:
+          '750',
+      })
+
+    expect(configuration.rateLimit).toEqual({
+      backend: 'redis',
+      url: 'rediss://redis.example:6380/2',
+      username: 'edge',
+      passwordFile: resolve(
+        'secrets/redis-password',
+      ),
+      certificateAuthorityFile: resolve(
+        'secrets/redis-ca.pem',
+      ),
+      keyPrefix: 'shieldward:test',
+      connectTimeoutMs: 2500,
+      commandTimeoutMs: 750,
+    })
+  })
+
+  it('permits cleartext Redis only on loopback', () => {
+    const configuration =
+      readRuntimeConfiguration({
+        SHIELDWARD_RATE_LIMIT_BACKEND: 'redis',
+        SHIELDWARD_REDIS_URL:
+          'redis://127.0.0.1:6379',
+      })
+
+    expect(configuration.rateLimit).toMatchObject({
+      backend: 'redis',
+      url: 'redis://127.0.0.1:6379',
+    })
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_RATE_LIMIT_BACKEND: 'redis',
+        SHIELDWARD_REDIS_URL:
+          'redis://redis.internal:6379',
+      }),
+    ).toThrow(
+      'SHIELDWARD_REDIS_URL must use rediss unless it targets loopback',
+    )
+  })
+
+  it('rejects Redis credentials in URLs or plaintext environment values', () => {
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_RATE_LIMIT_BACKEND: 'redis',
+        SHIELDWARD_REDIS_URL:
+          'rediss://user:secret@redis.example',
+      }),
+    ).toThrow(
+      'SHIELDWARD_REDIS_URL must not contain credentials',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_REDIS_PASSWORD: 'secret',
+      }),
+    ).toThrow(
+      'SHIELDWARD_REDIS_PASSWORD is not supported',
+    )
+  })
+
+  it('rejects inactive or incomplete Redis settings', () => {
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_REDIS_URL:
+          'redis://127.0.0.1:6379',
+      }),
+    ).toThrow(
+      'SHIELDWARD_REDIS_URL requires SHIELDWARD_RATE_LIMIT_BACKEND=redis',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_RATE_LIMIT_BACKEND: 'redis',
+      }),
+    ).toThrow(
+      'SHIELDWARD_REDIS_URL is required',
+    )
   })
 
   it('rejects invalid numeric settings', () => {

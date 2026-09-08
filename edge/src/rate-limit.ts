@@ -18,6 +18,28 @@ export interface RateLimitResult {
   readonly retryAfterSeconds: number
 }
 
+export interface RateLimiter {
+  check(
+    routeId: string,
+    identity: string,
+    policy: Readonly<RateLimitPolicy>,
+  ): RateLimitResult | Promise<RateLimitResult>
+}
+
+export type RateLimitBackend = 'memory' | 'redis'
+
+export type RateLimitMetricOutcome =
+  | 'allowed'
+  | 'limited'
+  | 'error'
+
+export interface RateLimitMetricRecorder {
+  recordRateLimitCheck(
+    backend: RateLimitBackend,
+    outcome: RateLimitMetricOutcome,
+  ): void
+}
+
 export interface RateLimiterOptions {
   readonly now?: () => number
   readonly maxBuckets?: number
@@ -30,7 +52,9 @@ export class RateLimiterError extends Error {
   }
 }
 
-export class FixedWindowRateLimiter {
+export class FixedWindowRateLimiter
+  implements RateLimiter
+{
   readonly #now: () => number
   readonly #maxBuckets: number
   readonly #buckets = new Map<
@@ -60,29 +84,11 @@ export class FixedWindowRateLimiter {
     identity: string,
     policy: Readonly<RateLimitPolicy>,
   ): RateLimitResult {
-    if (routeId.trim() === '') {
-      throw new RateLimiterError(
-        'route ID must not be empty',
-      )
-    }
-
-    if (
-      identity.trim() === '' ||
-      identity.length > 512
-    ) {
-      throw new RateLimiterError(
-        'rate-limit identity must contain 1 to 512 characters',
-      )
-    }
-
-    if (
-      !Number.isSafeInteger(policy.requests) ||
-      policy.requests <= 0
-    ) {
-      throw new RateLimiterError(
-        'rate-limit request count must be a positive integer',
-      )
-    }
+    const windowMs = validateRateLimitInput(
+      routeId,
+      identity,
+      policy,
+    )
 
     const now = this.#now()
 
@@ -91,10 +97,6 @@ export class FixedWindowRateLimiter {
         'rate-limiter clock returned an invalid time',
       )
     }
-
-    const windowMs = parseDurationMilliseconds(
-      policy.window,
-    )
 
     if (now >= this.#nextCleanupAt) {
       this.#removeExpired(now)
@@ -262,4 +264,88 @@ function durationUnitMilliseconds(
         'rate-limit window contains an unsupported unit',
       )
   }
+}
+
+export class MeasuredRateLimiter
+  implements RateLimiter
+{
+  readonly #limiter: RateLimiter
+  readonly #backend: RateLimitBackend
+  readonly #metrics: RateLimitMetricRecorder
+
+  constructor(
+    limiter: RateLimiter,
+    backend: RateLimitBackend,
+    metrics: RateLimitMetricRecorder,
+  ) {
+    this.#limiter = limiter
+    this.#backend = backend
+    this.#metrics = metrics
+  }
+
+  async check(
+    routeId: string,
+    identity: string,
+    policy: Readonly<RateLimitPolicy>,
+  ): Promise<RateLimitResult> {
+    try {
+      const result = await this.#limiter.check(
+        routeId,
+        identity,
+        policy,
+      )
+
+      this.#record(
+        result.allowed ? 'allowed' : 'limited',
+      )
+
+      return result
+    } catch (error) {
+      this.#record('error')
+      throw error
+    }
+  }
+
+  #record(outcome: RateLimitMetricOutcome): void {
+    try {
+      this.#metrics.recordRateLimitCheck(
+        this.#backend,
+        outcome,
+      )
+    } catch {
+      // Metrics failures must not affect policy decisions.
+    }
+  }
+}
+
+export function validateRateLimitInput(
+  routeId: string,
+  identity: string,
+  policy: Readonly<RateLimitPolicy>,
+): number {
+  if (routeId.trim() === '') {
+    throw new RateLimiterError(
+      'route ID must not be empty',
+    )
+  }
+
+  if (
+    identity.trim() === '' ||
+    identity.length > 512
+  ) {
+    throw new RateLimiterError(
+      'rate-limit identity must contain 1 to 512 characters',
+    )
+  }
+
+  if (
+    !Number.isSafeInteger(policy.requests) ||
+    policy.requests <= 0
+  ) {
+    throw new RateLimiterError(
+      'rate-limit request count must be a positive integer',
+    )
+  }
+
+  return parseDurationMilliseconds(policy.window)
 }

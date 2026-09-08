@@ -13,6 +13,8 @@ The `Continuous integration` workflow runs on pushes and pull requests targeting
 `main`. It checks repository policy, tests and vets Go on Linux and Windows, runs
 the Go race detector on Linux, and tests, type-checks, and builds Edge on Linux
 and Windows.
+The Linux-only distributed-rate-limit job also exercises two independent Edge
+clients against an isolated, digest-pinned Redis service.
 
 After the first successful pull-request run, configure a branch ruleset for
 `main` and require the CI jobs before merging. Also require pull requests and

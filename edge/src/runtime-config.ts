@@ -16,6 +16,19 @@ const DEFAULT_PUBLIC_KEY_FILE = fileURLToPath(
 const DEFAULT_MAX_REQUEST_BODY_BYTES =
   1024 * 1024
 
+const DEFAULT_REDIS_KEY_PREFIX =
+  'shieldward:rate-limit:v1'
+
+const REDIS_SETTING_NAMES = [
+  'SHIELDWARD_REDIS_URL',
+  'SHIELDWARD_REDIS_USERNAME',
+  'SHIELDWARD_REDIS_PASSWORD_FILE',
+  'SHIELDWARD_REDIS_CA_FILE',
+  'SHIELDWARD_REDIS_PREFIX',
+  'SHIELDWARD_REDIS_CONNECT_TIMEOUT_MS',
+  'SHIELDWARD_REDIS_COMMAND_TIMEOUT_MS',
+] as const
+
 export type RuntimeEnvironment = Readonly<
   Record<string, string | undefined>
 >
@@ -27,11 +40,31 @@ export interface RuntimeConfiguration {
   readonly publicKeyFile: string
   readonly maxRequestBodyBytes: number
   readonly tls: TlsRuntimeConfiguration | undefined
+  readonly rateLimit: RateLimitRuntimeConfiguration
 }
 
 export interface TlsRuntimeConfiguration {
   readonly certificateFile: string
   readonly privateKeyFile: string
+}
+
+export type RateLimitRuntimeConfiguration =
+  | {
+      readonly backend: 'memory'
+    }
+  | RedisRateLimitRuntimeConfiguration
+
+export interface RedisRateLimitRuntimeConfiguration {
+  readonly backend: 'redis'
+  readonly url: string
+  readonly username: string | undefined
+  readonly passwordFile: string | undefined
+  readonly certificateAuthorityFile:
+    | string
+    | undefined
+  readonly keyPrefix: string
+  readonly connectTimeoutMs: number
+  readonly commandTimeoutMs: number
 }
 
 export class RuntimeConfigurationError
@@ -84,6 +117,10 @@ export function readRuntimeConfiguration(
       Number.MAX_SAFE_INTEGER,
     )
 
+  const rateLimit = parseRateLimitConfiguration(
+    environment,
+  )
+
   return {
     hostname,
     port,
@@ -91,7 +128,188 @@ export function readRuntimeConfiguration(
     publicKeyFile,
     maxRequestBodyBytes,
     tls,
+    rateLimit,
   }
+}
+
+function parseRateLimitConfiguration(
+  environment: RuntimeEnvironment,
+): RateLimitRuntimeConfiguration {
+  if (
+    environment.SHIELDWARD_REDIS_PASSWORD !==
+    undefined
+  ) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_PASSWORD is not supported; use SHIELDWARD_REDIS_PASSWORD_FILE',
+    )
+  }
+
+  const backend = (
+    environment.SHIELDWARD_RATE_LIMIT_BACKEND ??
+    'memory'
+  )
+    .trim()
+    .toLowerCase()
+
+  if (backend !== 'memory' && backend !== 'redis') {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_RATE_LIMIT_BACKEND must be memory or redis',
+    )
+  }
+
+  if (backend === 'memory') {
+    const ignoredSetting = REDIS_SETTING_NAMES.find(
+      (name) => environment[name] !== undefined,
+    )
+
+    if (ignoredSetting !== undefined) {
+      throw new RuntimeConfigurationError(
+        `${ignoredSetting} requires SHIELDWARD_RATE_LIMIT_BACKEND=redis`,
+      )
+    }
+
+    return {
+      backend: 'memory',
+    }
+  }
+
+  const url = parseRedisUrl(
+    environment.SHIELDWARD_REDIS_URL,
+  )
+  const certificateAuthorityFile =
+    parseOptionalPath(
+      environment.SHIELDWARD_REDIS_CA_FILE,
+      'SHIELDWARD_REDIS_CA_FILE',
+    )
+
+  if (
+    certificateAuthorityFile !== undefined &&
+    new URL(url).protocol !== 'rediss:'
+  ) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_CA_FILE requires a rediss URL',
+    )
+  }
+
+  return {
+    backend: 'redis',
+    url,
+    username: parseOptionalText(
+      environment.SHIELDWARD_REDIS_USERNAME,
+      'SHIELDWARD_REDIS_USERNAME',
+      256,
+    ),
+    passwordFile: parseOptionalPath(
+      environment.SHIELDWARD_REDIS_PASSWORD_FILE,
+      'SHIELDWARD_REDIS_PASSWORD_FILE',
+    ),
+    certificateAuthorityFile,
+    keyPrefix: parseRedisKeyPrefix(
+      environment.SHIELDWARD_REDIS_PREFIX,
+    ),
+    connectTimeoutMs: parsePositiveInteger(
+      environment.SHIELDWARD_REDIS_CONNECT_TIMEOUT_MS,
+      3_000,
+      'SHIELDWARD_REDIS_CONNECT_TIMEOUT_MS',
+      30_000,
+    ),
+    commandTimeoutMs: parsePositiveInteger(
+      environment.SHIELDWARD_REDIS_COMMAND_TIMEOUT_MS,
+      1_000,
+      'SHIELDWARD_REDIS_COMMAND_TIMEOUT_MS',
+      30_000,
+    ),
+  }
+}
+
+function parseRedisUrl(
+  value: string | undefined,
+): string {
+  if (value === undefined || value.trim() === '') {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL is required for the Redis rate-limit backend',
+    )
+  }
+
+  let url: URL
+
+  try {
+    url = new URL(value.trim())
+  } catch {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL must be a valid URL',
+    )
+  }
+
+  if (
+    url.protocol !== 'redis:' &&
+    url.protocol !== 'rediss:'
+  ) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL must use redis or rediss',
+    )
+  }
+
+  if (url.username !== '' || url.password !== '') {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL must not contain credentials',
+    )
+  }
+
+  if (url.search !== '' || url.hash !== '') {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL must not contain a query or fragment',
+    )
+  }
+
+  if (
+    url.protocol === 'redis:' &&
+    !isLoopbackHostname(url.hostname)
+  ) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_URL must use rediss unless it targets loopback',
+    )
+  }
+
+  return url.href
+}
+
+function parseRedisKeyPrefix(
+  value: string | undefined,
+): string {
+  const prefix =
+    value?.trim() || DEFAULT_REDIS_KEY_PREFIX
+
+  if (!/^[A-Za-z0-9:_-]{1,128}$/.test(prefix)) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_REDIS_PREFIX must contain 1 to 128 letters, numbers, colons, underscores, or hyphens',
+    )
+  }
+
+  return prefix
+}
+
+function parseOptionalText(
+  value: string | undefined,
+  name: string,
+  maximumLength: number,
+): string | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+
+  if (
+    trimmed === '' ||
+    trimmed.length > maximumLength
+  ) {
+    throw new RuntimeConfigurationError(
+      `${name} must contain 1 to ${maximumLength} characters`,
+    )
+  }
+
+  return trimmed
 }
 
 function parseControlPlaneUrl(

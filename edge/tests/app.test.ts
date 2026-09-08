@@ -88,6 +88,26 @@ describe('ShieldWard edge application', () => {
     })
   })
 
+  it('fails readiness when the configured rate limiter is unavailable', async () => {
+    const application = createApp({
+      configuration: {
+        current: () => createSnapshot(),
+      },
+      rateLimiter: {
+        ready: () => false,
+      },
+    })
+
+    const response =
+      await application.request('/readyz')
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      service: 'shieldward-edge',
+      status: 'not_ready',
+    })
+  })
+
   it('serves privacy-safe metrics only to loopback clients', async () => {
     const metrics = new PrometheusMetrics({
       now: () => 2_000,

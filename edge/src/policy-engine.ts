@@ -2,7 +2,6 @@ import type {
   Bundle,
   CompiledRoute,
   JwtPolicy,
-  RateLimitPolicy,
 } from './bundle.js'
 import {
   JwtVerifier,
@@ -10,6 +9,7 @@ import {
 } from './jwt.js'
 import {
   FixedWindowRateLimiter,
+  type RateLimiter,
   type RateLimitResult,
 } from './rate-limit.js'
 import { RouteMatcher } from './route-matcher.js'
@@ -33,13 +33,7 @@ export interface JwtVerifierContract {
   ): Promise<VerifiedJwt>
 }
 
-export interface RateLimiterContract {
-  check(
-    routeId: string,
-    identity: string,
-    policy: Readonly<RateLimitPolicy>,
-  ): RateLimitResult
-}
+export type RateLimiterContract = RateLimiter
 
 export interface PolicyEngineOptions {
   readonly jwtVerifier?: JwtVerifierContract
@@ -225,7 +219,7 @@ export class PolicyEngine {
 
       try {
         rateLimitResult =
-          this.#rateLimiter.check(
+          await this.#rateLimiter.check(
             route.id,
             identity,
             route.rateLimit,

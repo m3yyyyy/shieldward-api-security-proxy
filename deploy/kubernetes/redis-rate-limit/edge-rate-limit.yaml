@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shieldward-edge
+  namespace: shieldward
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: edge
+          env:
+            - name: SHIELDWARD_RATE_LIMIT_BACKEND
+              value: redis
+            - name: SHIELDWARD_REDIS_URL
+              value: rediss://shieldward-redis.shieldward.svc.cluster.local:6379
+            - name: SHIELDWARD_REDIS_PASSWORD_FILE
+              value: /run/secrets/shieldward/redis-password
+            - name: SHIELDWARD_REDIS_CA_FILE
+              value: /run/secrets/shieldward/redis-ca.pem
+            - name: SHIELDWARD_REDIS_PREFIX
+              value: shieldward:rate-limit:v1

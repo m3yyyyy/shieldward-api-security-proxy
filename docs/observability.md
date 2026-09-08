@@ -19,11 +19,13 @@ The edge service reports:
 
 - process start time and uptime;
 - whether a verified policy is ready;
+- whether the configured rate-limit backend is ready;
 - age of the active verified policy;
 - gateway request counts by the bounded `outcome` and `status` labels;
 - request-duration count and sum by outcome;
 - configuration refresh counts for `updated` and `unchanged`;
 - a separate configuration synchronization error counter;
+- rate-limit checks by the bounded backend and result labels;
 - successful local metric scrapes.
 
 It deliberately does not use paths, route identifiers, request IDs, client IP
@@ -61,6 +63,7 @@ collectors must validate the server certificate normally.
 Alert when any of these conditions persist:
 
 - either readiness gauge is `0`;
+- Redis rate-limit errors increase when the distributed backend is enabled;
 - `shieldward_edge_policy_age_seconds` exceeds the expected reload interval;
 - configuration refresh or policy reload rejection counters increase;
 - the edge `error` outcome rate or upstream `502` response rate increases;

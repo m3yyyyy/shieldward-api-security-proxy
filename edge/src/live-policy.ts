@@ -7,7 +7,10 @@ import {
   type PolicyRequest,
   type PolicyDecision,
 } from './policy-engine.js'
-import { FixedWindowRateLimiter } from './rate-limit.js'
+import {
+  FixedWindowRateLimiter,
+  type RateLimiter,
+} from './rate-limit.js'
 
 export interface ConfigurationSource {
   current(): ConfigurationSnapshot | undefined
@@ -20,6 +23,7 @@ export type PolicyEngineFactory = (
 export interface LivePolicyOptions {
   readonly configuration: ConfigurationSource
   readonly policyEngineFactory?: PolicyEngineFactory
+  readonly rateLimiter?: RateLimiter
 }
 
 export class LivePolicyError extends Error {
@@ -49,6 +53,7 @@ export class LivePolicyEvaluator
 
     const jwtVerifier = new JwtVerifier()
     const rateLimiter =
+      options.rateLimiter ??
       new FixedWindowRateLimiter()
 
     this.#policyEngineFactory = (bundle) =>

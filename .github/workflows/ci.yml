@@ -87,3 +87,35 @@ jobs:
         run: npm --prefix edge run typecheck
       - name: Build Edge
         run: npm --prefix edge run build
+
+  distributed-rate-limit:
+    name: Distributed rate limit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      redis:
+        image: redis:8.10.1-alpine@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: edge/package-lock.json
+      - name: Install Edge dependencies
+        run: npm --prefix edge ci
+      - name: Test cross-instance rate limiting
+        env:
+          TEST_REDIS_URL: redis://127.0.0.1:6379
+        run: npm --prefix edge test -- redis-rate-limit.integration.test.ts

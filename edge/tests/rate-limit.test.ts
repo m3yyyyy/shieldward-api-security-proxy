@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { RateLimitPolicy } from '../src/bundle.js'
 import {
   FixedWindowRateLimiter,
+  MeasuredRateLimiter,
   RateLimiterError,
   parseDurationMilliseconds,
 } from '../src/rate-limit.js'
@@ -169,5 +170,63 @@ describe('fixed-window rate limiter', () => {
       limiter.check('orders-read', 'client-c', policy)
         .allowed,
     ).toBe(true)
+  })
+})
+
+describe('measured rate limiter', () => {
+  it('records bounded outcomes without changing decisions', async () => {
+    const events: string[] = []
+    const measured = new MeasuredRateLimiter(
+      {
+        check: async () => ({
+          allowed: false,
+          limit: 1,
+          remaining: 0,
+          resetAt: 60_000,
+          retryAfterSeconds: 60,
+        }),
+      },
+      'redis',
+      {
+        recordRateLimitCheck: (backend, outcome) => {
+          events.push(`${backend}:${outcome}`)
+        },
+      },
+    )
+
+    await expect(
+      measured.check(
+        'orders-read',
+        'client-a',
+        createPolicy(1),
+      ),
+    ).resolves.toMatchObject({
+      allowed: false,
+    })
+    expect(events).toEqual(['redis:limited'])
+  })
+
+  it('preserves limiter failures when metrics fail', async () => {
+    const measured = new MeasuredRateLimiter(
+      {
+        check: async () => {
+          throw new RateLimiterError('unavailable')
+        },
+      },
+      'redis',
+      {
+        recordRateLimitCheck: () => {
+          throw new Error('metrics unavailable')
+        },
+      },
+    )
+
+    await expect(
+      measured.check(
+        'orders-read',
+        'client-a',
+        createPolicy(1),
+      ),
+    ).rejects.toThrow('unavailable')
   })
 })

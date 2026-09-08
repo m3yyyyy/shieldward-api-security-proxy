@@ -18,6 +18,10 @@ export interface ConfigurationStatus {
   current(): ConfigurationSnapshot | undefined
 }
 
+export interface DependencyStatus {
+  ready(): boolean
+}
+
 export type ClientIpResolver = (
   context: Context,
 ) => string | undefined
@@ -28,6 +32,7 @@ export interface ApplicationOptions {
   readonly resolveClientIp?: ClientIpResolver
   readonly secureTransport?: boolean
   readonly metrics?: OperationalMetrics
+  readonly rateLimiter?: DependencyStatus
 }
 
 export function createApp(
@@ -58,10 +63,16 @@ export function createApp(
 
   application.get('/readyz', (context) => {
     const snapshot = options.configuration?.current()
+    const rateLimiterReady = isDependencyReady(
+      options.rateLimiter,
+    )
 
     context.header('Cache-Control', 'no-store')
 
-    if (snapshot === undefined) {
+    if (
+      snapshot === undefined ||
+      !rateLimiterReady
+    ) {
       return context.json(
         {
           service: 'shieldward-edge',
@@ -98,6 +109,9 @@ export function createApp(
     }
 
     const snapshot = options.configuration?.current()
+    const rateLimiterReady = isDependencyReady(
+      options.rateLimiter,
+    )
 
     context.header('Cache-Control', 'no-store')
     context.header(
@@ -107,7 +121,10 @@ export function createApp(
 
     return context.body(
       options.metrics.render({
-        ready: snapshot !== undefined,
+        ready:
+          snapshot !== undefined &&
+          rateLimiterReady,
+        rateLimiterReady,
         ...(snapshot === undefined
           ? {}
           : {
@@ -172,5 +189,15 @@ function resolveClientIp(
     return resolver?.(context)
   } catch {
     return undefined
+  }
+}
+
+function isDependencyReady(
+  dependency: DependencyStatus | undefined,
+): boolean {
+  try {
+    return dependency?.ready() ?? true
+  } catch {
+    return false
   }
 }

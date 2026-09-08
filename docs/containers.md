@@ -118,6 +118,10 @@ Change `ingress-nginx` if a different dedicated namespace is used. The supplied
 egress policy allows cluster DNS, the ShieldWard control plane, and outbound TCP
 443. Add narrowly scoped rules if an upstream uses another port or IPv6.
 
+The base deployment uses one Edge replica with the in-memory rate limiter. For
+two or more replicas, configure the TLS Redis overlay described in
+`docs/distributed-rate-limiting.md` so every replica enforces the same counter.
+
 ## Container CI and releases
 
 The `Containers` workflow builds both images, verifies their configured non-root

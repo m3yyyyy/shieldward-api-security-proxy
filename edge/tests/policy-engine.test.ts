@@ -285,6 +285,38 @@ describe('policy engine', () => {
     })
   })
 
+  it('awaits distributed rate limits and fails closed when unavailable', async () => {
+    const dependencies = createDependencies()
+
+    dependencies.check.mockResolvedValue(
+      allowedRateLimit,
+    )
+
+    const engine = new PolicyEngine(
+      readBundle(),
+      dependencies,
+    )
+
+    await expect(
+      engine.evaluate(createRequest()),
+    ).resolves.toMatchObject({
+      allowed: true,
+      rateLimit: allowedRateLimit,
+    })
+
+    dependencies.check.mockRejectedValue(
+      new Error('Redis unavailable'),
+    )
+
+    await expect(
+      engine.evaluate(createRequest()),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 503,
+      code: 'rate_limiter_unavailable',
+    })
+  })
+
   it('allows a request after every control passes', async () => {
     const dependencies = createDependencies()
     const engine = new PolicyEngine(

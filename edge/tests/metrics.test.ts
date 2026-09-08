@@ -21,6 +21,7 @@ describe('Prometheus operational metrics', () => {
     })
     metrics.recordConfigurationRefresh('updated')
     metrics.recordConfigurationSyncError()
+    metrics.recordRateLimitCheck('redis', 'allowed')
 
     now = 6_000
 
@@ -34,6 +35,9 @@ describe('Prometheus operational metrics', () => {
     )
     expect(output).toContain(
       'shieldward_edge_ready 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_rate_limiter_ready 1',
     )
     expect(output).toContain(
       'shieldward_edge_policy_age_seconds 2',
@@ -54,6 +58,9 @@ describe('Prometheus operational metrics', () => {
       'shieldward_edge_configuration_sync_errors_total 1',
     )
     expect(output).toContain(
+      'shieldward_edge_rate_limit_checks_total{backend="redis",result="allowed"} 1',
+    )
+    expect(output).toContain(
       'shieldward_edge_metrics_scrapes_total 1',
     )
   })
@@ -71,6 +78,7 @@ describe('Prometheus operational metrics', () => {
 
     const output = metrics.render({
       ready: false,
+      rateLimiterReady: false,
     })
 
     expect(output).toContain(
@@ -81,6 +89,9 @@ describe('Prometheus operational metrics', () => {
     )
     expect(output).toContain(
       'shieldward_edge_ready 0',
+    )
+    expect(output).toContain(
+      'shieldward_edge_rate_limiter_ready 0',
     )
     expect(output).not.toContain('NaN')
   })
