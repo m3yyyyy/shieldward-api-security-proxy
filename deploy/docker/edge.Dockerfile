@@ -16,6 +16,16 @@ RUN npm prune --omit=dev
 
 FROM node:24.20.0-alpine3.24@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS runtime
 
+RUN apk upgrade --no-cache \
+    && rm -rf \
+      /root/.npm \
+      /usr/local/bin/corepack \
+      /usr/local/bin/node-gyp \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/lib/node_modules/corepack \
+      /usr/local/lib/node_modules/npm
+
 ARG VERSION=0.1.0-dev
 ARG REVISION=unknown
 

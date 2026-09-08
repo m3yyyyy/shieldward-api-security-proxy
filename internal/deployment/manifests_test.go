@@ -69,6 +69,7 @@ func TestComposeServicesUseRuntimeHardening(t *testing.T) {
 			ReadOnly     bool     `yaml:"read_only"`
 			Capabilities []string `yaml:"cap_drop"`
 			SecurityOpt  []string `yaml:"security_opt"`
+			Ports        []string `yaml:"ports"`
 		} `yaml:"services"`
 	}
 	if err := yaml.Unmarshal(contents, &compose); err != nil {
@@ -89,6 +90,9 @@ func TestComposeServicesUseRuntimeHardening(t *testing.T) {
 		}
 		if !contains(service.SecurityOpt, "no-new-privileges:true") {
 			t.Errorf("compose service %q allows new privileges", serviceName)
+		}
+		if serviceName == "control-plane" && len(service.Ports) != 0 {
+			t.Errorf("compose control plane publishes host ports: %v", service.Ports)
 		}
 	}
 }
@@ -132,6 +136,17 @@ func TestFinalImagesSelectNonRootUsers(t *testing.T) {
 			} {
 				if !strings.Contains(text, expected) {
 					t.Errorf("Dockerfile does not contain %q", expected)
+				}
+			}
+
+			if test.path == "edge.Dockerfile" {
+				for _, expected := range []string{
+					"apk upgrade --no-cache",
+					"/usr/local/lib/node_modules/npm",
+				} {
+					if !strings.Contains(text, expected) {
+						t.Errorf("Dockerfile does not contain %q", expected)
+					}
 				}
 			}
 		})

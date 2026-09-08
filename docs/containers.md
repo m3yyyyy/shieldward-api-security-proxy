@@ -40,7 +40,7 @@ docker compose up --build --detach --wait --wait-timeout 180
 Verify both readiness endpoints using the generated CA:
 
 ```powershell
-curl.exe --fail --show-error --cacert .\.shieldward\containers\ca.pem https://127.0.0.1:18080/readyz
+docker compose exec -T control-plane /usr/local/bin/shieldwardd probe
 curl.exe --fail --show-error --cacert .\.shieldward\containers\ca.pem https://127.0.0.1:8787/readyz
 ```
 
@@ -51,11 +51,11 @@ docker compose logs --no-color
 docker compose down --volumes --remove-orphans
 ```
 
-The Compose stack publishes both ports only on host loopback. The control plane
-has no external network, while Edge has a separate egress network for HTTPS
-identity and upstream calls. Both services drop Linux capabilities, prevent
-privilege escalation, limit processes and memory, and mount credentials
-read-only.
+The Compose stack does not publish the control-plane port. Edge is the only
+host-facing service and binds only to host loopback. The control plane has no
+external network, while Edge has a separate egress network for HTTPS identity
+and upstream calls. Both services drop Linux capabilities, prevent privilege
+escalation, limit processes and memory, and mount credentials read-only.
 
 ## Kubernetes prerequisites
 

@@ -112,7 +112,7 @@ jobs:
       - name: Verify TLS readiness endpoints
         shell: bash
         run: |
-          curl --fail --silent --show-error --cacert .shieldward/containers/ca.pem https://127.0.0.1:18080/readyz
+          docker compose exec -T control-plane /usr/local/bin/shieldwardd probe
           curl --fail --silent --show-error --cacert .shieldward/containers/ca.pem https://127.0.0.1:8787/readyz
       - name: Show container logs after failure
         if: failure()

@@ -45,8 +45,8 @@ services:
         source: ./.shieldward/containers/ca.pem
         target: /run/secrets/tls-ca.pem
         read_only: true
-    ports:
-      - 127.0.0.1:18080:18080
+    expose:
+      - "18080"
     networks:
       - control
     read_only: true
