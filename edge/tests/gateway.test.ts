@@ -454,6 +454,125 @@ describe('gateway', () => {
     await recoveredResponse.body?.cancel()
   })
 
+  it('opens an upstream circuit after consecutive failures', async () => {
+    const fetcher = vi.fn<UpstreamFetch>(async () => {
+      throw new Error('connection refused')
+    })
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher,
+      circuitFailureThreshold: 2,
+      circuitOpenDurationMs: 30_000,
+    })
+    const createRequest = (): Request =>
+      new Request(
+        'https://edge.example/v1/orders/42',
+        {
+          method: 'POST',
+          body: 'hello',
+        },
+      )
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const failed = await gateway.handle(createRequest())
+
+      expect(failed.status).toBe(502)
+      await failed.body?.cancel()
+    }
+
+    const rejected = await gateway.handle(createRequest())
+
+    expect(rejected.status).toBe(503)
+    expect(rejected.headers.get('retry-after')).toBe('30')
+    await expect(rejected.json()).resolves.toEqual({
+      error: 'upstream_circuit_open',
+    })
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
+  it('counts upstream server errors as circuit failures', async () => {
+    const fetcher = vi.fn<UpstreamFetch>(
+      async () =>
+        new Response('unavailable', {
+          status: 503,
+        }),
+    )
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher,
+      circuitFailureThreshold: 1,
+    })
+
+    const first = await gateway.handle(
+      new Request('https://edge.example/v1/orders/42'),
+    )
+    expect(first.status).toBe(503)
+    await first.body?.cancel()
+
+    const rejected = await gateway.handle(
+      new Request('https://edge.example/v1/orders/42'),
+    )
+
+    await expect(rejected.json()).resolves.toEqual({
+      error: 'upstream_circuit_open',
+    })
+    expect(fetcher).toHaveBeenCalledOnce()
+  })
+
+  it('drains active streams and rejects new requests', async () => {
+    let closeStream = (): void => undefined
+    const gateway = new Gateway({
+      policyEvaluator: {
+        evaluate: async () => allowedDecision(),
+      },
+      fetcher: async () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              closeStream = () => controller.close()
+            },
+          }),
+        ),
+    })
+
+    const active = await gateway.handle(
+      new Request('https://edge.example/v1/orders/42'),
+    )
+
+    gateway.beginDrain()
+    gateway.beginDrain()
+
+    expect(gateway.acceptingRequests()).toBe(false)
+
+    let idle = false
+    const drained = gateway.waitForIdle().then(() => {
+      idle = true
+    })
+
+    await Promise.resolve()
+    expect(idle).toBe(false)
+
+    const rejected = await gateway.handle(
+      new Request('https://edge.example/v1/orders/42'),
+    )
+
+    expect(rejected.status).toBe(503)
+    expect(rejected.headers.get('connection')).toBe('close')
+    await expect(rejected.json()).resolves.toEqual({
+      error: 'gateway_draining',
+    })
+
+    closeStream()
+    await active.text()
+    await drained
+
+    expect(idle).toBe(true)
+  })
+
   it('rejects invalid resilience limits', () => {
     const policyEvaluator = {
       evaluate: async () => allowedDecision(),
@@ -477,6 +596,16 @@ describe('gateway', () => {
         }),
     ).toThrow(
       'maximum in-flight request count must be a positive integer',
+    )
+
+    expect(
+      () =>
+        new Gateway({
+          policyEvaluator,
+          circuitFailureThreshold: 0,
+        }),
+    ).toThrow(
+      'circuit failure threshold must be a positive integer',
     )
   })
 })

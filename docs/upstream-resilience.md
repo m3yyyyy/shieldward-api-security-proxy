@@ -60,3 +60,7 @@ Alert when active requests remain close to the configured maximum, overload
 rejections begin increasing, or upstream timeouts exceed the service's error
 budget. Increasing the limit without fixing a saturated upstream usually
 increases latency and memory pressure rather than capacity.
+
+Circuit breaking and process draining build on these limits. See
+`docs/circuit-breaking-and-draining.md` for failure isolation, recovery probes,
+and the shutdown sequence.

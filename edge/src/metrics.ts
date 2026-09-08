@@ -12,6 +12,11 @@ export type ConfigurationRefreshOutcome =
   | 'updated'
   | 'unchanged'
 
+export type CircuitMetricState =
+  | 'closed'
+  | 'open'
+  | 'half_open'
+
 export interface GatewayMetricRecord {
   readonly outcome: GatewayMetricOutcome
   readonly status: number
@@ -35,6 +40,13 @@ export interface OperationalMetrics {
   recordGatewayRequestStarted(): void
   recordGatewayRequestFinished(): void
   recordGatewayOverload(): void
+  recordGatewayDrainStarted(): void
+  recordGatewayDrainRejection(): void
+  recordUpstreamCircuitRejection(): void
+  recordUpstreamCircuitTransition(
+    previous: CircuitMetricState,
+    next: CircuitMetricState,
+  ): void
   recordRateLimitCheck(
     backend: RateLimitBackend,
     outcome: RateLimitMetricOutcome,
@@ -73,6 +85,12 @@ const RATE_LIMIT_OUTCOMES: readonly RateLimitMetricOutcome[] = [
   'error',
 ]
 
+const CIRCUIT_STATES: readonly CircuitMetricState[] = [
+  'closed',
+  'open',
+  'half_open',
+]
+
 export class PrometheusMetrics
   implements OperationalMetrics
 {
@@ -88,11 +106,19 @@ export class PrometheusMetrics
     number
   >()
   readonly #rateLimitChecks = new Map<string, number>()
+  readonly #circuitTransitions = new Map<
+    CircuitMetricState,
+    number
+  >()
 
   #scrapes = 0
   #configurationSyncErrors = 0
   #activeGatewayRequests = 0
   #gatewayOverloadRejections = 0
+  #gatewayAcceptingRequests = 1
+  #gatewayDrainRejections = 0
+  #upstreamCircuitRejections = 0
+  #unavailableUpstreamCircuits = 0
 
   constructor(
     options: PrometheusMetricsOptions = {},
@@ -109,6 +135,10 @@ export class PrometheusMetrics
 
     for (const outcome of REFRESH_OUTCOMES) {
       this.#configurationRefreshes.set(outcome, 0)
+    }
+
+    for (const state of CIRCUIT_STATES) {
+      this.#circuitTransitions.set(state, 0)
     }
   }
 
@@ -164,6 +194,48 @@ export class PrometheusMetrics
     this.#gatewayOverloadRejections += 1
   }
 
+  recordGatewayDrainStarted(): void {
+    this.#gatewayAcceptingRequests = 0
+  }
+
+  recordGatewayDrainRejection(): void {
+    this.#gatewayDrainRejections += 1
+  }
+
+  recordUpstreamCircuitRejection(): void {
+    this.#upstreamCircuitRejections += 1
+  }
+
+  recordUpstreamCircuitTransition(
+    previous: CircuitMetricState,
+    next: CircuitMetricState,
+  ): void {
+    if (
+      !CIRCUIT_STATES.includes(previous) ||
+      !CIRCUIT_STATES.includes(next) ||
+      previous === next
+    ) {
+      return
+    }
+
+    this.#circuitTransitions.set(
+      next,
+      (this.#circuitTransitions.get(next) ?? 0) + 1,
+    )
+
+    if (previous === 'closed' && next !== 'closed') {
+      this.#unavailableUpstreamCircuits += 1
+    } else if (
+      previous !== 'closed' &&
+      next === 'closed'
+    ) {
+      this.#unavailableUpstreamCircuits = Math.max(
+        0,
+        this.#unavailableUpstreamCircuits - 1,
+      )
+    }
+  }
+
   recordRateLimitCheck(
     backend: RateLimitBackend,
     outcome: RateLimitMetricOutcome,
@@ -206,6 +278,18 @@ export class PrometheusMetrics
       '# HELP shieldward_edge_gateway_overload_rejections_total Requests rejected because the in-flight limit was reached.',
       '# TYPE shieldward_edge_gateway_overload_rejections_total counter',
       `shieldward_edge_gateway_overload_rejections_total ${this.#gatewayOverloadRejections}`,
+      '# HELP shieldward_edge_gateway_accepting_requests Whether the gateway is accepting new requests.',
+      '# TYPE shieldward_edge_gateway_accepting_requests gauge',
+      `shieldward_edge_gateway_accepting_requests ${this.#gatewayAcceptingRequests}`,
+      '# HELP shieldward_edge_gateway_drain_rejections_total Requests rejected because graceful draining had started.',
+      '# TYPE shieldward_edge_gateway_drain_rejections_total counter',
+      `shieldward_edge_gateway_drain_rejections_total ${this.#gatewayDrainRejections}`,
+      '# HELP shieldward_edge_upstream_circuits_unavailable Upstream circuits that are open or half open.',
+      '# TYPE shieldward_edge_upstream_circuits_unavailable gauge',
+      `shieldward_edge_upstream_circuits_unavailable ${this.#unavailableUpstreamCircuits}`,
+      '# HELP shieldward_edge_upstream_circuit_rejections_total Requests rejected by an unavailable upstream circuit.',
+      '# TYPE shieldward_edge_upstream_circuit_rejections_total counter',
+      `shieldward_edge_upstream_circuit_rejections_total ${this.#upstreamCircuitRejections}`,
       '# HELP shieldward_edge_policy_age_seconds Age of the active verified policy.',
       '# TYPE shieldward_edge_policy_age_seconds gauge',
       `shieldward_edge_policy_age_seconds ${formatNumber(policyAgeSeconds(snapshot, now))}`,
@@ -234,6 +318,17 @@ export class PrometheusMetrics
       lines.push(
         `shieldward_edge_gateway_request_duration_seconds_count{outcome="${outcome}"} ${aggregate.count}`,
         `shieldward_edge_gateway_request_duration_seconds_sum{outcome="${outcome}"} ${formatNumber(aggregate.sumSeconds)}`,
+      )
+    }
+
+    lines.push(
+      '# HELP shieldward_edge_upstream_circuit_transitions_total Upstream circuit transitions grouped by destination state.',
+      '# TYPE shieldward_edge_upstream_circuit_transitions_total counter',
+    )
+
+    for (const state of CIRCUIT_STATES) {
+      lines.push(
+        `shieldward_edge_upstream_circuit_transitions_total{state="${state}"} ${this.#circuitTransitions.get(state) ?? 0}`,
       )
     }
 

@@ -62,6 +62,13 @@ upstream deadline and a maximum of 1,024 concurrent admitted Edge requests.
 Tune these values for measured upstream latency and instance capacity using
 the guidance in `docs/upstream-resilience.md`.
 
+They open an upstream circuit after five consecutive failures, allow one
+recovery probe after 30 seconds, retain state for at most 1,024 upstream
+origins, and give active requests 10 seconds to drain during shutdown. The
+container stop window is deliberately longer than the application drain
+window. See `docs/circuit-breaking-and-draining.md` before changing either
+deadline.
+
 ## Kubernetes prerequisites
 
 The base manifests under `deploy/kubernetes/base` are secure starting points,

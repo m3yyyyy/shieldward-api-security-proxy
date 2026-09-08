@@ -9,6 +9,7 @@ import { getConnInfo } from '@hono/node-server/conninfo'
 
 import { createApp } from './app.js'
 import { JsonSecurityAuditLogger } from './audit.js'
+import { performGracefulShutdown, type ShutdownServer } from './shutdown.js'
 import { ConfigurationClient } from './config-client.js'
 import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
@@ -109,6 +110,12 @@ async function main(): Promise<void> {
       runtime.upstreamTimeoutMs,
     maxInFlightRequests:
       runtime.maxInFlightRequests,
+    circuitFailureThreshold:
+      runtime.circuitFailureThreshold,
+    circuitOpenDurationMs:
+      runtime.circuitOpenDurationMs,
+    circuitMaximumUpstreams:
+      runtime.circuitMaximumUpstreams,
   })
 
   const application = createApp({
@@ -155,8 +162,10 @@ async function main(): Promise<void> {
 
   installShutdownHandlers(
     server,
+    gateway,
     synchronizer,
     rateLimitRuntime,
+    runtime.shutdownGracePeriodMs,
   )
 }
 
@@ -187,8 +196,10 @@ async function loadPublicKey(
 
 function installShutdownHandlers(
   server: ServerType,
+  gateway: Gateway,
   synchronizer: ConfigurationSynchronizer,
   rateLimitRuntime: RateLimitRuntime,
+  shutdownGracePeriodMs: number,
 ): void {
   let shuttingDown = false
 
@@ -205,22 +216,26 @@ function installShutdownHandlers(
       `Received ${signal}; shutting down`,
     )
 
-    await stopDependencies(
-      synchronizer,
-      rateLimitRuntime,
-    )
-
-    server.close((error) => {
-      if (error !== undefined) {
-        console.error(
-          `Edge shutdown error: ${error.message}`,
-        )
-        process.exitCode = 1
-        return
-      }
-
-      console.log('ShieldWard edge shutdown complete')
+    const result = await performGracefulShutdown({
+      gateway,
+      server: server as unknown as ShutdownServer,
+      gracePeriodMs: shutdownGracePeriodMs,
+      stopDependencies: () =>
+        stopDependencies(
+          synchronizer,
+          rateLimitRuntime,
+        ),
     })
+
+    if (result.forced) {
+      console.error(
+        `Edge shutdown forced after ${shutdownGracePeriodMs}ms`,
+      )
+      process.exitCode = 1
+      return
+    }
+
+    console.log('ShieldWard edge shutdown complete')
   }
 
   process.once('SIGINT', () => {
@@ -242,6 +257,7 @@ function installShutdownHandlers(
       `ShieldWard edge server error: ${error.message}`,
     )
     process.exitCode = 1
+    gateway.beginDrain()
     void stopDependencies(
       synchronizer,
       rateLimitRuntime,

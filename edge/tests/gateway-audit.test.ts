@@ -272,6 +272,87 @@ describe('gateway security auditing', () => {
     )
   })
 
+  it('audits an open upstream circuit', async () => {
+    const record = vi.fn<
+      SecurityAuditLogger['record']
+    >()
+    const gateway = new Gateway({
+      ...gatewayOptions(
+        evaluator({
+          allowed: true,
+          route,
+          jwt: undefined,
+          rateLimit: undefined,
+          wafMatches: [],
+        }),
+        { record },
+      ),
+      nowMilliseconds: () => 100,
+      fetcher: async () => {
+        throw new Error('connection refused')
+      },
+      circuitFailureThreshold: 1,
+    })
+
+    const failed = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+      ),
+    )
+    await failed.body?.cancel()
+
+    const rejected = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+      ),
+    )
+
+    expect(rejected.status).toBe(503)
+    expect(record).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        outcome: 'error',
+        status: 503,
+        reason: 'upstream_circuit_open',
+        routeId: 'orders-read',
+      }),
+    )
+  })
+
+  it('audits requests rejected during draining', async () => {
+    const record = vi.fn<
+      SecurityAuditLogger['record']
+    >()
+    const gateway = new Gateway(
+      gatewayOptions(
+        evaluator({
+          allowed: true,
+          route,
+          jwt: undefined,
+          rateLimit: undefined,
+          wafMatches: [],
+        }),
+        { record },
+      ),
+    )
+
+    gateway.beginDrain()
+
+    const response = await gateway.handle(
+      new Request(
+        'https://edge.example/v1/orders/42',
+      ),
+    )
+
+    expect(response.status).toBe(503)
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        outcome: 'error',
+        status: 503,
+        reason: 'gateway_draining',
+      }),
+    )
+  })
+
   it('does not change responses when auditing fails', async () => {
     const gateway = new Gateway(
       gatewayOptions(

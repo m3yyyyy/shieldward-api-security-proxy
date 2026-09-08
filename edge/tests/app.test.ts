@@ -108,6 +108,27 @@ describe('ShieldWard edge application', () => {
     })
   })
 
+  it('fails readiness after gateway draining starts', async () => {
+    const application = createApp({
+      configuration: {
+        current: () => createSnapshot(),
+      },
+      gateway: {
+        handle: async () => new Response('unused'),
+        acceptingRequests: () => false,
+      },
+    })
+
+    const response =
+      await application.request('/readyz')
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      service: 'shieldward-edge',
+      status: 'not_ready',
+    })
+  })
+
   it('serves privacy-safe metrics only to loopback clients', async () => {
     const metrics = new PrometheusMetrics({
       now: () => 2_000,

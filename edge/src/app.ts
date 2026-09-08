@@ -12,6 +12,7 @@ export interface GatewayHandler {
     request: Request,
     clientIp?: string,
   ): Promise<Response>
+  acceptingRequests?(): boolean
 }
 
 export interface ConfigurationStatus {
@@ -66,12 +67,16 @@ export function createApp(
     const rateLimiterReady = isDependencyReady(
       options.rateLimiter,
     )
+    const gatewayReady = isGatewayAccepting(
+      options.gateway,
+    )
 
     context.header('Cache-Control', 'no-store')
 
     if (
       snapshot === undefined ||
-      !rateLimiterReady
+      !rateLimiterReady ||
+      !gatewayReady
     ) {
       return context.json(
         {
@@ -112,6 +117,9 @@ export function createApp(
     const rateLimiterReady = isDependencyReady(
       options.rateLimiter,
     )
+    const gatewayReady = isGatewayAccepting(
+      options.gateway,
+    )
 
     context.header('Cache-Control', 'no-store')
     context.header(
@@ -123,7 +131,8 @@ export function createApp(
       options.metrics.render({
         ready:
           snapshot !== undefined &&
-          rateLimiterReady,
+          rateLimiterReady &&
+          gatewayReady,
         rateLimiterReady,
         ...(snapshot === undefined
           ? {}
@@ -197,6 +206,16 @@ function isDependencyReady(
 ): boolean {
   try {
     return dependency?.ready() ?? true
+  } catch {
+    return false
+  }
+}
+
+function isGatewayAccepting(
+  gateway: GatewayHandler | undefined,
+): boolean {
+  try {
+    return gateway?.acceptingRequests?.() ?? true
   } catch {
     return false
   }

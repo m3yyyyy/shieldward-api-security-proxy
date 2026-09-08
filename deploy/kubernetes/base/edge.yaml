@@ -60,6 +60,14 @@ spec:
               value: "10000"
             - name: SHIELDWARD_MAX_IN_FLIGHT_REQUESTS
               value: "1024"
+            - name: SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD
+              value: "5"
+            - name: SHIELDWARD_CIRCUIT_OPEN_MS
+              value: "30000"
+            - name: SHIELDWARD_CIRCUIT_MAX_UPSTREAMS
+              value: "1024"
+            - name: SHIELDWARD_SHUTDOWN_GRACE_MS
+              value: "10000"
           ports:
             - name: https
               containerPort: 8787

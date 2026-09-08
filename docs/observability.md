@@ -22,6 +22,8 @@ The edge service reports:
 - whether the configured rate-limit backend is ready;
 - current admitted requests that have not completed or been cancelled;
 - cumulative requests rejected at the in-flight admission limit;
+- whether the gateway is still accepting new requests and drain rejections;
+- unavailable upstream circuit count, circuit rejections, and transitions;
 - age of the active verified policy;
 - gateway request counts by the bounded `outcome` and `status` labels;
 - request-duration count and sum by outcome;
@@ -73,6 +75,10 @@ Alert when any of these conditions persist:
   `shieldward_edge_gateway_overload_rejections_total` increase;
 - `shieldward_edge_gateway_active_requests` remains near its configured
   maximum;
+- `shieldward_edge_upstream_circuits_unavailable` remains above `0` or circuit
+  rejections increase;
+- `shieldward_edge_gateway_accepting_requests` unexpectedly becomes `0` outside
+  a planned rollout;
 - no metric scrapes arrive within the collector's expected interval.
 
 Counter increases should be evaluated with a rate or increase function rather

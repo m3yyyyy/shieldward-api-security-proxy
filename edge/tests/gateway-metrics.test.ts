@@ -14,6 +14,10 @@ function createMetrics(
     recordGatewayRequestStarted: () => undefined,
     recordGatewayRequestFinished: () => undefined,
     recordGatewayOverload: () => undefined,
+    recordGatewayDrainStarted: () => undefined,
+    recordGatewayDrainRejection: () => undefined,
+    recordUpstreamCircuitRejection: () => undefined,
+    recordUpstreamCircuitTransition: () => undefined,
     recordRateLimitCheck: () => undefined,
     render: () => '',
   }

@@ -18,6 +18,10 @@ const DEFAULT_MAX_REQUEST_BODY_BYTES =
 
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_IN_FLIGHT_REQUESTS = 1_024
+const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 5
+const DEFAULT_CIRCUIT_OPEN_MS = 30_000
+const DEFAULT_CIRCUIT_MAX_UPSTREAMS = 1_024
+const DEFAULT_SHUTDOWN_GRACE_MS = 10_000
 
 const DEFAULT_REDIS_KEY_PREFIX =
   'shieldward:rate-limit:v1'
@@ -44,6 +48,10 @@ export interface RuntimeConfiguration {
   readonly maxRequestBodyBytes: number
   readonly upstreamTimeoutMs: number
   readonly maxInFlightRequests: number
+  readonly circuitFailureThreshold: number
+  readonly circuitOpenDurationMs: number
+  readonly circuitMaximumUpstreams: number
+  readonly shutdownGracePeriodMs: number
   readonly tls: TlsRuntimeConfiguration | undefined
   readonly rateLimit: RateLimitRuntimeConfiguration
 }
@@ -136,6 +144,34 @@ export function readRuntimeConfiguration(
     100_000,
   )
 
+  const circuitFailureThreshold = parsePositiveInteger(
+    environment.SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD,
+    DEFAULT_CIRCUIT_FAILURE_THRESHOLD,
+    'SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD',
+    100,
+  )
+
+  const circuitOpenDurationMs = parsePositiveInteger(
+    environment.SHIELDWARD_CIRCUIT_OPEN_MS,
+    DEFAULT_CIRCUIT_OPEN_MS,
+    'SHIELDWARD_CIRCUIT_OPEN_MS',
+    300_000,
+  )
+
+  const circuitMaximumUpstreams = parsePositiveInteger(
+    environment.SHIELDWARD_CIRCUIT_MAX_UPSTREAMS,
+    DEFAULT_CIRCUIT_MAX_UPSTREAMS,
+    'SHIELDWARD_CIRCUIT_MAX_UPSTREAMS',
+    100_000,
+  )
+
+  const shutdownGracePeriodMs = parsePositiveInteger(
+    environment.SHIELDWARD_SHUTDOWN_GRACE_MS,
+    DEFAULT_SHUTDOWN_GRACE_MS,
+    'SHIELDWARD_SHUTDOWN_GRACE_MS',
+    120_000,
+  )
+
   const rateLimit = parseRateLimitConfiguration(
     environment,
   )
@@ -148,6 +184,10 @@ export function readRuntimeConfiguration(
     maxRequestBodyBytes,
     upstreamTimeoutMs,
     maxInFlightRequests,
+    circuitFailureThreshold,
+    circuitOpenDurationMs,
+    circuitMaximumUpstreams,
+    shutdownGracePeriodMs,
     tls,
     rateLimit,
   }

@@ -32,6 +32,18 @@ describe('runtime configuration', () => {
     expect(
       configuration.maxInFlightRequests,
     ).toBe(1_024)
+    expect(
+      configuration.circuitFailureThreshold,
+    ).toBe(5)
+    expect(
+      configuration.circuitOpenDurationMs,
+    ).toBe(30_000)
+    expect(
+      configuration.circuitMaximumUpstreams,
+    ).toBe(1_024)
+    expect(
+      configuration.shutdownGracePeriodMs,
+    ).toBe(10_000)
     expect(configuration.tls).toBeUndefined()
     expect(configuration.rateLimit).toEqual({
       backend: 'memory',
@@ -60,6 +72,10 @@ describe('runtime configuration', () => {
         MAX_REQUEST_BODY_BYTES: '2048',
         SHIELDWARD_UPSTREAM_TIMEOUT_MS: '25000',
         SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: '200',
+        SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD: '3',
+        SHIELDWARD_CIRCUIT_OPEN_MS: '45000',
+        SHIELDWARD_CIRCUIT_MAX_UPSTREAMS: '300',
+        SHIELDWARD_SHUTDOWN_GRACE_MS: '8000',
         SHIELDWARD_TLS_CERT_FILE:
           'keys/tls-cert.pem',
         SHIELDWARD_TLS_KEY_FILE:
@@ -77,6 +93,10 @@ describe('runtime configuration', () => {
       maxRequestBodyBytes: 2048,
       upstreamTimeoutMs: 25_000,
       maxInFlightRequests: 200,
+      circuitFailureThreshold: 3,
+      circuitOpenDurationMs: 45_000,
+      circuitMaximumUpstreams: 300,
+      shutdownGracePeriodMs: 8_000,
       tls: {
         certificateFile: resolve(
           'keys/tls-cert.pem',
@@ -226,6 +246,38 @@ describe('runtime configuration', () => {
       }),
     ).toThrow(
       'SHIELDWARD_MAX_IN_FLIGHT_REQUESTS must be between 1 and 100000',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD: '101',
+      }),
+    ).toThrow(
+      'SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD must be between 1 and 100',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_CIRCUIT_OPEN_MS: '300001',
+      }),
+    ).toThrow(
+      'SHIELDWARD_CIRCUIT_OPEN_MS must be between 1 and 300000',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_CIRCUIT_MAX_UPSTREAMS: '0',
+      }),
+    ).toThrow(
+      'SHIELDWARD_CIRCUIT_MAX_UPSTREAMS must be between 1 and 100000',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_SHUTDOWN_GRACE_MS: '120001',
+      }),
+    ).toThrow(
+      'SHIELDWARD_SHUTDOWN_GRACE_MS must be between 1 and 120000',
     )
   })
 

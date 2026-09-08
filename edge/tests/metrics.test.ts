@@ -26,6 +26,17 @@ describe('Prometheus operational metrics', () => {
     metrics.recordGatewayRequestStarted()
     metrics.recordGatewayRequestFinished()
     metrics.recordGatewayOverload()
+    metrics.recordGatewayDrainStarted()
+    metrics.recordGatewayDrainRejection()
+    metrics.recordUpstreamCircuitRejection()
+    metrics.recordUpstreamCircuitTransition(
+      'closed',
+      'open',
+    )
+    metrics.recordUpstreamCircuitTransition(
+      'open',
+      'half_open',
+    )
 
     now = 6_000
 
@@ -48,6 +59,24 @@ describe('Prometheus operational metrics', () => {
     )
     expect(output).toContain(
       'shieldward_edge_gateway_overload_rejections_total 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_gateway_accepting_requests 0',
+    )
+    expect(output).toContain(
+      'shieldward_edge_gateway_drain_rejections_total 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_upstream_circuits_unavailable 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_upstream_circuit_rejections_total 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_upstream_circuit_transitions_total{state="open"} 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_upstream_circuit_transitions_total{state="half_open"} 1',
     )
     expect(output).toContain(
       'shieldward_edge_policy_age_seconds 2',

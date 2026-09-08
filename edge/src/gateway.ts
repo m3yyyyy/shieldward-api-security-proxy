@@ -9,6 +9,10 @@ import type {
 } from './policy-engine.js'
 import type { OperationalMetrics } from './metrics.js'
 import {
+  UpstreamCircuitBreaker,
+  type UpstreamCircuitState,
+} from './circuit-breaker.js'
+import {
   proxyToUpstream,
   UpstreamTimeoutError,
   type UpstreamFetch,
@@ -36,6 +40,9 @@ export interface GatewayOptions {
   readonly metrics?: OperationalMetrics
   readonly upstreamTimeoutMs?: number
   readonly maxInFlightRequests?: number
+  readonly circuitFailureThreshold?: number
+  readonly circuitOpenDurationMs?: number
+  readonly circuitMaximumUpstreams?: number
 }
 
 interface BufferedBody {
@@ -60,6 +67,7 @@ export class Gateway {
   readonly #metrics: OperationalMetrics | undefined
   readonly #upstreamTimeoutMs: number
   readonly #admissionGate: AdmissionGate
+  readonly #circuitBreaker: UpstreamCircuitBreaker
 
   constructor(options: GatewayOptions) {
     this.#policyEvaluator = options.policyEvaluator
@@ -81,6 +89,31 @@ export class Gateway {
       options.maxInFlightRequests ??
         DEFAULT_MAX_IN_FLIGHT_REQUESTS,
     )
+    this.#circuitBreaker = new UpstreamCircuitBreaker({
+      ...(options.circuitFailureThreshold === undefined
+        ? {}
+        : {
+            failureThreshold:
+              options.circuitFailureThreshold,
+          }),
+      ...(options.circuitOpenDurationMs === undefined
+        ? {}
+        : {
+            openDurationMs:
+              options.circuitOpenDurationMs,
+          }),
+      ...(options.circuitMaximumUpstreams === undefined
+        ? {}
+        : {
+            maximumUpstreams:
+              options.circuitMaximumUpstreams,
+          }),
+      onTransition: ({ previous, next }) =>
+        this.#recordCircuitTransition(
+          previous,
+          next,
+        ),
+    })
 
     if (
       !Number.isSafeInteger(
@@ -111,9 +144,31 @@ export class Gateway {
   ): Promise<Response> {
     const requestId = this.#requestIdFactory()
     const startedAt = this.#nowMilliseconds()
-    const release = this.#admissionGate.tryAcquire()
+    const admission = this.#admissionGate.tryAcquire()
 
-    if (release === undefined) {
+    if (admission.status !== 'accepted') {
+      if (admission.status === 'draining') {
+        this.#recordDrainRejection()
+
+        return this.#complete(
+          request,
+          requestId,
+          startedAt,
+          errorResponse(
+            503,
+            'gateway_draining',
+            {
+              connection: 'close',
+              'retry-after': '1',
+            },
+          ),
+          {
+            outcome: 'error',
+            reason: 'gateway_draining',
+          },
+        )
+      }
+
       this.#recordOverload()
 
       return this.#complete(
@@ -143,7 +198,7 @@ export class Gateway {
       }
 
       requestReleased = true
-      release()
+      admission.release()
       this.#recordRequestFinished()
     }
 
@@ -163,6 +218,20 @@ export class Gateway {
       releaseRequest()
       throw error
     }
+  }
+
+  beginDrain(): void {
+    if (this.#admissionGate.beginDrain()) {
+      this.#recordDrainStarted()
+    }
+  }
+
+  acceptingRequests(): boolean {
+    return this.#admissionGate.acceptingRequests()
+  }
+
+  waitForIdle(): Promise<void> {
+    return this.#admissionGate.waitForIdle()
   }
 
   async #handleAdmitted(
@@ -279,6 +348,34 @@ export class Gateway {
       )
     }
 
+    const circuit = this.#circuitBreaker.acquire(
+      decision.route.upstream,
+    )
+
+    if (!circuit.allowed) {
+      this.#recordCircuitRejection()
+
+      return this.#complete(
+        request,
+        requestId,
+        startedAt,
+        errorResponse(
+          503,
+          'upstream_circuit_open',
+          {
+            'retry-after': String(
+              circuit.retryAfterSeconds,
+            ),
+          },
+        ),
+        {
+          outcome: 'error',
+          reason: 'upstream_circuit_open',
+          routeId: decision.route.id,
+        },
+      )
+    }
+
     try {
       const response = await proxyToUpstream({
         request,
@@ -298,6 +395,12 @@ export class Gateway {
             }),
       })
 
+      if (response.status >= 500) {
+        circuit.recordFailure()
+      } else {
+        circuit.recordSuccess()
+      }
+
       return this.#complete(
         request,
         requestId,
@@ -311,8 +414,11 @@ export class Gateway {
       )
     } catch (error) {
       if (request.signal.aborted) {
+        circuit.abandon()
         throw error
       }
+
+      circuit.recordFailure()
 
       if (error instanceof UpstreamTimeoutError) {
         return this.#complete(
@@ -434,11 +540,63 @@ export class Gateway {
       // Metrics failures must not alter load shedding.
     }
   }
+
+  #recordDrainStarted(): void {
+    try {
+      this.#metrics?.recordGatewayDrainStarted()
+    } catch {
+      // Metrics failures must not alter draining.
+    }
+  }
+
+  #recordDrainRejection(): void {
+    try {
+      this.#metrics?.recordGatewayDrainRejection()
+    } catch {
+      // Metrics failures must not alter draining.
+    }
+  }
+
+  #recordCircuitRejection(): void {
+    try {
+      this.#metrics?.recordUpstreamCircuitRejection()
+    } catch {
+      // Metrics failures must not alter circuit behavior.
+    }
+  }
+
+  #recordCircuitTransition(
+    previous: UpstreamCircuitState,
+    next: UpstreamCircuitState,
+  ): void {
+    try {
+      this.#metrics?.recordUpstreamCircuitTransition(
+        previous,
+        next,
+      )
+    } catch {
+      // Metrics failures must not alter circuit behavior.
+    }
+  }
 }
+
+type AdmissionResult =
+  | {
+      readonly status: 'accepted'
+      readonly release: () => void
+    }
+  | {
+      readonly status: 'overloaded'
+    }
+  | {
+      readonly status: 'draining'
+    }
 
 class AdmissionGate {
   readonly #maximum: number
   #active = 0
+  #accepting = true
+  readonly #idleWaiters: Array<() => void> = []
 
   constructor(maximum: number) {
     if (
@@ -453,22 +611,62 @@ class AdmissionGate {
     this.#maximum = maximum
   }
 
-  tryAcquire(): (() => void) | undefined {
+  tryAcquire(): AdmissionResult {
+    if (!this.#accepting) {
+      return {
+        status: 'draining',
+      }
+    }
+
     if (this.#active >= this.#maximum) {
-      return undefined
+      return {
+        status: 'overloaded',
+      }
     }
 
     this.#active += 1
     let released = false
 
-    return () => {
-      if (released) {
-        return
-      }
+    return {
+      status: 'accepted',
+      release: () => {
+        if (released) {
+          return
+        }
 
-      released = true
-      this.#active -= 1
+        released = true
+        this.#active -= 1
+
+        if (this.#active === 0) {
+          for (const resolve of this.#idleWaiters.splice(0)) {
+            resolve()
+          }
+        }
+      },
     }
+  }
+
+  beginDrain(): boolean {
+    if (!this.#accepting) {
+      return false
+    }
+
+    this.#accepting = false
+    return true
+  }
+
+  acceptingRequests(): boolean {
+    return this.#accepting
+  }
+
+  waitForIdle(): Promise<void> {
+    if (this.#active === 0) {
+      return Promise.resolve()
+    }
+
+    return new Promise((resolve) => {
+      this.#idleWaiters.push(resolve)
+    })
   }
 }
 

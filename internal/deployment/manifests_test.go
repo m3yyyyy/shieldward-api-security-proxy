@@ -139,6 +139,11 @@ func TestEdgeDeploymentsSetResilienceBudgets(t *testing.T) {
 			expected: []string{
 				`SHIELDWARD_UPSTREAM_TIMEOUT_MS: "10000"`,
 				`SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: "1024"`,
+				`SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD: "5"`,
+				`SHIELDWARD_CIRCUIT_OPEN_MS: "30000"`,
+				`SHIELDWARD_CIRCUIT_MAX_UPSTREAMS: "1024"`,
+				`SHIELDWARD_SHUTDOWN_GRACE_MS: "10000"`,
+				"stop_grace_period: 15s",
 			},
 		},
 		{
@@ -146,8 +151,15 @@ func TestEdgeDeploymentsSetResilienceBudgets(t *testing.T) {
 			expected: []string{
 				"SHIELDWARD_UPSTREAM_TIMEOUT_MS",
 				"SHIELDWARD_MAX_IN_FLIGHT_REQUESTS",
+				"SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD",
+				"SHIELDWARD_CIRCUIT_OPEN_MS",
+				"SHIELDWARD_CIRCUIT_MAX_UPSTREAMS",
+				"SHIELDWARD_SHUTDOWN_GRACE_MS",
 				`value: "10000"`,
 				`value: "1024"`,
+				`value: "5"`,
+				`value: "30000"`,
+				"terminationGracePeriodSeconds: 20",
 			},
 		},
 	}
