@@ -109,4 +109,28 @@ describe('JSON security audit logger', () => {
       reason: 'configuration_sync_failed',
     })
   })
+
+  it('writes bounded TLS rotation events without certificate details', () => {
+    const lines: string[] = []
+    const logger = new JsonSecurityAuditLogger({
+      write: (line) => lines.push(line),
+      now: () =>
+        new Date('2026-09-07T03:04:05.678Z'),
+    })
+
+    logger.recordSystem({
+      component: 'tls',
+      outcome: 'error',
+      reason: 'control_plane_client_tls_reload_failed',
+    })
+
+    expect(JSON.parse(lines[0]!)).toEqual({
+      type: 'security_system',
+      schemaVersion: 1,
+      timestamp: '2026-09-07T03:04:05.678Z',
+      component: 'tls',
+      outcome: 'error',
+      reason: 'control_plane_client_tls_reload_failed',
+    })
+  })
 })

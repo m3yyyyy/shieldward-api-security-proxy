@@ -38,9 +38,16 @@ Configure the Edge process with the matching HTTPS URL:
 
 ```powershell
 $env:CONTROL_PLANE_URL = "https://control.example:18080"
+$env:SHIELDWARD_CONTROL_PLANE_CA_FILE = "C:\ShieldWard\secrets\control-plane-ca.pem"
+$env:SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE = "C:\ShieldWard\secrets\edge-client-cert.pem"
+$env:SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE = "C:\ShieldWard\secrets\edge-client-key.pem"
 ```
 
-For a private certificate authority, configure Node.js to trust the CA before starting the Edge process, for example with `NODE_EXTRA_CA_CERTS`. Do not disable certificate verification.
+For HTTPS control-plane connections, all three mutual TLS files are required.
+The control plane authorizes the Edge by an exact SPIFFE URI SAN rather than a
+common name. Do not disable certificate verification. See
+`docs/mutual-tls-and-certificate-rotation.md` for the complete trust and
+zero-downtime rotation procedure.
 
 ## Upstream services
 

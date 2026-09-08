@@ -45,6 +45,12 @@ describe('runtime configuration', () => {
       configuration.shutdownGracePeriodMs,
     ).toBe(10_000)
     expect(configuration.tls).toBeUndefined()
+    expect(
+      configuration.controlPlaneTls,
+    ).toBeUndefined()
+    expect(
+      configuration.tlsReloadIntervalMs,
+    ).toBe(30_000)
     expect(configuration.rateLimit).toEqual({
       backend: 'memory',
     })
@@ -67,6 +73,12 @@ describe('runtime configuration', () => {
         PORT: '9090',
         CONTROL_PLANE_URL:
           'https://control.example/base#ignored',
+        SHIELDWARD_CONTROL_PLANE_CA_FILE:
+          'keys/control-ca.pem',
+        SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE:
+          'keys/control-client-cert.pem',
+        SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE:
+          'keys/control-client-key.pem',
         SHIELDWARD_PUBLIC_KEY_FILE:
           'keys/public.pem',
         MAX_REQUEST_BODY_BYTES: '2048',
@@ -76,6 +88,7 @@ describe('runtime configuration', () => {
         SHIELDWARD_CIRCUIT_OPEN_MS: '45000',
         SHIELDWARD_CIRCUIT_MAX_UPSTREAMS: '300',
         SHIELDWARD_SHUTDOWN_GRACE_MS: '8000',
+        SHIELDWARD_TLS_RELOAD_INTERVAL_MS: '15000',
         SHIELDWARD_TLS_CERT_FILE:
           'keys/tls-cert.pem',
         SHIELDWARD_TLS_KEY_FILE:
@@ -105,6 +118,18 @@ describe('runtime configuration', () => {
           'keys/tls-key.pem',
         ),
       },
+      controlPlaneTls: {
+        certificateAuthorityFile: resolve(
+          'keys/control-ca.pem',
+        ),
+        certificateFile: resolve(
+          'keys/control-client-cert.pem',
+        ),
+        privateKeyFile: resolve(
+          'keys/control-client-key.pem',
+        ),
+      },
+      tlsReloadIntervalMs: 15_000,
       rateLimit: {
         backend: 'memory',
       },
@@ -279,6 +304,15 @@ describe('runtime configuration', () => {
     ).toThrow(
       'SHIELDWARD_SHUTDOWN_GRACE_MS must be between 1 and 120000',
     )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_TLS_RELOAD_INTERVAL_MS:
+          '300001',
+      }),
+    ).toThrow(
+      'SHIELDWARD_TLS_RELOAD_INTERVAL_MS must be between 1 and 300000',
+    )
   })
 
   it('rejects unsafe control-plane URLs', () => {
@@ -338,6 +372,41 @@ describe('runtime configuration', () => {
       }),
     ).toThrow(
       'SHIELDWARD_TLS_CERT_FILE must not be empty',
+    )
+  })
+
+  it('requires complete mutual TLS settings for an HTTPS control plane', () => {
+    expect(() =>
+      readRuntimeConfiguration({
+        CONTROL_PLANE_URL:
+          'https://control.example',
+      }),
+    ).toThrow(
+      'control-plane mutual TLS files are required for HTTPS',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        CONTROL_PLANE_URL:
+          'https://control.example',
+        SHIELDWARD_CONTROL_PLANE_CA_FILE:
+          'keys/ca.pem',
+      }),
+    ).toThrow(
+      'SHIELDWARD_CONTROL_PLANE_CA_FILE, SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE, and SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE must be configured together',
+    )
+
+    expect(() =>
+      readRuntimeConfiguration({
+        SHIELDWARD_CONTROL_PLANE_CA_FILE:
+          'keys/ca.pem',
+        SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE:
+          'keys/client-cert.pem',
+        SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE:
+          'keys/client-key.pem',
+      }),
+    ).toThrow(
+      'control-plane mutual TLS files require an HTTPS CONTROL_PLANE_URL',
     )
   })
 

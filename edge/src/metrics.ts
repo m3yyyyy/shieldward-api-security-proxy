@@ -17,6 +17,14 @@ export type CircuitMetricState =
   | 'open'
   | 'half_open'
 
+export type TlsReloadRole =
+  | 'listener'
+  | 'control_plane_client'
+
+export type TlsReloadOutcome =
+  | 'updated'
+  | 'rejected'
+
 export interface GatewayMetricRecord {
   readonly outcome: GatewayMetricOutcome
   readonly status: number
@@ -37,6 +45,10 @@ export interface OperationalMetrics {
     outcome: ConfigurationRefreshOutcome,
   ): void
   recordConfigurationSyncError(): void
+  recordTlsReload(
+    role: TlsReloadRole,
+    outcome: TlsReloadOutcome,
+  ): void
   recordGatewayRequestStarted(): void
   recordGatewayRequestFinished(): void
   recordGatewayOverload(): void
@@ -91,6 +103,16 @@ const CIRCUIT_STATES: readonly CircuitMetricState[] = [
   'half_open',
 ]
 
+const TLS_RELOAD_ROLES: readonly TlsReloadRole[] = [
+  'listener',
+  'control_plane_client',
+]
+
+const TLS_RELOAD_OUTCOMES: readonly TlsReloadOutcome[] = [
+  'updated',
+  'rejected',
+]
+
 export class PrometheusMetrics
   implements OperationalMetrics
 {
@@ -110,6 +132,7 @@ export class PrometheusMetrics
     CircuitMetricState,
     number
   >()
+  readonly #tlsReloads = new Map<string, number>()
 
   #scrapes = 0
   #configurationSyncErrors = 0
@@ -177,6 +200,24 @@ export class PrometheusMetrics
 
   recordConfigurationSyncError(): void {
     this.#configurationSyncErrors += 1
+  }
+
+  recordTlsReload(
+    role: TlsReloadRole,
+    outcome: TlsReloadOutcome,
+  ): void {
+    if (
+      !TLS_RELOAD_ROLES.includes(role) ||
+      !TLS_RELOAD_OUTCOMES.includes(outcome)
+    ) {
+      return
+    }
+
+    const key = `${role}\u0000${outcome}`
+    this.#tlsReloads.set(
+      key,
+      (this.#tlsReloads.get(key) ?? 0) + 1,
+    )
   }
 
   recordGatewayRequestStarted(): void {
@@ -343,6 +384,21 @@ export class PrometheusMetrics
 
         lines.push(
           `shieldward_edge_rate_limit_checks_total{backend="${backend}",result="${outcome}"} ${this.#rateLimitChecks.get(key) ?? 0}`,
+        )
+      }
+    }
+
+    lines.push(
+      '# HELP shieldward_edge_tls_reload_total TLS material reloads grouped by bounded role and result.',
+      '# TYPE shieldward_edge_tls_reload_total counter',
+    )
+
+    for (const role of TLS_RELOAD_ROLES) {
+      for (const outcome of TLS_RELOAD_OUTCOMES) {
+        const key = `${role}\u0000${outcome}`
+
+        lines.push(
+          `shieldward_edge_tls_reload_total{role="${role}",result="${outcome}"} ${this.#tlsReloads.get(key) ?? 0}`,
         )
       }
     }

@@ -22,11 +22,21 @@ export interface SecurityAuditLogger {
   record(event: SecurityAuditRecord): void
 }
 
-export interface SecuritySystemAuditRecord {
-  readonly component: 'configuration_sync'
-  readonly outcome: 'error'
-  readonly reason: 'configuration_sync_failed'
-}
+export type SecuritySystemAuditRecord =
+  | {
+      readonly component: 'configuration_sync'
+      readonly outcome: 'error'
+      readonly reason: 'configuration_sync_failed'
+    }
+  | {
+      readonly component: 'tls'
+      readonly outcome: 'updated' | 'error'
+      readonly reason:
+        | 'listener_tls_reloaded'
+        | 'listener_tls_reload_failed'
+        | 'control_plane_client_tls_reloaded'
+        | 'control_plane_client_tls_reload_failed'
+    }
 
 export interface JsonSecurityAuditLoggerOptions {
   readonly write?: (line: string) => void

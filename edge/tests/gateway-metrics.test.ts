@@ -11,6 +11,7 @@ function createMetrics(
     recordGatewayRequest,
     recordConfigurationRefresh: () => undefined,
     recordConfigurationSyncError: () => undefined,
+    recordTlsReload: () => undefined,
     recordGatewayRequestStarted: () => undefined,
     recordGatewayRequestFinished: () => undefined,
     recordGatewayOverload: () => undefined,

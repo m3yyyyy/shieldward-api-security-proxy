@@ -49,6 +49,12 @@ spec:
             - /run/secrets/shieldward/tls-cert.pem
             - -tls-key
             - /run/secrets/shieldward/tls-key.pem
+            - -client-ca
+            - /run/secrets/shieldward/tls-ca.pem
+            - -client-identity
+            - spiffe://shieldward.local/edge
+            - -tls-reload-interval
+            - 30s
           env:
             - name: SHIELDWARD_HEALTHCHECK_URL
               value: https://127.0.0.1:18080/readyz

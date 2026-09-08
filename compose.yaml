@@ -21,6 +21,12 @@ services:
       - /run/secrets/tls-cert.pem
       - -tls-key
       - /run/secrets/tls-key.pem
+      - -client-ca
+      - /run/secrets/tls-ca.pem
+      - -client-identity
+      - spiffe://shieldward.local/edge
+      - -tls-reload-interval
+      - 30s
     environment:
       SHIELDWARD_HEALTHCHECK_URL: https://127.0.0.1:18080/readyz
       SHIELDWARD_HEALTHCHECK_CA_FILE: /run/secrets/tls-ca.pem
@@ -79,8 +85,12 @@ services:
       SHIELDWARD_PUBLIC_KEY_FILE: /run/secrets/control-plane-public.pem
       SHIELDWARD_TLS_CERT_FILE: /run/secrets/tls-cert.pem
       SHIELDWARD_TLS_KEY_FILE: /run/secrets/tls-key.pem
-      NODE_EXTRA_CA_CERTS: /run/secrets/control-plane-ca.pem
+      SHIELDWARD_CONTROL_PLANE_CA_FILE: /run/secrets/control-plane-ca.pem
+      SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE: /run/secrets/control-plane-client-cert.pem
+      SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE: /run/secrets/control-plane-client-key.pem
+      SHIELDWARD_TLS_RELOAD_INTERVAL_MS: "30000"
       SHIELDWARD_HEALTHCHECK_URL: https://127.0.0.1:8787/readyz
+      SHIELDWARD_HEALTHCHECK_CA_FILE: /run/secrets/control-plane-ca.pem
       SHIELDWARD_UPSTREAM_TIMEOUT_MS: "10000"
       SHIELDWARD_MAX_IN_FLIGHT_REQUESTS: "1024"
       SHIELDWARD_CIRCUIT_FAILURE_THRESHOLD: "5"
@@ -103,6 +113,14 @@ services:
       - type: bind
         source: ./.shieldward/containers/edge-key.pem
         target: /run/secrets/tls-key.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/edge-client-cert.pem
+        target: /run/secrets/control-plane-client-cert.pem
+        read_only: true
+      - type: bind
+        source: ./.shieldward/containers/edge-client-key.pem
+        target: /run/secrets/control-plane-client-key.pem
         read_only: true
     ports:
       - 127.0.0.1:8787:8787

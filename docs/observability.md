@@ -29,6 +29,8 @@ The edge service reports:
 - request-duration count and sum by outcome;
 - configuration refresh counts for `updated` and `unchanged`;
 - a separate configuration synchronization error counter;
+- accepted and rejected TLS material reloads by bounded listener or
+  control-plane-client role;
 - rate-limit checks by the bounded backend and result labels;
 - successful local metric scrapes.
 
@@ -43,6 +45,7 @@ The control plane reports:
 - whether a signed policy bundle is ready;
 - HTTP request counts by a fixed route class and status;
 - successful and rejected policy reload counts;
+- successful and rejected TLS material reload counts;
 - active server-sent event connections;
 - successful local metric scrapes.
 
@@ -70,6 +73,8 @@ Alert when any of these conditions persist:
 - Redis rate-limit errors increase when the distributed backend is enabled;
 - `shieldward_edge_policy_age_seconds` exceeds the expected reload interval;
 - configuration refresh or policy reload rejection counters increase;
+- either TLS reload `rejected` counter increases, or a planned rotation does
+  not produce an `updated` event;
 - the edge `error` outcome rate or upstream `502` response rate increases;
 - upstream `504` responses or
   `shieldward_edge_gateway_overload_rejections_total` increase;

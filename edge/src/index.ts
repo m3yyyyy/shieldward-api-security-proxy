@@ -1,5 +1,8 @@
 import { readFile } from 'node:fs/promises'
-import { createServer as createHttpsServer } from 'node:https'
+import {
+  createServer as createHttpsServer,
+  type Server as HttpsServer,
+} from 'node:https'
 
 import {
   serve,
@@ -15,13 +18,19 @@ import { ConfigurationSynchronizer } from './config-sync.js'
 import { Gateway } from './gateway.js'
 import { LivePolicyEvaluator } from './live-policy.js'
 import { PrometheusMetrics } from './metrics.js'
+import { createMutualTlsFetch } from './mutual-tls-fetch.js'
 import { MeasuredRateLimiter } from './rate-limit.js'
 import {
   createRateLimitRuntime,
   type RateLimitRuntime,
 } from './rate-limit-runtime.js'
 import { readRuntimeConfiguration } from './runtime-config.js'
-import { loadTlsMaterial } from './tls.js'
+import {
+  loadMutualTlsMaterial,
+  loadTlsMaterial,
+  TlsMaterialReloader,
+  validateTlsMaterial,
+} from './tls.js'
 import { createTrustedKeyring } from './trusted-keys.js'
 
 const MAX_PUBLIC_KEY_FILE_BYTES = 16 * 1024
@@ -32,10 +41,102 @@ async function main(): Promise<void> {
   const publicKeyPem = await loadPublicKey(
     runtime.publicKeyFile,
   )
-  const tlsMaterial =
+  const auditLogger = new JsonSecurityAuditLogger()
+  const metrics = new PrometheusMetrics()
+
+  let httpsServer: HttpsServer | undefined
+
+  const listenerTls =
     runtime.tls === undefined
       ? undefined
-      : await loadTlsMaterial(runtime.tls)
+      : new TlsMaterialReloader({
+          load: () => loadTlsMaterial(runtime.tls!),
+          validate: validateTlsMaterial,
+          apply: (material) => {
+            if (httpsServer === undefined) {
+              throw new Error(
+                'HTTPS listener is unavailable',
+              )
+            }
+
+            httpsServer.setSecureContext({
+              cert: material.certificate,
+              key: material.privateKey,
+            })
+          },
+          intervalMs: runtime.tlsReloadIntervalMs,
+          onReload: () => {
+            metrics.recordTlsReload(
+              'listener',
+              'updated',
+            )
+            recordTlsAudit(
+              auditLogger,
+              'updated',
+              'listener_tls_reloaded',
+            )
+          },
+          onError: (error) => {
+            metrics.recordTlsReload(
+              'listener',
+              'rejected',
+            )
+            recordTlsAudit(
+              auditLogger,
+              'error',
+              'listener_tls_reload_failed',
+            )
+            console.error(
+              `Listener TLS reload rejected: ${errorMessage(error)}`,
+            )
+          },
+        })
+
+  const controlPlaneTls =
+    runtime.controlPlaneTls === undefined
+      ? undefined
+      : new TlsMaterialReloader({
+          load: () =>
+            loadMutualTlsMaterial(
+              runtime.controlPlaneTls!,
+            ),
+          validate: validateTlsMaterial,
+          intervalMs: runtime.tlsReloadIntervalMs,
+          onReload: () => {
+            metrics.recordTlsReload(
+              'control_plane_client',
+              'updated',
+            )
+            recordTlsAudit(
+              auditLogger,
+              'updated',
+              'control_plane_client_tls_reloaded',
+            )
+          },
+          onError: (error) => {
+            metrics.recordTlsReload(
+              'control_plane_client',
+              'rejected',
+            )
+            recordTlsAudit(
+              auditLogger,
+              'error',
+              'control_plane_client_tls_reload_failed',
+            )
+            console.error(
+              `Control-plane client TLS reload rejected: ${errorMessage(error)}`,
+            )
+          },
+        })
+
+  const tlsMaterial = await listenerTls?.initialize()
+  await controlPlaneTls?.initialize()
+  const controlPlaneFetch =
+    controlPlaneTls === undefined
+      ? globalThis.fetch
+      : createMutualTlsFetch(() =>
+          controlPlaneTls.current(),
+        )
 
   const trustedKeys = createTrustedKeyring([
     publicKeyPem,
@@ -44,9 +145,8 @@ async function main(): Promise<void> {
   const configuration = new ConfigurationClient({
     baseUrl: runtime.controlPlaneUrl,
     trustedKeys,
+    fetchImpl: controlPlaneFetch,
   })
-  const auditLogger = new JsonSecurityAuditLogger()
-  const metrics = new PrometheusMetrics()
   const rateLimitRuntime =
     await createRateLimitRuntime(
       runtime.rateLimit,
@@ -56,6 +156,7 @@ async function main(): Promise<void> {
     new ConfigurationSynchronizer({
       baseUrl: runtime.controlPlaneUrl,
       client: configuration,
+      fetchImpl: controlPlaneFetch,
       onError: (error) => {
         metrics.recordConfigurationSyncError()
 
@@ -160,12 +261,22 @@ async function main(): Promise<void> {
     },
   )
 
+  if (tlsMaterial !== undefined) {
+    httpsServer = server as HttpsServer
+    listenerTls!.start()
+  }
+  controlPlaneTls?.start()
+
   installShutdownHandlers(
     server,
     gateway,
     synchronizer,
     rateLimitRuntime,
     runtime.shutdownGracePeriodMs,
+    () => {
+      listenerTls?.stop()
+      controlPlaneTls?.stop()
+    },
   )
 }
 
@@ -200,6 +311,7 @@ function installShutdownHandlers(
   synchronizer: ConfigurationSynchronizer,
   rateLimitRuntime: RateLimitRuntime,
   shutdownGracePeriodMs: number,
+  stopTlsReloaders: () => void,
 ): void {
   let shuttingDown = false
 
@@ -211,6 +323,7 @@ function installShutdownHandlers(
     }
 
     shuttingDown = true
+    stopTlsReloaders()
 
     console.log(
       `Received ${signal}; shutting down`,
@@ -257,12 +370,33 @@ function installShutdownHandlers(
       `ShieldWard edge server error: ${error.message}`,
     )
     process.exitCode = 1
+    stopTlsReloaders()
     gateway.beginDrain()
     void stopDependencies(
       synchronizer,
       rateLimitRuntime,
     )
   })
+}
+
+function recordTlsAudit(
+  auditLogger: JsonSecurityAuditLogger,
+  outcome: 'updated' | 'error',
+  reason:
+    | 'listener_tls_reloaded'
+    | 'listener_tls_reload_failed'
+    | 'control_plane_client_tls_reloaded'
+    | 'control_plane_client_tls_reload_failed',
+): void {
+  try {
+    auditLogger.recordSystem({
+      component: 'tls',
+      outcome,
+      reason,
+    })
+  } catch {
+    // Audit failures must not stop TLS rotation.
+  }
 }
 
 async function stopDependencies(

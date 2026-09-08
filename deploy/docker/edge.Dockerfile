@@ -48,7 +48,7 @@ USER 1000:1000
 EXPOSE 8787
 
 HEALTHCHECK --interval=10s --timeout=4s --start-period=15s --retries=6 \
-  CMD ["node", "-e", "fetch(process.env.SHIELDWARD_HEALTHCHECK_URL,{signal:AbortSignal.timeout(3000)}).then((response)=>{if(!response.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+  CMD ["node", "dist/healthcheck.js"]
 
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["node", "dist/index.js"]

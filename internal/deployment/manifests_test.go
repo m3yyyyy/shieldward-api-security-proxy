@@ -180,6 +180,58 @@ func TestEdgeDeploymentsSetResilienceBudgets(t *testing.T) {
 	}
 }
 
+func TestDeploymentsRequireMutualTLSServiceIdentity(t *testing.T) {
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("..", "..", "compose.yaml"),
+			expected: []string{
+				"-client-ca",
+				"spiffe://shieldward.local/edge",
+				"SHIELDWARD_CONTROL_PLANE_CA_FILE",
+				"SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE",
+				"SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE",
+				`SHIELDWARD_TLS_RELOAD_INTERVAL_MS: "30000"`,
+			},
+		},
+		{
+			path: filepath.Join("..", "..", "deploy", "kubernetes", "base", "control-plane.yaml"),
+			expected: []string{
+				"-client-ca",
+				"-client-identity",
+				"spiffe://shieldward.local/edge",
+				"-tls-reload-interval",
+			},
+		},
+		{
+			path: filepath.Join("..", "..", "deploy", "kubernetes", "base", "edge.yaml"),
+			expected: []string{
+				"SHIELDWARD_CONTROL_PLANE_CA_FILE",
+				"SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE",
+				"SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE",
+				"SHIELDWARD_TLS_RELOAD_INTERVAL_MS",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(filepath.Base(test.path), func(t *testing.T) {
+			contents, err := os.ReadFile(test.path)
+			if err != nil {
+				t.Fatalf("read deployment: %v", err)
+			}
+
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("deployment does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestComposeServicesUseRuntimeHardening(t *testing.T) {
 	contents, err := os.ReadFile(filepath.Join("..", "..", "compose.yaml"))
 	if err != nil {

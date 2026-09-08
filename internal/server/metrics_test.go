@@ -29,6 +29,8 @@ func TestMetricsAreLocalAndPrivacySafe(t *testing.T) {
 	)
 	metrics.RecordPolicyReload(PolicyReloadUpdated)
 	metrics.RecordPolicyReload(PolicyReloadRejected)
+	metrics.RecordTLSReload(TLSReloadUpdated)
+	metrics.RecordTLSReload(TLSReloadRejected)
 
 	now = time.Unix(1_005, 0)
 	response := requestWithRemote(
@@ -56,6 +58,8 @@ func TestMetricsAreLocalAndPrivacySafe(t *testing.T) {
 		`shieldward_control_plane_http_requests_total{route="ready",status="503"} 1`,
 		`shieldward_control_plane_policy_reload_total{result="updated"} 1`,
 		`shieldward_control_plane_policy_reload_total{result="rejected"} 1`,
+		`shieldward_control_plane_tls_reload_total{result="updated"} 1`,
+		`shieldward_control_plane_tls_reload_total{result="rejected"} 1`,
 		"shieldward_control_plane_metrics_scrapes_total 1",
 	} {
 		if !strings.Contains(body, expected) {

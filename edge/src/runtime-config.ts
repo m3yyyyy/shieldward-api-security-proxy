@@ -22,6 +22,7 @@ const DEFAULT_CIRCUIT_FAILURE_THRESHOLD = 5
 const DEFAULT_CIRCUIT_OPEN_MS = 30_000
 const DEFAULT_CIRCUIT_MAX_UPSTREAMS = 1_024
 const DEFAULT_SHUTDOWN_GRACE_MS = 10_000
+const DEFAULT_TLS_RELOAD_INTERVAL_MS = 30_000
 
 const DEFAULT_REDIS_KEY_PREFIX =
   'shieldward:rate-limit:v1'
@@ -53,12 +54,21 @@ export interface RuntimeConfiguration {
   readonly circuitMaximumUpstreams: number
   readonly shutdownGracePeriodMs: number
   readonly tls: TlsRuntimeConfiguration | undefined
+  readonly controlPlaneTls:
+    | MutualTlsRuntimeConfiguration
+    | undefined
+  readonly tlsReloadIntervalMs: number
   readonly rateLimit: RateLimitRuntimeConfiguration
 }
 
 export interface TlsRuntimeConfiguration {
   readonly certificateFile: string
   readonly privateKeyFile: string
+}
+
+export interface MutualTlsRuntimeConfiguration
+  extends TlsRuntimeConfiguration {
+  readonly certificateAuthorityFile: string
 }
 
 export type RateLimitRuntimeConfiguration =
@@ -112,6 +122,11 @@ export function readRuntimeConfiguration(
   )
 
   const tls = parseTlsConfiguration(environment)
+  const controlPlaneTls =
+    parseControlPlaneTlsConfiguration(
+      environment,
+      controlPlaneUrl,
+    )
 
   if (
     tls === undefined &&
@@ -172,6 +187,13 @@ export function readRuntimeConfiguration(
     120_000,
   )
 
+  const tlsReloadIntervalMs = parsePositiveInteger(
+    environment.SHIELDWARD_TLS_RELOAD_INTERVAL_MS,
+    DEFAULT_TLS_RELOAD_INTERVAL_MS,
+    'SHIELDWARD_TLS_RELOAD_INTERVAL_MS',
+    300_000,
+  )
+
   const rateLimit = parseRateLimitConfiguration(
     environment,
   )
@@ -189,7 +211,63 @@ export function readRuntimeConfiguration(
     circuitMaximumUpstreams,
     shutdownGracePeriodMs,
     tls,
+    controlPlaneTls,
+    tlsReloadIntervalMs,
     rateLimit,
+  }
+}
+
+function parseControlPlaneTlsConfiguration(
+  environment: RuntimeEnvironment,
+  controlPlaneUrl: string,
+): MutualTlsRuntimeConfiguration | undefined {
+  const certificateAuthorityFile = parseOptionalPath(
+    environment.SHIELDWARD_CONTROL_PLANE_CA_FILE,
+    'SHIELDWARD_CONTROL_PLANE_CA_FILE',
+  )
+  const certificateFile = parseOptionalPath(
+    environment.SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE,
+    'SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE',
+  )
+  const privateKeyFile = parseOptionalPath(
+    environment.SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE,
+    'SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE',
+  )
+  const configured = [
+    certificateAuthorityFile,
+    certificateFile,
+    privateKeyFile,
+  ].filter((value) => value !== undefined).length
+  const secure =
+    new URL(controlPlaneUrl).protocol === 'https:'
+
+  if (configured === 0) {
+    if (secure) {
+      throw new RuntimeConfigurationError(
+        'control-plane mutual TLS files are required for HTTPS',
+      )
+    }
+
+    return undefined
+  }
+
+  if (configured !== 3) {
+    throw new RuntimeConfigurationError(
+      'SHIELDWARD_CONTROL_PLANE_CA_FILE, SHIELDWARD_CONTROL_PLANE_CLIENT_CERT_FILE, and SHIELDWARD_CONTROL_PLANE_CLIENT_KEY_FILE must be configured together',
+    )
+  }
+
+  if (!secure) {
+    throw new RuntimeConfigurationError(
+      'control-plane mutual TLS files require an HTTPS CONTROL_PLANE_URL',
+    )
+  }
+
+  return {
+    certificateAuthorityFile:
+      certificateAuthorityFile!,
+    certificateFile: certificateFile!,
+    privateKeyFile: privateKeyFile!,
   }
 }
 

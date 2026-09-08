@@ -29,6 +29,9 @@ The script refuses to overwrite existing certificates. Use `-Force` only when
 intentionally rotating the local development certificates. All generated files
 remain under the ignored `.shieldward` directory. The development CA is not a
 production trust anchor and should not be installed as a system-wide trusted CA.
+The generated Edge client certificate carries
+`spiffe://shieldward.local/edge`; the control plane requires that exact
+identity for configuration APIs.
 
 Validate and start the stack:
 
@@ -69,6 +72,11 @@ container stop window is deliberately longer than the application drain
 window. See `docs/circuit-breaking-and-draining.md` before changing either
 deadline.
 
+The services reload their listener certificates, the control-plane client CA,
+and the Edge client identity every 30 seconds. Invalid replacements are rejected
+while the last-known-good identity remains active. Follow
+`docs/mutual-tls-and-certificate-rotation.md` when changing a production CA.
+
 ## Kubernetes prerequisites
 
 The base manifests under `deploy/kubernetes/base` are secure starting points,
@@ -77,7 +85,9 @@ not a complete environment-specific deployment. Before applying them:
 1. Replace the example policy endpoints and identifiers.
 2. Issue separate production certificates. The control-plane certificate must
    include `shieldward-control-plane.shieldward.svc.cluster.local`; the Edge
-   certificate must include its client-facing DNS name.
+   listener certificate must include its client-facing DNS name. Issue a
+   separate Edge client certificate with client-authentication extended key
+   usage and URI SAN `spiffe://shieldward.local/edge`.
 3. Store the signing private key and TLS private keys in a managed secret store.
 4. Replace both example image tags with immutable image digests.
 5. Review resource limits and NetworkPolicies against the real upstreams, DNS
@@ -105,7 +115,9 @@ kubectl -n shieldward create secret generic shieldward-edge-credentials `
   --from-file=control-plane-public.pem=.\.shieldward\public.pem `
   --from-file=control-plane-ca.pem=C:\secure\control-plane-ca.pem `
   --from-file=tls-cert.pem=C:\secure\edge-cert.pem `
-  --from-file=tls-key.pem=C:\secure\edge-key.pem
+  --from-file=tls-key.pem=C:\secure\edge-key.pem `
+  --from-file=control-plane-client-cert.pem=C:\secure\edge-client-cert.pem `
+  --from-file=control-plane-client-key.pem=C:\secure\edge-client-key.pem
 ```
 
 Replace `C:\secure\...` with actual protected paths. Prefer the cluster's

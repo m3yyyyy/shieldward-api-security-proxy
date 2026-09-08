@@ -30,7 +30,7 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	flagSet.Usage = func() {
 		_, _ = fmt.Fprintln(
 			stderr,
-			"Usage: shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>] [-tls-cert <path> -tls-key <path>]",
+			"Usage: shieldwardd serve -policy <path> [-private-key <path>] [-listen <address>] [-tls-cert <path> -tls-key <path>] [-client-ca <path> -client-identity <spiffe-uri>] [-tls-reload-interval <duration>]",
 		)
 	}
 
@@ -58,6 +58,21 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 		"tls-key",
 		"",
 		"path to the PEM TLS private key",
+	)
+	clientCAPath := flagSet.String(
+		"client-ca",
+		"",
+		"path to the PEM CA bundle for required client certificates",
+	)
+	clientIdentity := flagSet.String(
+		"client-identity",
+		"",
+		"exact SPIFFE URI authorized for client certificates",
+	)
+	tlsReloadInterval := flagSet.Duration(
+		"tls-reload-interval",
+		30*time.Second,
+		"interval for reloading TLS certificate, key, and client CA files",
 	)
 
 	if err := flagSet.Parse(args); err != nil {
@@ -90,17 +105,30 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
+	if err := validateMutualTLS(
+		tlsEnabled,
+		*clientCAPath,
+		*clientIdentity,
+	); err != nil {
+		return err
+	}
+	if *tlsReloadInterval < time.Second ||
+		*tlsReloadInterval > 10*time.Minute {
+		return fmt.Errorf(
+			"tls-reload-interval must be between 1s and 10m",
+		)
+	}
 
-	var tlsCertificate *tls.Certificate
+	var tlsReloader *tlsMaterialReloader
 	if tlsEnabled {
-		certificate, err := tls.LoadX509KeyPair(
+		tlsReloader, err = newTLSMaterialReloader(
 			strings.TrimSpace(*tlsCertificatePath),
 			strings.TrimSpace(*tlsPrivateKeyPath),
+			strings.TrimSpace(*clientCAPath),
 		)
 		if err != nil {
-			return fmt.Errorf("load TLS certificate and key: %w", err)
+			return err
 		}
-		tlsCertificate = &certificate
 	}
 
 	envelope, err := loadSignedEnvelope(
@@ -124,6 +152,32 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	)
 	defer stopSignals()
 
+	if tlsReloader != nil {
+		go tlsReloader.Run(
+			processContext,
+			*tlsReloadInterval,
+			func() {
+				metrics.RecordTLSReload(
+					controlserver.TLSReloadUpdated,
+				)
+				_, _ = fmt.Fprintln(
+					stdout,
+					"TLS material reloaded",
+				)
+			},
+			func(reloadErr error) {
+				metrics.RecordTLSReload(
+					controlserver.TLSReloadRejected,
+				)
+				_, _ = fmt.Fprintf(
+					stderr,
+					"TLS reload rejected: %v\n",
+					reloadErr,
+				)
+			},
+		)
+	}
+
 	listener, err := net.Listen(
 		"tcp",
 		strings.TrimSpace(*listenAddress),
@@ -136,15 +190,22 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 	}
-	if tlsCertificate != nil {
-		tlsConfig.Certificates = []tls.Certificate{*tlsCertificate}
+	if tlsReloader != nil {
+		tlsConfig = tlsReloader.TLSConfig(
+			strings.TrimSpace(*clientIdentity),
+		)
+	}
+
+	handler := controlserver.NewHandlerWithMetrics(
+		store,
+		metrics,
+	)
+	if strings.TrimSpace(*clientCAPath) != "" {
+		handler = requireServiceIdentity(handler)
 	}
 
 	httpServer := &http.Server{
-		Handler: controlserver.NewHandlerWithMetrics(
-			store,
-			metrics,
-		),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		IdleTimeout:       60 * time.Second,
@@ -183,6 +244,9 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	transport := "http"
 	if tlsEnabled {
 		transport = "https"
+	}
+	if strings.TrimSpace(*clientCAPath) != "" {
+		transport = "mutual-tls"
 	}
 
 	_, _ = fmt.Fprintf(

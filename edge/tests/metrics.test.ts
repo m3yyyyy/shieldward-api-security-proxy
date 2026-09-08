@@ -21,6 +21,11 @@ describe('Prometheus operational metrics', () => {
     })
     metrics.recordConfigurationRefresh('updated')
     metrics.recordConfigurationSyncError()
+    metrics.recordTlsReload('listener', 'updated')
+    metrics.recordTlsReload(
+      'control_plane_client',
+      'rejected',
+    )
     metrics.recordRateLimitCheck('redis', 'allowed')
     metrics.recordGatewayRequestStarted()
     metrics.recordGatewayRequestStarted()
@@ -95,6 +100,12 @@ describe('Prometheus operational metrics', () => {
     )
     expect(output).toContain(
       'shieldward_edge_configuration_sync_errors_total 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_tls_reload_total{role="listener",result="updated"} 1',
+    )
+    expect(output).toContain(
+      'shieldward_edge_tls_reload_total{role="control_plane_client",result="rejected"} 1',
     )
     expect(output).toContain(
       'shieldward_edge_rate_limit_checks_total{backend="redis",result="allowed"} 1',

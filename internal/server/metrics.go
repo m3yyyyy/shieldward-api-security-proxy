@@ -12,10 +12,13 @@ import (
 )
 
 type PolicyReloadOutcome string
+type TLSReloadOutcome string
 
 const (
 	PolicyReloadUpdated  PolicyReloadOutcome = "updated"
 	PolicyReloadRejected PolicyReloadOutcome = "rejected"
+	TLSReloadUpdated     TLSReloadOutcome    = "updated"
+	TLSReloadRejected    TLSReloadOutcome    = "rejected"
 )
 
 type httpMetricKey struct {
@@ -31,6 +34,7 @@ type Metrics struct {
 
 	httpRequests  map[httpMetricKey]uint64
 	policyReloads map[PolicyReloadOutcome]uint64
+	tlsReloads    map[TLSReloadOutcome]uint64
 
 	activeEventStreams atomic.Int64
 	metricsScrapes     atomic.Uint64
@@ -53,7 +57,26 @@ func newMetrics(now func() time.Time) *Metrics {
 			PolicyReloadUpdated:  0,
 			PolicyReloadRejected: 0,
 		},
+		tlsReloads: map[TLSReloadOutcome]uint64{
+			TLSReloadUpdated:  0,
+			TLSReloadRejected: 0,
+		},
 	}
+}
+
+func (metrics *Metrics) RecordTLSReload(
+	outcome TLSReloadOutcome,
+) {
+	switch outcome {
+	case TLSReloadUpdated, TLSReloadRejected:
+	default:
+		return
+	}
+
+	metrics.mu.Lock()
+	defer metrics.mu.Unlock()
+
+	metrics.tlsReloads[outcome]++
 }
 
 func (metrics *Metrics) RecordPolicyReload(
@@ -130,6 +153,13 @@ func (metrics *Metrics) render(
 	for key, value := range metrics.policyReloads {
 		policyReloads[key] = value
 	}
+	tlsReloads := make(
+		map[TLSReloadOutcome]uint64,
+		len(metrics.tlsReloads),
+	)
+	for key, value := range metrics.tlsReloads {
+		tlsReloads[key] = value
+	}
 	metrics.mu.Unlock()
 
 	keys := make([]httpMetricKey, 0, len(httpRequests))
@@ -179,6 +209,19 @@ func (metrics *Metrics) render(
 			"shieldward_control_plane_policy_reload_total{result=%q} %d\n",
 			outcome,
 			policyReloads[outcome],
+		)
+	}
+	fmt.Fprintln(&output, "# HELP shieldward_control_plane_tls_reload_total TLS material reloads by result.")
+	fmt.Fprintln(&output, "# TYPE shieldward_control_plane_tls_reload_total counter")
+	for _, outcome := range []TLSReloadOutcome{
+		TLSReloadUpdated,
+		TLSReloadRejected,
+	} {
+		fmt.Fprintf(
+			&output,
+			"shieldward_control_plane_tls_reload_total{result=%q} %d\n",
+			outcome,
+			tlsReloads[outcome],
 		)
 	}
 	fmt.Fprintln(&output, "# HELP shieldward_control_plane_event_stream_connections Active configuration event streams.")

@@ -103,8 +103,8 @@ jobs:
         run: |
           sudo chown 65532:65532 .shieldward/private.pem .shieldward/containers/control-plane-key.pem
           sudo chmod 0400 .shieldward/private.pem .shieldward/containers/control-plane-key.pem
-          sudo chown 1000:1000 .shieldward/containers/edge-key.pem
-          sudo chmod 0400 .shieldward/containers/edge-key.pem
+          sudo chown 1000:1000 .shieldward/containers/edge-key.pem .shieldward/containers/edge-client-key.pem
+          sudo chmod 0400 .shieldward/containers/edge-key.pem .shieldward/containers/edge-client-key.pem
       - name: Validate Compose configuration
         run: docker compose config --quiet
       - name: Start hardened stack

@@ -16,6 +16,8 @@ $expectedFiles = @(
     'control-plane-key.pem'
     'edge-cert.pem'
     'edge-key.pem'
+    'edge-client-cert.pem'
+    'edge-client-key.pem'
 )
 
 if (-not $Force) {
@@ -78,7 +80,12 @@ function New-LeafMaterial {
         [Parameter(Mandatory)]
         [string]$CommonName,
         [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
         [string[]]$DnsNames,
+        [Parameter(Mandatory)]
+        [string[]]$EnhancedKeyUsageOids,
+        [string[]]$UriNames = @(),
+        [switch]$IncludeLoopback,
         [Parameter(Mandatory)]
         [string]$CertificatePath,
         [Parameter(Mandatory)]
@@ -111,13 +118,15 @@ function New-LeafMaterial {
             )
         )
 
-        $serverAuthentication = [System.Security.Cryptography.OidCollection]::new()
-        [void]$serverAuthentication.Add(
-            [System.Security.Cryptography.Oid]::new('1.3.6.1.5.5.7.3.1')
-        )
+        $enhancedKeyUsages = [System.Security.Cryptography.OidCollection]::new()
+        foreach ($oid in $EnhancedKeyUsageOids) {
+            [void]$enhancedKeyUsages.Add(
+                [System.Security.Cryptography.Oid]::new($oid)
+            )
+        }
         $request.CertificateExtensions.Add(
             [System.Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new(
-                $serverAuthentication,
+                $enhancedKeyUsages,
                 $true
             )
         )
@@ -132,8 +141,13 @@ function New-LeafMaterial {
         foreach ($dnsName in $DnsNames) {
             $san.AddDnsName($dnsName)
         }
-        $san.AddIpAddress([System.Net.IPAddress]::Parse('127.0.0.1'))
-        $san.AddIpAddress([System.Net.IPAddress]::Parse('::1'))
+        foreach ($uriName in $UriNames) {
+            $san.AddUri([Uri]::new($uriName))
+        }
+        if ($IncludeLoopback) {
+            $san.AddIpAddress([System.Net.IPAddress]::Parse('127.0.0.1'))
+            $san.AddIpAddress([System.Net.IPAddress]::Parse('::1'))
+        }
         $request.CertificateExtensions.Add($san.Build($true))
 
         $serialNumber = [byte[]]::new(16)
@@ -207,6 +221,8 @@ try {
                 'shieldward-control-plane.shieldward.svc.cluster.local',
                 'localhost'
             ) `
+            -EnhancedKeyUsageOids @('1.3.6.1.5.5.7.3.1') `
+            -IncludeLoopback `
             -CertificatePath (Join-Path $outputPath 'control-plane-cert.pem') `
             -PrivateKeyPath (Join-Path $outputPath 'control-plane-key.pem') `
             -Issuer $caCertificate
@@ -221,8 +237,19 @@ try {
                 'shieldward-edge.shieldward.svc.cluster.local',
                 'localhost'
             ) `
+            -EnhancedKeyUsageOids @('1.3.6.1.5.5.7.3.1') `
+            -IncludeLoopback `
             -CertificatePath (Join-Path $outputPath 'edge-cert.pem') `
             -PrivateKeyPath (Join-Path $outputPath 'edge-key.pem') `
+            -Issuer $caCertificate
+
+        New-LeafMaterial `
+            -CommonName 'shieldward-edge-client' `
+            -DnsNames @() `
+            -EnhancedKeyUsageOids @('1.3.6.1.5.5.7.3.2') `
+            -UriNames @('spiffe://shieldward.local/edge') `
+            -CertificatePath (Join-Path $outputPath 'edge-client-cert.pem') `
+            -PrivateKeyPath (Join-Path $outputPath 'edge-client-key.pem') `
             -Issuer $caCertificate
     }
     finally {
