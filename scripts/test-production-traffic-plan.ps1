@@ -12,6 +12,9 @@ param(
     [ValidateSet('Pending', 'Approved', 'Either')]
     [string]$RequiredState = 'Approved',
 
+    [ValidateSet('PreActivation', 'PostActivationEvidence')]
+    [string]$ValidationPurpose = 'PreActivation',
+
     [switch]$CheckCluster
 )
 
@@ -181,7 +184,10 @@ if ([string]$plan.candidate.policyVersion -notmatch $digestPattern) {
 
 $collectedAt = [DateTimeOffset]$baseline.collectedAtUtc
 $baselineAge = [DateTimeOffset]::UtcNow - $collectedAt.ToUniversalTime()
-if ($baselineAge.TotalMinutes -lt -5 -or $baselineAge.TotalMinutes -gt [int]$plan.maxBaselineAgeMinutes) {
+if (
+    $ValidationPurpose -eq 'PreActivation' -and
+    ($baselineAge.TotalMinutes -lt -5 -or $baselineAge.TotalMinutes -gt [int]$plan.maxBaselineAgeMinutes)
+) {
     throw 'The production baseline evidence is stale. Traffic activation is blocked.'
 }
 
@@ -224,6 +230,9 @@ if ((Get-Sha256Text -Text ($integrity | ConvertTo-Json -Depth 4 -Compress)) -ne 
 
 $state = [string]$plan.state
 $approvalStatus = [string]$plan.approval.status
+if ($ValidationPurpose -eq 'PostActivationEvidence' -and $RequiredState -ne 'Approved') {
+    throw 'Post-activation evidence may only use an approved traffic activation plan.'
+}
 if ($RequiredState -eq 'Pending' -and ($state -ne 'pending' -or $approvalStatus -ne 'pending')) {
     throw "The production traffic activation plan is '$state'; expected pending."
 }

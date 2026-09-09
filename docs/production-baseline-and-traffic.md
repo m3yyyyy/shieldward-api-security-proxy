@@ -183,6 +183,8 @@ read-only checks. Never delete credentials or audit evidence as an incidental
 rollback step.
 
 On success, record the exact live image and policy digests as the first verified
-production rollback baseline. Later releases must use
-`docs/production-promotion.md`. Full traffic expansion remains a separate,
-platform-owned approval and is not granted by this initial canary plan.
+production candidate baseline, then follow
+`docs/production-canary-and-expansion.md` to record the completed observation
+and request no more than the first 25 percent expansion. Later releases must
+use `docs/production-promotion.md`. Full traffic expansion remains a separate,
+platform-owned approval and is not granted by either initial plan.

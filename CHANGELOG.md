@@ -19,6 +19,8 @@ versioning.
 - Sanitized production baseline evidence and a separate, tamper-detecting
   initial traffic plan limited to a fresh, explicitly approved 1-10 percent
   canary with disable-before-removal guidance.
+- Tamper-detecting initial canary observation evidence with fail-closed signal
+  states and a separately approved first expansion capped at 25 percent.
 
 ## [1.0.0] - 2026-09-09
 

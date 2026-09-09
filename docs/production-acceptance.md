@@ -93,3 +93,8 @@ After that initial installation exists but before any production traffic is
 enabled, follow `docs/production-baseline-and-traffic.md`. It captures the live
 traffic-disabled baseline and limits the separately approved first cohort to a
 1-10 percent canary.
+
+After the canary observation window completes, use
+`docs/production-canary-and-expansion.md`. It records explicit fail-closed
+signal states and permits one separately approved expansion no higher than 25
+percent. It does not authorize full traffic.

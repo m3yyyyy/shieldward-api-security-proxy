@@ -49,6 +49,9 @@ jobs:
       - name: Test production baseline and traffic contract
         shell: pwsh
         run: ./scripts/test-production-traffic-contract.ps1
+      - name: Test production canary and expansion contract
+        shell: pwsh
+        run: ./scripts/test-production-expansion-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

@@ -560,6 +560,7 @@ func TestProductionBaselineAndTrafficContracts(t *testing.T) {
 				"fresh-traffic-disabled-baseline",
 				"canaryPercent",
 				"stale",
+				"PostActivationEvidence",
 				"CheckCluster",
 				"does not enforce or change traffic routing",
 			},
@@ -611,6 +612,103 @@ func TestProductionBaselineAndTrafficContracts(t *testing.T) {
 			for _, expected := range test.expected {
 				if !strings.Contains(string(contents), expected) {
 					t.Errorf("production baseline and traffic artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
+func TestProductionCanaryAndExpansionContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-canary-evidence.ps1"),
+			expected: []string{
+				"ObservedCanaryPercent",
+				"ValidationPurpose = 'PostActivationEvidence'",
+				"CheckCluster = $true",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-canary-evidence.ps1"),
+			expected: []string{
+				"initial-canary-observation",
+				"trafficPlanApprovalDigest",
+				"expectedOutcome",
+				"CheckCluster",
+				"does not change or authorize traffic routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "new-production-expansion-plan.ps1"),
+			expected: []string{
+				"ValidateRange(2, 25)",
+				"TargetPercent",
+				"passed-canary-evidence",
+				"bounded-first-expansion",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-expansion-plan.ps1"),
+			expected: []string{
+				"maximumInitialExpansionPercent",
+				"canary evidence is stale",
+				"CheckCluster",
+				"does not enforce or change traffic routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-expansion-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvedAtUnixSeconds",
+				"approvalDigest",
+				"external change system remains authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-expansion-contract.ps1"),
+			expected: []string{
+				"unknownCanaryRejected",
+				"staleEvidenceRejected",
+				"fullTrafficTamperingRejected",
+				"evidenceTamperingRejected",
+				"Production canary evidence and first expansion planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-canary-and-expansion.md"),
+			expected: []string{
+				"read-only",
+				"cannot exceed 25 percent",
+				"Missing or unknown signals",
+				"authorize any later step or full traffic",
+				"Disable traffic first",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production canary and expansion contract",
+				"test-production-expansion-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production canary and expansion artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production canary and expansion artifact does not contain %q", expected)
 				}
 			}
 		})
