@@ -139,3 +139,7 @@ environment-specific item in `docs/production-acceptance.md`. A failed check is
 a blocked promotion, not an accepted warning. Record the owner, decision time,
 approved image digests, rollback authority, and observation window before
 sending any production traffic to the new release.
+
+Use `docs/production-promotion.md` to convert the staging evidence into a
+tamper-evident pending plan, record explicit approval, and verify the exact
+production context and rollback baseline without changing the cluster.

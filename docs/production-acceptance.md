@@ -77,3 +77,9 @@ provider and upstreams from a non-production client before receiving traffic.
 Use the digest-pinned staging procedure in `docs/staging-rollout.md` to collect
 the cluster rollout baseline and sanitized evidence. That baseline supplements,
 but does not replace, the environment-specific sign-off items above.
+
+After staging succeeds, use the decision gate in
+`docs/production-promotion.md`. It binds the candidate to the staging evidence,
+the exact production context, an explicit approval record, a bounded
+observation window, and previously verified rollback digests. The gate does not
+deploy workloads or enforce production traffic routing.

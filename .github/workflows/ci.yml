@@ -40,6 +40,9 @@ jobs:
             -Version $metadata.version `
             -ControlPlaneDigest ('sha256:' + ('1' * 64)) `
             -EdgeDigest ('sha256:' + ('2' * 64))
+      - name: Test production promotion planning contract
+        shell: pwsh
+        run: ./scripts/test-production-promotion-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

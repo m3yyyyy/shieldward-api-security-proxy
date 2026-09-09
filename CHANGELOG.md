@@ -10,6 +10,9 @@ versioning.
 - Guarded, digest-pinned Kubernetes staging overlays with exact-context rollout
   checks, fail-closed acceptance probes, an optional control-plane outage drill,
   sanitized evidence capture, and digest-based rollback guidance.
+- Tamper-evident production promotion plans with explicit approval records,
+  exact-context read-only preflights, immutable rollback baselines, and a
+  bounded observation and traffic-expansion procedure.
 
 ## [1.0.0] - 2026-09-09
 

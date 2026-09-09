@@ -360,6 +360,84 @@ func TestStagingRolloutContracts(t *testing.T) {
 	}
 }
 
+func TestProductionPromotionContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-promotion-plan.ps1"),
+			expected: []string{
+				"StagingEvidencePath",
+				"ProductionContext must be different",
+				"RollbackControlPlaneDigest",
+				"integrityDigest",
+				"no cluster changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-promotion-plan.ps1"),
+			expected: []string{
+				"ExpectedProductionContext",
+				"current-context",
+				"CheckCluster",
+				"approved rollback baseline",
+				"not traffic-routing enforcement",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-promotion.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvedAtUnixSeconds",
+				"approvalDigest",
+				"external change system remains authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-promotion-contract.ps1"),
+			expected: []string{
+				"invalidApprovalRejected",
+				"planTamperingRejected",
+				"tamperingRejected",
+				"Production promotion planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-promotion.md"),
+			expected: []string{
+				"operator decision gate",
+				"existing rollback baseline",
+				"-CheckCluster",
+				"does not enforce traffic routing",
+				"Stop or roll back",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production promotion planning contract",
+				"test-production-promotion-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production promotion artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production promotion artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -389,6 +467,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "failure-drills.md"),
 		filepath.Join("docs", "release-runbook.md"),
 		filepath.Join("docs", "staging-rollout.md"),
+		filepath.Join("docs", "production-promotion.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))
