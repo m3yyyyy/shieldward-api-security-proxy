@@ -38,6 +38,9 @@ describe('ShieldWard edge application', () => {
       response.headers.get('referrer-policy'),
     ).toBe('no-referrer')
     expect(
+      response.headers.get('cache-control'),
+    ).toBe('no-store')
+    expect(
       response.headers.get('strict-transport-security'),
     ).toBeNull()
   })

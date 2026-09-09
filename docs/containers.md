@@ -153,7 +153,9 @@ two or more replicas, configure the TLS Redis overlay described in
 The `Containers` workflow builds both images, verifies their configured non-root
 users, runs smoke commands, scans final images for high and critical known
 vulnerabilities, and launches the TLS Compose topology on every push and pull
-request.
+request. Its production acceptance step verifies fail-closed responses, the
+mutual-TLS identity gate, and continued enforcement during a deliberate
+control-plane outage. See `docs/production-acceptance.md`.
 
 A semantic-version tag publishes multi-platform Linux AMD64 and ARM64 images to
 GitHub Container Registry with OCI provenance and SBOMs. Public-repository image

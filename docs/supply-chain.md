@@ -15,6 +15,9 @@ the Go race detector on Linux, and tests, type-checks, and builds Edge on Linux
 and Windows.
 The Linux-only distributed-rate-limit job also exercises two independent Edge
 clients against an isolated, digest-pinned Redis service.
+The Linux `Release candidate` job builds the complete versioned bundle, creates
+an SPDX SBOM and checksums, and verifies the artifact contract before a tag can
+publish it.
 
 After the first successful pull-request run, configure a branch ruleset for
 `main` and require the CI jobs before merging. Also require pull requests and
@@ -51,7 +54,10 @@ does not replace it.
 ## Creating a release
 
 Release only a clean commit that has passed the required checks. Create and push
-a semantic-version tag:
+a semantic-version tag. Follow `docs/release-runbook.md`; its release-readiness
+gate checks that package metadata, workflows, and the requested version agree.
+
+For the first release:
 
 ```powershell
 git status --short
@@ -99,5 +105,7 @@ gh attestation verify .\shieldwardd-windows-amd64.exe --repo m3yyyyy/shieldward-
 ```
 
 Inspect the SBOM before deployment and keep the release assets together with
-their checksum file. On Linux, make the downloaded binary executable with
-`chmod +x` only after verification.
+their checksum file. `scripts/verify-release-assets.ps1` verifies the exact
+inventory, every checksum, SPDX metadata, safe Edge archive paths, archived
+package version, and the native control-plane binary version. On Linux, make a
+downloaded binary executable with `chmod +x` only after verification.

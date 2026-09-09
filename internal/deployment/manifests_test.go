@@ -17,11 +17,19 @@ func TestDeploymentYAMLParses(t *testing.T) {
 	repositoryRoot := filepath.Join("..", "..")
 
 	assertYAMLDocuments(t, filepath.Join(repositoryRoot, "compose.yaml"), false)
-	assertYAMLDocuments(
-		t,
-		filepath.Join(repositoryRoot, ".github", "workflows", "ci.yml"),
-		false,
+
+	workflowPaths, err := filepath.Glob(
+		filepath.Join(repositoryRoot, ".github", "workflows", "*.yml"),
 	)
+	if err != nil {
+		t.Fatalf("glob GitHub Actions workflows: %v", err)
+	}
+	if len(workflowPaths) == 0 {
+		t.Fatal("no GitHub Actions workflows found")
+	}
+	for _, workflowPath := range workflowPaths {
+		assertYAMLDocuments(t, workflowPath, false)
+	}
 
 	manifestPaths, err := filepath.Glob(
 		filepath.Join(repositoryRoot, "deploy", "kubernetes", "*", "*.yaml"),
@@ -227,6 +235,105 @@ func TestDeploymentsRequireMutualTLSServiceIdentity(t *testing.T) {
 				if !strings.Contains(string(contents), expected) {
 					t.Errorf("deployment does not contain %q", expected)
 				}
+			}
+		})
+	}
+}
+
+func TestContainersWorkflowRunsProductionAcceptanceDrill(t *testing.T) {
+	path := filepath.Join("..", "..", ".github", "workflows", "containers.yml")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read Containers workflow: %v", err)
+	}
+
+	text := string(contents)
+	for _, expected := range []string{
+		"test-production-acceptance.ps1",
+		"-IncludeFailureDrills",
+		"steps.version.outputs.value",
+		"-RequireClean -RequireTag",
+		"Show container logs after failure",
+		"docker compose down --volumes --remove-orphans",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Errorf("Containers workflow does not contain %q", expected)
+		}
+	}
+}
+
+func TestReleaseWorkflowInjectsAndVerifiesVersion(t *testing.T) {
+	path := filepath.Join("..", "..", ".github", "workflows", "release.yml")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read Release workflow: %v", err)
+	}
+
+	text := string(contents)
+	for _, expected := range []string{
+		"check-release-readiness.ps1",
+		"-RequireClean -RequireTag",
+		"build-release-assets.sh",
+		"verify-release-assets.ps1",
+		"gh release create",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Errorf("Release workflow does not contain %q", expected)
+		}
+	}
+
+	buildScriptPath := filepath.Join("..", "..", "scripts", "build-release-assets.sh")
+	buildScript, err := os.ReadFile(buildScriptPath)
+	if err != nil {
+		t.Fatalf("read release build script: %v", err)
+	}
+	for _, expected := range []string{
+		"-X main.version=${version}",
+		"--sort=name",
+		"gzip -n",
+	} {
+		if !strings.Contains(string(buildScript), expected) {
+			t.Errorf("Release build script does not contain %q", expected)
+		}
+	}
+}
+
+func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
+	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read Continuous Integration workflow: %v", err)
+	}
+
+	text := string(contents)
+	for _, expected := range []string{
+		"release-candidate:",
+		"build-release-assets.sh",
+		"shieldward-source.spdx.json",
+		"verify-release-assets.ps1",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Errorf("Continuous Integration workflow does not contain %q", expected)
+		}
+	}
+}
+
+func TestProductionReleaseDocumentsExist(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	for _, relativePath := range []string{
+		"README.md",
+		"CHANGELOG.md",
+		filepath.Join("docs", "production-acceptance.md"),
+		filepath.Join("docs", "failure-drills.md"),
+		filepath.Join("docs", "release-runbook.md"),
+	} {
+		t.Run(relativePath, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))
+			if err != nil {
+				t.Fatalf("read release document: %v", err)
+			}
+			if len(bytes.TrimSpace(contents)) == 0 {
+				t.Fatal("release document is empty")
 			}
 		})
 	}

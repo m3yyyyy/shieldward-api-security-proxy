@@ -55,12 +55,14 @@ export function createApp(
     }
   })
 
-  application.get('/healthz', (context) =>
-    context.json({
+  application.get('/healthz', (context) => {
+    context.header('Cache-Control', 'no-store')
+
+    return context.json({
       service: 'shieldward-edge',
       status: 'ok',
-    }),
-  )
+    })
+  })
 
   application.get('/readyz', (context) => {
     const snapshot = options.configuration?.current()
