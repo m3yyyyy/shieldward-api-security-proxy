@@ -210,8 +210,10 @@ if ($state -eq 'approved') {
     ) {
         throw 'The production approval identity or statement is invalid.'
     }
-    $approvedAt = [DateTimeOffset]::MinValue
-    if (-not [DateTimeOffset]::TryParse([string]$plan.approval.approvedAtUtc, [ref]$approvedAt)) {
+    try {
+        $approvedAt = [DateTimeOffset]$plan.approval.approvedAtUtc
+    }
+    catch {
         throw 'The production approval timestamp is invalid.'
     }
     $approvedAtUnixSeconds = [long]$plan.approval.approvedAtUnixSeconds

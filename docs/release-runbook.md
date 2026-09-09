@@ -69,8 +69,10 @@ checks in `docs/production-acceptance.md`. Attach the sanitized staging evidence
 to the change record. If this is the first production installation and no
 verified rollback release exists, follow
 `docs/initial-production-installation.md`, keep traffic disabled, and establish
-the first baseline without inventing older digests. Otherwise, create and
-approve the tamper-evident plan in `docs/production-promotion.md`, then run its
+the first baseline without inventing older digests. Then use
+`docs/production-baseline-and-traffic.md` for the separate, bounded initial
+canary approval. Otherwise, create and approve the tamper-evident plan in
+`docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small
 production cohort through the approved platform, watch readiness, error
 outcomes, policy age, rejected reloads, rate-limit dependency health, circuit

@@ -154,8 +154,10 @@ authoritative change record. Those live digests become the verified production
 rollback baseline for the next release.
 
 Enabling production traffic is a separate approved change. Revalidate the live
-digests and traffic-controller state immediately before that change. This local
-gate does not authorize or perform traffic enablement.
+digests and traffic-controller state immediately before that change. Use
+`docs/production-baseline-and-traffic.md` to collect the traffic-disabled
+baseline and create a separately approved initial canary. This local gate does
+not authorize or perform traffic enablement.
 
 ## 9. Abort or remove
 

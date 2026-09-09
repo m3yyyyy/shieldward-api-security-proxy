@@ -16,6 +16,9 @@ versioning.
 - A first-production installation gate with verified staging evidence,
   traffic-disabled approval, an exact-context empty-baseline preflight, and an
   approved removal path that does not invent a previous release.
+- Sanitized production baseline evidence and a separate, tamper-detecting
+  initial traffic plan limited to a fresh, explicitly approved 1-10 percent
+  canary with disable-before-removal guidance.
 
 ## [1.0.0] - 2026-09-09
 

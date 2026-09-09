@@ -88,3 +88,8 @@ When no verified production baseline exists yet, use
 `docs/initial-production-installation.md` instead. It keeps traffic disabled,
 requires an empty target and approved removal path, and never invents rollback
 digests for a release that was not previously deployed.
+
+After that initial installation exists but before any production traffic is
+enabled, follow `docs/production-baseline-and-traffic.md`. It captures the live
+traffic-disabled baseline and limits the separately approved first cohort to a
+1-10 percent canary.

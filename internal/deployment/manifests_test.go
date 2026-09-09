@@ -490,7 +490,7 @@ func TestInitialProductionInstallationContracts(t *testing.T) {
 				"operator decision gate",
 				"traffic disabled",
 				"empty-baseline preflight",
-				"does not authorize or perform traffic enablement",
+				"not authorize or perform traffic enablement",
 				"Abort or remove",
 			},
 		},
@@ -512,6 +512,105 @@ func TestInitialProductionInstallationContracts(t *testing.T) {
 			for _, expected := range test.expected {
 				if !strings.Contains(string(contents), expected) {
 					t.Errorf("initial production installation artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
+func TestProductionBaselineAndTrafficContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-baseline-evidence.ps1"),
+			expected: []string{
+				"TrafficIsolationEvidenceReference",
+				"RemovalDrillEvidenceReference",
+				"current-context",
+				"candidate-ready-traffic-disabled",
+				"no cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-baseline-evidence.ps1"),
+			expected: []string{
+				"ExpectedProductionContext",
+				"initialPlanSha256",
+				"CheckCluster",
+				"externally exposed",
+				"does not change or authorize routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "new-production-traffic-plan.ps1"),
+			expected: []string{
+				"MaxBaselineAgeMinutes",
+				"ValidateRange(1, 10)",
+				"disable-traffic-and-remove-installation",
+				"Required approval statement",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-traffic-plan.ps1"),
+			expected: []string{
+				"fresh-traffic-disabled-baseline",
+				"canaryPercent",
+				"stale",
+				"CheckCluster",
+				"does not enforce or change traffic routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-traffic-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvedAtUnixSeconds",
+				"approvalDigest",
+				"external change system remains authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-traffic-contract.ps1"),
+			expected: []string{
+				"invalidApprovalRejected",
+				"staleBaselineRejected",
+				"trafficTamperingRejected",
+				"baselineTamperingRejected",
+				"Production baseline and traffic activation planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-baseline-and-traffic.md"),
+			expected: []string{
+				"read-only",
+				"1-10 percent",
+				"traffic-disabled baseline",
+				"does not authorize expansion",
+				"disable traffic first",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production baseline and traffic contract",
+				"test-production-traffic-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production baseline and traffic artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production baseline and traffic artifact does not contain %q", expected)
 				}
 			}
 		})
@@ -549,6 +648,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "staging-rollout.md"),
 		filepath.Join("docs", "production-promotion.md"),
 		filepath.Join("docs", "initial-production-installation.md"),
+		filepath.Join("docs", "production-baseline-and-traffic.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

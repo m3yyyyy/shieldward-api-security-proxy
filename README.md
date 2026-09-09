@@ -46,6 +46,7 @@ directory. It is for local testing only.
 
 - [Staging rollout and rollback](docs/staging-rollout.md)
 - [Initial production installation gate](docs/initial-production-installation.md)
+- [Production baseline and initial traffic gate](docs/production-baseline-and-traffic.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)
