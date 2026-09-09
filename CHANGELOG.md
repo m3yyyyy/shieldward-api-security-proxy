@@ -3,6 +3,14 @@
 All notable changes to ShieldWard are documented here. Releases follow semantic
 versioning.
 
+## [Unreleased]
+
+### Added
+
+- Guarded, digest-pinned Kubernetes staging overlays with exact-context rollout
+  checks, fail-closed acceptance probes, an optional control-plane outage drill,
+  sanitized evidence capture, and digest-based rollback guidance.
+
 ## [1.0.0] - 2026-09-09
 
 ### Added

@@ -32,6 +32,14 @@ jobs:
       - name: Check release metadata consistency
         shell: pwsh
         run: ./scripts/check-release-readiness.ps1
+      - name: Generate digest-pinned staging bundle
+        shell: pwsh
+        run: |
+          $metadata = Get-Content -Raw ./edge/package.json | ConvertFrom-Json
+          ./scripts/new-staging-overlay.ps1 `
+            -Version $metadata.version `
+            -ControlPlaneDigest ('sha256:' + ('1' * 64)) `
+            -EdgeDigest ('sha256:' + ('2' * 64))
 
   go:
     name: Go (${{ matrix.os }})

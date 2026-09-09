@@ -148,6 +148,13 @@ The base deployment uses one Edge replica with the in-memory rate limiter. For
 two or more replicas, configure the TLS Redis overlay described in
 `docs/distributed-rate-limiting.md` so every replica enforces the same counter.
 
+For a released staging deployment, do not edit image tags in the base manifests
+or apply them and mutate the deployments afterward. Generate a local,
+digest-pinned overlay and run the guarded rollout procedure in
+`docs/staging-rollout.md`. It checks the exact Kubernetes context, confirms the
+live images, exercises fail-closed behavior and recovery, and records sanitized
+evidence beneath the ignored `.shieldward` directory.
+
 ## Container CI and releases
 
 The `Containers` workflow builds both images, verifies their configured non-root

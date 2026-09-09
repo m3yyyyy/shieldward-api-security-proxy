@@ -289,12 +289,74 @@ func TestReleaseWorkflowInjectsAndVerifiesVersion(t *testing.T) {
 	}
 	for _, expected := range []string{
 		"-X main.version=${version}",
+		"--create --file=-",
 		"--sort=name",
 		"gzip -n",
 	} {
 		if !strings.Contains(string(buildScript), expected) {
 			t.Errorf("Release build script does not contain %q", expected)
 		}
+	}
+}
+
+func TestStagingRolloutContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-staging-overlay.ps1"),
+			expected: []string{
+				".shieldward/staging",
+				"sha256:[0-9a-f]{64}",
+				"digest:",
+				"rollout.json",
+				"No credentials were written",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "invoke-staging-rollout.ps1"),
+			expected: []string{
+				"ExpectedContext",
+				"current-context",
+				"rollout', 'status",
+				"default_deny",
+				"IncludeControlPlaneOutageDrill",
+				"Sanitized evidence",
+			},
+		},
+		{
+			path: filepath.Join("docs", "staging-rollout.md"),
+			expected: []string{
+				"digest-pinned",
+				"ExpectedContext",
+				"-IncludeControlPlaneOutageDrill",
+				"Roll back by digest",
+				"blocked promotion",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Generate digest-pinned staging bundle",
+				"new-staging-overlay.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read staging rollout artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("staging rollout artifact does not contain %q", expected)
+				}
+			}
+		})
 	}
 }
 
@@ -326,6 +388,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-acceptance.md"),
 		filepath.Join("docs", "failure-drills.md"),
 		filepath.Join("docs", "release-runbook.md"),
+		filepath.Join("docs", "staging-rollout.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

@@ -54,6 +54,7 @@ foreach ($requiredText in @(
 $releaseBuildScript = [System.IO.File]::ReadAllText($releaseBuildScriptPath)
 foreach ($requiredText in @(
     '-X main.version=${version}'
+    '--create --file=-'
     '--sort=name'
     "gzip -n"
 )) {
@@ -91,9 +92,12 @@ foreach ($relativePath in @(
     'docs/production-acceptance.md'
     'docs/failure-drills.md'
     'docs/release-runbook.md'
+    'docs/staging-rollout.md'
+    'scripts/new-staging-overlay.ps1'
+    'scripts/invoke-staging-rollout.ps1'
 )) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relativePath) -PathType Leaf)) {
-        throw "Required release document is missing: $relativePath"
+        throw "Required release artifact is missing: $relativePath"
     }
 }
 

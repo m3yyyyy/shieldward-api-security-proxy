@@ -73,3 +73,7 @@ identity provider or business upstream. JWT cryptography, proxying, rate-limit
 behavior, overload handling, and circuit transitions are covered by the normal
 test suites. Each target environment must additionally test its real identity
 provider and upstreams from a non-production client before receiving traffic.
+
+Use the digest-pinned staging procedure in `docs/staging-rollout.md` to collect
+the cluster rollout baseline and sanitized evidence. That baseline supplements,
+but does not replace, the environment-specific sign-off items above.

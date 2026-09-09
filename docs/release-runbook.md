@@ -64,10 +64,12 @@ digests. Deploy only digest-pinned images, never a mutable tag.
 ## 4. Promote gradually
 
 Deploy to a non-production environment first and complete the
-environment-specific checks in `docs/production-acceptance.md`. Promote a small
-production cohort, watch readiness, error outcomes, policy age, rejected
-reloads, rate-limit dependency health, circuit transitions, and drain behavior,
-then increase traffic only while the release remains within its error budget.
+digest-pinned rollout in `docs/staging-rollout.md` plus the environment-specific
+checks in `docs/production-acceptance.md`. Attach the sanitized staging evidence
+to the change record. Promote a small production cohort, watch readiness, error
+outcomes, policy age, rejected reloads, rate-limit dependency health, circuit
+transitions, and drain behavior, then increase traffic only while the release
+remains within its error budget.
 
 ## 5. Respond to a failed release
 
