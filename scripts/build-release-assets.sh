@@ -45,5 +45,5 @@ CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -buildvcs=true -ldfla
 mkdir -p "$stage_directory/edge"
 cp -R edge/dist "$stage_directory/edge/dist"
 cp edge/package.json edge/package-lock.json "$stage_directory/edge/"
-tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -C "$stage_directory" edge \
+tar --create --file=- --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner -C "$stage_directory" edge \
   | gzip -n > "$output_directory/shieldward-edge-${version}.tar.gz"
