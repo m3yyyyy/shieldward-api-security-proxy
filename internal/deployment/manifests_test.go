@@ -438,6 +438,86 @@ func TestProductionPromotionContracts(t *testing.T) {
 	}
 }
 
+func TestInitialProductionInstallationContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-initial-production-plan.ps1"),
+			expected: []string{
+				"StagingEvidencePath",
+				"ProductionContext must be different",
+				"trafficState = 'disabled'",
+				"remove-installation",
+				"no cluster changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-initial-production-plan.ps1"),
+			expected: []string{
+				"ExpectedProductionContext",
+				"current-context",
+				"initial-empty-baseline",
+				"No Secret values were read",
+				"not traffic-routing enforcement",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-initial-production-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvedAtUnixSeconds",
+				"approvalDigest",
+				"Traffic remains disabled",
+				"external change system remains authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-initial-production-contract.ps1"),
+			expected: []string{
+				"sameContextRejected",
+				"invalidApprovalRejected",
+				"trafficTamperingRejected",
+				"evidenceTamperingRejected",
+				"Initial production installation planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "initial-production-installation.md"),
+			expected: []string{
+				"operator decision gate",
+				"traffic disabled",
+				"empty-baseline preflight",
+				"does not authorize or perform traffic enablement",
+				"Abort or remove",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test initial production installation contract",
+				"test-initial-production-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read initial production installation artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("initial production installation artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -468,6 +548,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "release-runbook.md"),
 		filepath.Join("docs", "staging-rollout.md"),
 		filepath.Join("docs", "production-promotion.md"),
+		filepath.Join("docs", "initial-production-installation.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

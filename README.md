@@ -45,6 +45,7 @@ directory. It is for local testing only.
 ## Operational documentation
 
 - [Staging rollout and rollback](docs/staging-rollout.md)
+- [Initial production installation gate](docs/initial-production-installation.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

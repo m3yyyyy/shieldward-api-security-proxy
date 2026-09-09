@@ -66,12 +66,16 @@ digests. Deploy only digest-pinned images, never a mutable tag.
 Deploy to a non-production environment first and complete the
 digest-pinned rollout in `docs/staging-rollout.md` plus the environment-specific
 checks in `docs/production-acceptance.md`. Attach the sanitized staging evidence
-to the change record. Create and approve the tamper-evident plan in
-`docs/production-promotion.md`, then run its read-only production-context and
-rollback-baseline preflight. Promote a small production cohort through the
-approved platform, watch readiness, error outcomes, policy age, rejected
-reloads, rate-limit dependency health, circuit transitions, and drain behavior,
-then increase traffic only while the release remains within its error budget.
+to the change record. If this is the first production installation and no
+verified rollback release exists, follow
+`docs/initial-production-installation.md`, keep traffic disabled, and establish
+the first baseline without inventing older digests. Otherwise, create and
+approve the tamper-evident plan in `docs/production-promotion.md`, then run its
+read-only production-context and rollback-baseline preflight. Promote a small
+production cohort through the approved platform, watch readiness, error
+outcomes, policy age, rejected reloads, rate-limit dependency health, circuit
+transitions, and drain behavior, then increase traffic only while the release
+remains within its error budget.
 
 ## 5. Respond to a failed release
 

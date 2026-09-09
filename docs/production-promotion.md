@@ -30,6 +30,11 @@ deployment procedure until a healthy baseline and tested removal path have
 been recorded. Do not invent a previous digest or describe "no rollback" as a
 tested rollback.
 
+Use the repository's fail-closed first-install procedure in
+`docs/initial-production-installation.md` to bind that initial deployment to
+verified staging evidence, an empty target, explicit approval, disabled
+traffic, and an approved removal path.
+
 ## 2. Generate a pending plan
 
 Run from the repository root and replace every example value. The staging

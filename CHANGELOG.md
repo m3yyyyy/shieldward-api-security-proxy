@@ -13,6 +13,9 @@ versioning.
 - Tamper-evident production promotion plans with explicit approval records,
   exact-context read-only preflights, immutable rollback baselines, and a
   bounded observation and traffic-expansion procedure.
+- A first-production installation gate with verified staging evidence,
+  traffic-disabled approval, an exact-context empty-baseline preflight, and an
+  approved removal path that does not invent a previous release.
 
 ## [1.0.0] - 2026-09-09
 

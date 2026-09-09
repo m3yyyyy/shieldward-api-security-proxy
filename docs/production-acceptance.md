@@ -83,3 +83,8 @@ After staging succeeds, use the decision gate in
 the exact production context, an explicit approval record, a bounded
 observation window, and previously verified rollback digests. The gate does not
 deploy workloads or enforce production traffic routing.
+
+When no verified production baseline exists yet, use
+`docs/initial-production-installation.md` instead. It keeps traffic disabled,
+requires an empty target and approved removal path, and never invents rollback
+digests for a release that was not previously deployed.

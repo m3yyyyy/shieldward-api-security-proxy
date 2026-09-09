@@ -43,6 +43,9 @@ jobs:
       - name: Test production promotion planning contract
         shell: pwsh
         run: ./scripts/test-production-promotion-contract.ps1
+      - name: Test initial production installation contract
+        shell: pwsh
+        run: ./scripts/test-initial-production-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})
