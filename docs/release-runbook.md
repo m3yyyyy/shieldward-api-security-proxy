@@ -73,6 +73,8 @@ the first baseline without inventing older digests. Then use
 `docs/production-baseline-and-traffic.md` for the separate, bounded initial
 canary approval, followed by `docs/production-canary-and-expansion.md` for the
 tamper-detecting observation record and separately approved first expansion.
+After its observation window, use `docs/production-progressive-expansion.md`
+for the next evidence-bound step, capped at 50 percent total traffic.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

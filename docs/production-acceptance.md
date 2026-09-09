@@ -98,3 +98,8 @@ After the canary observation window completes, use
 `docs/production-canary-and-expansion.md`. It records explicit fail-closed
 signal states and permits one separately approved expansion no higher than 25
 percent. It does not authorize full traffic.
+
+After the first expansion observation completes, use
+`docs/production-progressive-expansion.md`. It records tamper-detecting evidence
+and permits one separately approved step of at most 25 percentage points, with
+an absolute cap of 50 percent. Full traffic remains outside this gate.

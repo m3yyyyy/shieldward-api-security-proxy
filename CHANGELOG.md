@@ -21,6 +21,8 @@ versioning.
   canary with disable-before-removal guidance.
 - Tamper-detecting initial canary observation evidence with fail-closed signal
   states and a separately approved first expansion capped at 25 percent.
+- Tamper-detecting first-expansion evidence and a separately approved
+  progressive step limited to 25 percentage points and 50 percent total traffic.
 
 ## [1.0.0] - 2026-09-09
 

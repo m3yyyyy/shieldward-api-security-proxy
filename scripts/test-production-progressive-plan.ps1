@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$PlanPath = '.shieldward/production-expansion/expansion.json',
+    [string]$PlanPath = '.shieldward/production-progressive/expansion.json',
+    [string]$ExpansionEvidencePath = '',
+    [string]$ExpansionPlanPath = '',
     [string]$CanaryEvidencePath = '',
     [string]$TrafficPlanPath = '',
     [string]$BaselineEvidencePath = '',
@@ -13,9 +15,6 @@ param(
 
     [ValidateSet('Pending', 'Approved', 'Either')]
     [string]$RequiredState = 'Approved',
-
-    [ValidateSet('PreExpansion', 'PostExpansionEvidence')]
-    [string]$ValidationPurpose = 'PreExpansion',
 
     [switch]$CheckCluster
 )
@@ -66,21 +65,21 @@ function Get-Sha256Text {
 
 $resolvedPlanPath = Resolve-LocalStatePath -Path $PlanPath -Description 'PlanPath'
 if (-not (Test-Path -LiteralPath $resolvedPlanPath -PathType Leaf)) {
-    throw "Production expansion plan is missing: $resolvedPlanPath"
+    throw "Production progressive expansion plan is missing: $resolvedPlanPath"
 }
 $plan = Get-Content -Raw -LiteralPath $resolvedPlanPath | ConvertFrom-Json
 if (
     [int]$plan.schemaVersion -ne 1 -or
     [string]$plan.environment -ne 'production' -or
-    [string]$plan.operation -ne 'initial-traffic-expansion'
+    [string]$plan.operation -ne 'progressive-traffic-expansion'
 ) {
-    throw 'The supplied production expansion plan is unsupported.'
+    throw 'The supplied production progressive expansion plan is unsupported.'
 }
 if ([string]$plan.productionContext -ne $ExpectedProductionContext) {
-    throw "The expansion plan targets '$($plan.productionContext)'; expected '$ExpectedProductionContext'."
+    throw "The progressive expansion plan targets '$($plan.productionContext)'; expected '$ExpectedProductionContext'."
 }
 if ([string]$plan.namespace -ne 'shieldward') {
-    throw "The expansion plan uses unsupported namespace '$($plan.namespace)'."
+    throw "The progressive expansion plan uses unsupported namespace '$($plan.namespace)'."
 }
 if (
     [int]$plan.observationMinutes -lt 5 -or
@@ -88,69 +87,76 @@ if (
     [int]$plan.maxEvidenceAgeMinutes -lt 5 -or
     [int]$plan.maxEvidenceAgeMinutes -gt 1440
 ) {
-    throw 'The expansion plan contains an unsupported time boundary.'
+    throw 'The progressive expansion plan contains an unsupported time boundary.'
 }
 if (
-    [int]$plan.traffic.currentPercent -lt 1 -or
-    [int]$plan.traffic.currentPercent -gt 10 -or
+    [int]$plan.traffic.currentPercent -lt 2 -or
+    [int]$plan.traffic.currentPercent -gt 25 -or
     [int]$plan.traffic.targetPercent -le [int]$plan.traffic.currentPercent -or
-    [int]$plan.traffic.targetPercent -gt 25 -or
-    [int]$plan.traffic.maximumInitialExpansionPercent -ne 25 -or
+    [int]$plan.traffic.targetPercent -gt 50 -or
+    ([int]$plan.traffic.targetPercent - [int]$plan.traffic.currentPercent) -gt 25 -or
+    [int]$plan.traffic.maximumTargetPercent -ne 50 -or
+    [int]$plan.traffic.maximumStepPercentagePoints -ne 25 -or
     [bool]$plan.traffic.externalEnforcementRequired -ne $true -or
     [string]::IsNullOrWhiteSpace([string]$plan.traffic.controller) -or
     [string]::IsNullOrWhiteSpace([string]$plan.traffic.controllerChangeReference)
 ) {
-    throw 'The first production expansion must increase the canary without exceeding 25 percent.'
+    throw 'The progressive expansion must increase traffic by at most 25 percentage points without exceeding 50 percent.'
 }
 if (
-    [string]$plan.rollback.mode -ne 'disable-traffic-and-remove-installation' -or
-    [string]$plan.rollback.targetState -ne 'absent' -or
+    [string]$plan.rollback.mode -ne 'restore-previous-cohort-or-disable-and-remove' -or
+    [int]$plan.rollback.targetPercent -ne [int]$plan.traffic.currentPercent -or
+    [int]$plan.rollback.emergencyTargetPercent -ne 0 -or
     [string]::IsNullOrWhiteSpace([string]$plan.rollback.authority) -or
     [string]::IsNullOrWhiteSpace([string]$plan.rollback.procedureReference)
 ) {
-    throw 'The expansion plan must preserve the approved disable-before-removal path.'
+    throw 'The progressive expansion plan must restore the previous cohort or preserve emergency disable-before-removal.'
 }
 
 $requiredSafeguards = @(
-    'passed-canary-evidence'
+    'passed-first-expansion-evidence'
     'fresh-observation-evidence'
     'immutable-candidate-images'
-    'bounded-first-expansion'
+    'bounded-progressive-step'
+    'maximum-half-traffic'
     'external-traffic-enforcement'
     'separate-expansion-approval'
-    'disable-before-removal'
+    'restore-previous-cohort'
+    'emergency-disable-before-removal'
     'bounded-observation-window'
 )
 foreach ($requiredSafeguard in $requiredSafeguards) {
     if (@($plan.safeguards) -notcontains $requiredSafeguard) {
-        throw "The expansion plan is missing safeguard '$requiredSafeguard'."
+        throw "The progressive expansion plan is missing safeguard '$requiredSafeguard'."
     }
 }
 
-$resolvedCanaryEvidencePath = if ([string]::IsNullOrWhiteSpace($CanaryEvidencePath)) {
-    Resolve-LocalStatePath -Path ([string]$plan.canaryEvidence.relativePath) -Description 'Recorded canary evidence path'
+$resolvedEvidencePath = if ([string]::IsNullOrWhiteSpace($ExpansionEvidencePath)) {
+    Resolve-LocalStatePath -Path ([string]$plan.expansionEvidence.relativePath) -Description 'Recorded expansion evidence path'
 }
 else {
-    Resolve-LocalStatePath -Path $CanaryEvidencePath -Description 'CanaryEvidencePath'
+    Resolve-LocalStatePath -Path $ExpansionEvidencePath -Description 'ExpansionEvidencePath'
 }
-if (-not (Test-Path -LiteralPath $resolvedCanaryEvidencePath -PathType Leaf)) {
-    throw "Recorded production canary evidence is missing: $resolvedCanaryEvidencePath"
+if (-not (Test-Path -LiteralPath $resolvedEvidencePath -PathType Leaf)) {
+    throw "Recorded production first-expansion evidence is missing: $resolvedEvidencePath"
 }
-$canaryEvidenceRelativePath = [System.IO.Path]::GetRelativePath($repoRoot, $resolvedCanaryEvidencePath).Replace('\', '/')
-$canaryEvidenceHash = (Get-FileHash -LiteralPath $resolvedCanaryEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
+$evidenceRelativePath = [System.IO.Path]::GetRelativePath($repoRoot, $resolvedEvidencePath).Replace('\', '/')
+$evidenceHash = (Get-FileHash -LiteralPath $resolvedEvidencePath -Algorithm SHA256).Hash.ToLowerInvariant()
 if (
-    $canaryEvidenceRelativePath -ne [string]$plan.canaryEvidence.relativePath -or
-    $canaryEvidenceHash -ne [string]$plan.canaryEvidence.sha256
+    $evidenceRelativePath -ne [string]$plan.expansionEvidence.relativePath -or
+    $evidenceHash -ne [string]$plan.expansionEvidence.sha256
 ) {
-    throw 'The production canary evidence hash does not match the expansion plan.'
+    throw 'The production first-expansion evidence hash does not match the progressive plan.'
 }
 
 $evidenceValidationArguments = @{
-    EvidencePath = $resolvedCanaryEvidencePath
+    EvidencePath = $resolvedEvidencePath
     ExpectedProductionContext = $ExpectedProductionContext
     CheckCluster = $CheckCluster
 }
 foreach ($optionalPath in @(
+    [pscustomobject]@{ Name = 'ExpansionPlanPath'; Value = $ExpansionPlanPath }
+    [pscustomobject]@{ Name = 'CanaryEvidencePath'; Value = $CanaryEvidencePath }
     [pscustomobject]@{ Name = 'TrafficPlanPath'; Value = $TrafficPlanPath }
     [pscustomobject]@{ Name = 'BaselineEvidencePath'; Value = $BaselineEvidencePath }
     [pscustomobject]@{ Name = 'InitialPlanPath'; Value = $InitialPlanPath }
@@ -160,52 +166,48 @@ foreach ($optionalPath in @(
         $evidenceValidationArguments[$optionalPath.Name] = $optionalPath.Value
     }
 }
-& (Join-Path $PSScriptRoot 'test-production-canary-evidence.ps1') @evidenceValidationArguments | Out-Null
-$canaryEvidence = Get-Content -Raw -LiteralPath $resolvedCanaryEvidencePath | ConvertFrom-Json
+& (Join-Path $PSScriptRoot 'test-production-expansion-evidence.ps1') @evidenceValidationArguments | Out-Null
+$evidence = Get-Content -Raw -LiteralPath $resolvedEvidencePath | ConvertFrom-Json
 if (
-    [string]$canaryEvidence.outcome -ne 'passed' -or
-    [string]$plan.canaryEvidence.outcome -ne 'passed' -or
-    [string]$plan.canaryEvidence.integrityDigest -ne [string]$canaryEvidence.integrityDigest -or
-    ([DateTimeOffset]$plan.canaryEvidence.collectedAtUtc).ToUniversalTime().ToString('o') -ne ([DateTimeOffset]$canaryEvidence.collectedAtUtc).ToUniversalTime().ToString('o') -or
-    [int]$plan.traffic.currentPercent -ne [int]$canaryEvidence.observation.observedCanaryPercent -or
-    [string]$plan.traffic.controller -ne [string]$canaryEvidence.traffic.controller -or
-    [string]$plan.traffic.controllerChangeReference -ne [string]$canaryEvidence.externalEvidence.trafficChangeReference -or
-    [string]$plan.candidate.version -ne [string]$canaryEvidence.candidate.version -or
-    [string]$plan.candidate.sourceTag -ne [string]$canaryEvidence.candidate.sourceTag -or
-    [string]$plan.candidate.controlPlaneImage -ne [string]$canaryEvidence.candidate.controlPlaneImage -or
-    [string]$plan.candidate.edgeImage -ne [string]$canaryEvidence.candidate.edgeImage -or
-    [string]$plan.candidate.policyVersion -ne [string]$canaryEvidence.candidate.policyVersion
+    [string]$evidence.outcome -ne 'passed' -or
+    [string]$plan.expansionEvidence.outcome -ne 'passed' -or
+    [string]$plan.expansionEvidence.integrityDigest -ne [string]$evidence.integrityDigest -or
+    ([DateTimeOffset]$plan.expansionEvidence.collectedAtUtc).ToUniversalTime().ToString('o') -ne ([DateTimeOffset]$evidence.collectedAtUtc).ToUniversalTime().ToString('o') -or
+    ([DateTimeOffset]$plan.expansionEvidence.observationEndedAtUtc).ToUniversalTime().ToString('o') -ne ([DateTimeOffset]$evidence.observation.endedAtUtc).ToUniversalTime().ToString('o') -or
+    [int]$plan.traffic.currentPercent -ne [int]$evidence.observation.observedTrafficPercent -or
+    [string]$plan.traffic.controller -ne [string]$evidence.traffic.controller -or
+    [string]$plan.traffic.controllerChangeReference -ne [string]$evidence.externalEvidence.trafficChangeReference -or
+    [string]$plan.candidate.version -ne [string]$evidence.candidate.version -or
+    [string]$plan.candidate.sourceTag -ne [string]$evidence.candidate.sourceTag -or
+    [string]$plan.candidate.controlPlaneImage -ne [string]$evidence.candidate.controlPlaneImage -or
+    [string]$plan.candidate.edgeImage -ne [string]$evidence.candidate.edgeImage -or
+    [string]$plan.candidate.policyVersion -ne [string]$evidence.candidate.policyVersion
 ) {
-    throw 'The expansion plan no longer matches passed canary evidence.'
+    throw 'The progressive expansion plan no longer matches passed first-expansion evidence.'
 }
 
-$collectedAt = [DateTimeOffset]$canaryEvidence.collectedAtUtc
+$collectedAt = [DateTimeOffset]$evidence.collectedAtUtc
 $evidenceAge = [DateTimeOffset]::UtcNow - $collectedAt.ToUniversalTime()
-$observationEndedAt = [DateTimeOffset]$canaryEvidence.observation.endedAtUtc
+$observationEndedAt = [DateTimeOffset]$evidence.observation.endedAtUtc
 $observationAge = [DateTimeOffset]::UtcNow - $observationEndedAt.ToUniversalTime()
 if (
-    $ValidationPurpose -eq 'PreExpansion' -and
-    (
-        $evidenceAge.TotalMinutes -lt -5 -or
-        $evidenceAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes -or
-        $observationAge.TotalMinutes -lt -5 -or
-        $observationAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes
-    )
+    $evidenceAge.TotalMinutes -lt -5 -or
+    $evidenceAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes -or
+    $observationAge.TotalMinutes -lt -5 -or
+    $observationAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes
 ) {
-    throw 'The production canary evidence is stale. Traffic expansion is blocked.'
+    throw 'The production first-expansion evidence is stale. Progressive expansion is blocked.'
 }
 if (
-    [string]$plan.rollback.mode -ne [string]$canaryEvidence.rollback.mode -or
-    [string]$plan.rollback.targetState -ne [string]$canaryEvidence.rollback.targetState -or
-    [string]$plan.rollback.authority -ne [string]$canaryEvidence.rollback.authority -or
-    [string]$plan.rollback.procedureReference -ne [string]$canaryEvidence.rollback.procedureReference
+    [string]$plan.rollback.authority -ne [string]$evidence.rollback.authority -or
+    [string]$plan.rollback.procedureReference -ne [string]$evidence.rollback.procedureReference
 ) {
-    throw 'The expansion rollback path no longer matches the canary evidence.'
+    throw 'The progressive rollback authority no longer matches first-expansion evidence.'
 }
 
 $integrity = [ordered]@{
-    canaryEvidenceSha256 = [string]$plan.canaryEvidence.sha256
-    canaryEvidenceIntegrityDigest = [string]$plan.canaryEvidence.integrityDigest
+    expansionEvidenceSha256 = [string]$plan.expansionEvidence.sha256
+    expansionEvidenceIntegrityDigest = [string]$plan.expansionEvidence.integrityDigest
     productionContext = [string]$plan.productionContext
     namespace = [string]$plan.namespace
     changeId = [string]$plan.changeId
@@ -215,9 +217,13 @@ $integrity = [ordered]@{
     policyVersion = [string]$plan.candidate.policyVersion
     currentTrafficPercent = [int]$plan.traffic.currentPercent
     targetTrafficPercent = [int]$plan.traffic.targetPercent
+    maximumTargetPercent = [int]$plan.traffic.maximumTargetPercent
+    maximumStepPercentagePoints = [int]$plan.traffic.maximumStepPercentagePoints
     trafficController = [string]$plan.traffic.controller
     controllerChangeReference = [string]$plan.traffic.controllerChangeReference
     rollbackMode = [string]$plan.rollback.mode
+    rollbackTargetPercent = [int]$plan.rollback.targetPercent
+    rollbackEmergencyTargetPercent = [int]$plan.rollback.emergencyTargetPercent
     rollbackAuthority = [string]$plan.rollback.authority
     rollbackProcedureReference = [string]$plan.rollback.procedureReference
     observationMinutes = [int]$plan.observationMinutes
@@ -225,48 +231,45 @@ $integrity = [ordered]@{
     approvalOwner = [string]$plan.approval.owner
 }
 if ((Get-Sha256Text -Text ($integrity | ConvertTo-Json -Depth 4 -Compress)) -ne [string]$plan.integrityDigest) {
-    throw 'The production expansion plan integrity digest is invalid.'
+    throw 'The production progressive expansion plan integrity digest is invalid.'
 }
 
 $state = [string]$plan.state
 $approvalStatus = [string]$plan.approval.status
-if ($ValidationPurpose -eq 'PostExpansionEvidence' -and $RequiredState -ne 'Approved') {
-    throw 'Post-expansion evidence may only use an approved expansion plan.'
-}
 if ($RequiredState -eq 'Pending' -and ($state -ne 'pending' -or $approvalStatus -ne 'pending')) {
-    throw "The production expansion plan is '$state'; expected pending."
+    throw "The production progressive expansion plan is '$state'; expected pending."
 }
 if ($RequiredState -eq 'Approved' -and ($state -ne 'approved' -or $approvalStatus -ne 'approved')) {
-    throw "The production expansion plan is '$state'; expected approved."
+    throw "The production progressive expansion plan is '$state'; expected approved."
 }
 if ($RequiredState -eq 'Either' -and $state -notin @('pending', 'approved')) {
-    throw "The production expansion plan has unsupported state '$state'."
+    throw "The production progressive expansion plan has unsupported state '$state'."
 }
 
 $requiredStatement = "APPROVE EXPANSION TO $($plan.traffic.targetPercent)% $($plan.changeId) FOR $($plan.productionContext) RELEASE $($plan.candidate.version)"
 if ([string]$plan.approval.requiredStatement -ne $requiredStatement) {
-    throw 'The production expansion approval statement is inconsistent with the plan.'
+    throw 'The production progressive expansion approval statement is inconsistent with the plan.'
 }
 if ($state -eq 'approved') {
     if (
         [string]$plan.approval.approvedBy -ne [string]$plan.approval.owner -or
         [string]$plan.approval.approvalStatement -ne $requiredStatement
     ) {
-        throw 'The production expansion approval identity or statement is invalid.'
+        throw 'The production progressive expansion approval identity or statement is invalid.'
     }
     try {
         $approvedAt = [DateTimeOffset]$plan.approval.approvedAtUtc
     }
     catch {
-        throw 'The production expansion approval timestamp is invalid.'
+        throw 'The production progressive expansion approval timestamp is invalid.'
     }
     $approvedAtUnixSeconds = [long]$plan.approval.approvedAtUnixSeconds
     if ($approvedAtUnixSeconds -ne $approvedAt.ToUnixTimeSeconds()) {
-        throw 'The production expansion approval timestamp and Unix time do not agree.'
+        throw 'The production progressive expansion approval timestamp and Unix time do not agree.'
     }
     $approvalInput = "$($plan.integrityDigest)|$($plan.approval.approvedBy)|$approvedAtUnixSeconds|$($plan.approval.approvalStatement)"
     if ((Get-Sha256Text -Text $approvalInput) -ne [string]$plan.approval.approvalDigest) {
-        throw 'The production expansion approval digest is invalid.'
+        throw 'The production progressive expansion approval digest is invalid.'
     }
 }
 elseif (
@@ -277,8 +280,8 @@ elseif (
     $null -ne $plan.approval.approvalStatement -or
     $null -ne $plan.approval.approvalDigest
 ) {
-    throw 'A pending expansion plan contains an inconsistent approval state.'
+    throw 'A pending progressive expansion plan contains an inconsistent approval state.'
 }
 
-Write-Host "Production traffic expansion plan validation passed for $($plan.traffic.currentPercent)% to $($plan.traffic.targetPercent)%."
+Write-Host "Production progressive expansion plan validation passed for $($plan.traffic.currentPercent)% to $($plan.traffic.targetPercent)%."
 Write-Host 'This validation records authorization; it does not enforce or change traffic routing.'

@@ -175,3 +175,9 @@ expansion. Disable traffic first through the authoritative controller, confirm
 the cohort is zero, and invoke the approved removal path if required. Preserve
 all evidence. Do not delete credentials or audit records as an incidental
 rollback action.
+
+After a successful first expansion has completed its full observation window,
+continue with `docs/production-progressive-expansion.md`. That gate records the
+resulting evidence and permits one separately approved increase of at most 25
+percentage points, capped at 50 percent total traffic. It still does not
+authorize full traffic.
