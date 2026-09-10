@@ -39,6 +39,9 @@ versioning.
 - Freshness-bound production incident containment evidence that proves exact
   hold-at-100, rollback-to-75, or disable-to-zero response enforcement before
   recovery can begin.
+- Tamper-evident production incident recovery plans with separate change
+  approval, fail-closed readiness checks, bounded zero-to-canary restoration,
+  exact 75-to-100 recovery, and rollback to the contained boundary.
 
 ## [1.0.0] - 2026-09-09
 

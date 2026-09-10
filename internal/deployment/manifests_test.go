@@ -1347,6 +1347,100 @@ func TestProductionIncidentContainmentContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-plan.ps1"),
+			expected: []string{
+				"production-incident-recovery",
+				"bounded-canary-restoration",
+				"RecoveryChangeId must identify a separate recovery change record",
+				"continue-remediation-and-hold-traffic",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-plan.ps1"),
+			expected: []string{
+				"RequiredState",
+				"canary of 1-10 percent",
+				"Failed or unknown recovery readiness must remain blocked",
+				"recovery plan integrity digest is invalid",
+				"does not change or prove restored production traffic",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-incident-recovery-plan.ps1"),
+			expected: []string{
+				"Only a passed production incident recovery plan may be approved",
+				"approvalDigest",
+				"external incident and change systems remain authoritative",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-gate.ps1"),
+			expected: []string{
+				"MaxPlanAgeMinutes",
+				"stale, future-dated, or expired",
+				"recovery is not authorized",
+				"does not change production state or prove traffic restoration",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-contract.ps1"),
+			expected: []string{
+				"zeroRecoveryPlanPath",
+				"rollbackRecoveryPlanPath",
+				"holdRecoveryPlanPath",
+				"invalidTargetRejected",
+				"failedRemediationPlanPath",
+				"missingReacceptancePlanPath",
+				"unknownTrafficPlanPath",
+				"pendingChangePlanPath",
+				"recoveryPlanTamperingRejected",
+				"containmentTimestampTamperingRejected",
+				"containmentTamperingRejected",
+				"Production incident recovery planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery.md"),
+			expected: []string{
+				"containment approval and successful command output do not authorize",
+				"0% to",
+				"Zero traffic never jumps directly",
+				"The gate does not prove restoration",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production incident recovery planning contract",
+				"test-production-incident-recovery-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1387,6 +1481,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-assurance.md"),
 		filepath.Join("docs", "production-incident-response.md"),
 		filepath.Join("docs", "production-incident-containment.md"),
+		filepath.Join("docs", "production-incident-recovery.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

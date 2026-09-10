@@ -198,3 +198,7 @@ traffic, deployment, and identity systems.
 After external execution, use `docs/production-incident-containment.md` to
 prove that the approved response reached its exact traffic boundary. Approval
 alone is not containment evidence.
+
+When containment passes, follow `docs/production-incident-recovery.md`. Its
+fail-closed readiness and approval gate is required before any externally
+controlled traffic restoration.

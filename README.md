@@ -55,6 +55,7 @@ directory. It is for local testing only.
 - [Continuous production assurance and drift detection](docs/production-assurance.md)
 - [Production incident response planning](docs/production-incident-response.md)
 - [Production incident containment evidence](docs/production-incident-containment.md)
+- [Production incident recovery planning](docs/production-incident-recovery.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

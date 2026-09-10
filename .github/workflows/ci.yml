@@ -73,6 +73,9 @@ jobs:
       - name: Test production incident containment evidence contract
         shell: pwsh
         run: ./scripts/test-production-incident-containment-contract.ps1
+      - name: Test production incident recovery planning contract
+        shell: pwsh
+        run: ./scripts/test-production-incident-recovery-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

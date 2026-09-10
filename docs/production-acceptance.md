@@ -133,3 +133,8 @@ production change.
 After that approved response is executed externally, use
 `docs/production-incident-containment.md` to prove the exact 100, 75, or 0
 percent boundary with current, tamper-detecting evidence before recovery.
+
+Only after containment passes, use `docs/production-incident-recovery.md` to
+bind current remediation, re-acceptance, health evidence, and a separate
+recovery change to one bounded restoration target. Approval does not itself
+change traffic or prove recovery.

@@ -154,3 +154,8 @@ or traffic restoration.
 
 Attach the immutable containment file and gate output to the authoritative
 incident record. Preserve all failed attempts as audit evidence.
+
+After containment passes and remediation or re-acceptance is complete, follow
+`docs/production-incident-recovery.md`. Recovery requires a separate change,
+fresh healthy evidence, an exact target, and explicit approval; this
+containment artifact alone never authorizes restoration.
