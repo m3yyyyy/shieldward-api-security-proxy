@@ -191,3 +191,9 @@ the previous approved cohort through the authoritative controller. For a
 security, correctness, policy-drift, identity, or unknown-state failure, disable
 traffic first, confirm zero traffic, and invoke the approved removal procedure
 if necessary. Preserve all evidence and external audit records.
+
+After a successful 75 percent expansion completes its full observation window,
+continue with `docs/production-final-expansion.md`. That gate records the
+second-expansion evidence and requires a separately approved, exact increase
+from 75 to 100 percent. It does not itself change or prove enforcement of full
+traffic.

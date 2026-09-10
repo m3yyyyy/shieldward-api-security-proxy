@@ -58,6 +58,9 @@ jobs:
       - name: Test production second expansion contract
         shell: pwsh
         run: ./scripts/test-production-second-expansion-contract.ps1
+      - name: Test production final expansion contract
+        shell: pwsh
+        run: ./scripts/test-production-final-expansion-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

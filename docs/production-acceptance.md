@@ -108,3 +108,8 @@ After the progressive observation completes, use
 `docs/production-second-expansion.md`. It records tamper-detecting evidence and
 permits one separately approved step of at most 25 percentage points, with an
 absolute cap of 75 percent. Full traffic remains outside this gate.
+
+After the 75 percent observation completes, use
+`docs/production-final-expansion.md`. It records tamper-detecting evidence and
+requires a new exact approval for the final 75-to-100-percent step. The scripts
+remain read-only; only the authoritative external controller may change traffic.

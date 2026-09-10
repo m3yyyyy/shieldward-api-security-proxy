@@ -855,6 +855,7 @@ func TestProductionSecondExpansionContracts(t *testing.T) {
 			expected: []string{
 				"maximumTargetPercent",
 				"progressive evidence is stale",
+				"PostExpansionEvidence",
 				"CheckCluster",
 				"does not enforce or change traffic routing",
 			},
@@ -913,6 +914,106 @@ func TestProductionSecondExpansionContracts(t *testing.T) {
 	}
 }
 
+func TestProductionFinalExpansionContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-second-expansion-evidence.ps1"),
+			expected: []string{
+				"ValidateRange(4, 75)",
+				"second-expansion-observation",
+				"ValidationPurpose = 'PostExpansionEvidence'",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-second-expansion-evidence.ps1"),
+			expected: []string{
+				"second-expansion-observation",
+				"secondExpansionPlanApprovalDigest",
+				"expectedOutcome",
+				"CheckCluster",
+				"does not change or authorize traffic routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "new-production-final-expansion-plan.ps1"),
+			expected: []string{
+				"ValidateRange(76, 100)",
+				"Final expansion requires an observed 75% cohort",
+				"exact-full-traffic-target",
+				"APPROVE FINAL EXPANSION TO 100%",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-final-expansion-plan.ps1"),
+			expected: []string{
+				"currentPercent -ne 75",
+				"targetPercent -ne 100",
+				"second expansion evidence is stale",
+				"APPROVE FINAL EXPANSION TO 100%",
+				"does not enforce or change traffic routing",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-final-expansion-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvedAtUnixSeconds",
+				"approvalDigest",
+				"external change system remains authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-final-expansion-contract.ps1"),
+			expected: []string{
+				"unknownSecondExpansionRejected",
+				"failedSecondExpansionRejected",
+				"staleEvidenceRejected",
+				"nonFullTargetRejected",
+				"fullTrafficTamperingRejected",
+				"evidenceTamperingRejected",
+				"Production second-expansion evidence and final expansion planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-final-expansion.md"),
+			expected: []string{
+				"read-only",
+				"exact 75-to-100-percent",
+				"Missing or unknown signals",
+				"authoritative change system",
+				"previous 75 percent cohort",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production final expansion contract",
+				"test-production-final-expansion-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production final expansion artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production final expansion artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -948,6 +1049,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-canary-and-expansion.md"),
 		filepath.Join("docs", "production-progressive-expansion.md"),
 		filepath.Join("docs", "production-second-expansion.md"),
+		filepath.Join("docs", "production-final-expansion.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

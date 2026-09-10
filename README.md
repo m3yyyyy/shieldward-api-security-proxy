@@ -50,6 +50,7 @@ directory. It is for local testing only.
 - [Production canary evidence and first expansion gate](docs/production-canary-and-expansion.md)
 - [Production first-expansion evidence and progressive gate](docs/production-progressive-expansion.md)
 - [Production progressive evidence and second expansion gate](docs/production-second-expansion.md)
+- [Production second-expansion evidence and final expansion gate](docs/production-final-expansion.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

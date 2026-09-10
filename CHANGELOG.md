@@ -25,6 +25,8 @@ versioning.
   progressive step limited to 25 percentage points and 50 percent total traffic.
 - Tamper-detecting progressive expansion evidence and a separately approved
   second step limited to 25 percentage points and 75 percent total traffic.
+- Tamper-detecting 75 percent observation evidence and a separately approved,
+  exact final expansion from 75 to 100 percent with rollback to the prior cohort.
 
 ## [1.0.0] - 2026-09-09
 
