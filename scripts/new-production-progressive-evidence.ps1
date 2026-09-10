@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$ExpansionPlanPath = '.shieldward/production-expansion/expansion.json',
+    [string]$ProgressivePlanPath = '.shieldward/production-progressive/expansion.json',
+    [string]$ExpansionEvidencePath = '',
+    [string]$ExpansionPlanPath = '',
     [string]$CanaryEvidencePath = '',
     [string]$TrafficPlanPath = '',
     [string]$BaselineEvidencePath = '',
@@ -12,7 +14,7 @@ param(
     [string]$ExpectedProductionContext,
 
     [Parameter(Mandatory)]
-    [ValidateRange(2, 25)]
+    [ValidateRange(3, 50)]
     [int]$ObservedTrafficPercent,
 
     [Parameter(Mandatory)]
@@ -55,7 +57,7 @@ param(
     [ValidateSet('healthy', 'degraded', 'unknown')]
     [string]$OperationalStatus,
 
-    [string]$OutputDirectory = '.shieldward/production-expansion-evidence',
+    [string]$OutputDirectory = '.shieldward/production-progressive-evidence',
     [switch]$Force
 )
 
@@ -127,18 +129,20 @@ foreach ($reference in @(
     Assert-EvidenceReference -Value $reference.Value -Description $reference.Description
 }
 
-$resolvedExpansionPlanPath = Resolve-LocalStatePath -Path $ExpansionPlanPath -Description 'ExpansionPlanPath'
-if (-not (Test-Path -LiteralPath $resolvedExpansionPlanPath -PathType Leaf)) {
-    throw "Approved production expansion plan is missing: $resolvedExpansionPlanPath"
+$resolvedPlanPath = Resolve-LocalStatePath -Path $ProgressivePlanPath -Description 'ProgressivePlanPath'
+if (-not (Test-Path -LiteralPath $resolvedPlanPath -PathType Leaf)) {
+    throw "Approved production progressive expansion plan is missing: $resolvedPlanPath"
 }
 $planValidationArguments = @{
-    PlanPath = $resolvedExpansionPlanPath
+    PlanPath = $resolvedPlanPath
     ExpectedProductionContext = $ExpectedProductionContext
     RequiredState = 'Approved'
     ValidationPurpose = 'PostExpansionEvidence'
     CheckCluster = $true
 }
 foreach ($optionalPath in @(
+    [pscustomobject]@{ Name = 'ExpansionEvidencePath'; Value = $ExpansionEvidencePath }
+    [pscustomobject]@{ Name = 'ExpansionPlanPath'; Value = $ExpansionPlanPath }
     [pscustomobject]@{ Name = 'CanaryEvidencePath'; Value = $CanaryEvidencePath }
     [pscustomobject]@{ Name = 'TrafficPlanPath'; Value = $TrafficPlanPath }
     [pscustomobject]@{ Name = 'BaselineEvidencePath'; Value = $BaselineEvidencePath }
@@ -149,14 +153,14 @@ foreach ($optionalPath in @(
         $planValidationArguments[$optionalPath.Name] = $optionalPath.Value
     }
 }
-& (Join-Path $PSScriptRoot 'test-production-expansion-plan.ps1') @planValidationArguments | Out-Null
-$expansionPlan = Get-Content -Raw -LiteralPath $resolvedExpansionPlanPath | ConvertFrom-Json
-if ($ObservedTrafficPercent -ne [int]$expansionPlan.traffic.targetPercent) {
-    throw "ObservedTrafficPercent must exactly match the approved $($expansionPlan.traffic.targetPercent)% target."
+& (Join-Path $PSScriptRoot 'test-production-progressive-plan.ps1') @planValidationArguments | Out-Null
+$plan = Get-Content -Raw -LiteralPath $resolvedPlanPath | ConvertFrom-Json
+if ($ObservedTrafficPercent -ne [int]$plan.traffic.targetPercent) {
+    throw "ObservedTrafficPercent must exactly match the approved $($plan.traffic.targetPercent)% target."
 }
 
 try {
-    $approvedAt = [DateTimeOffset]$expansionPlan.approval.approvedAtUtc
+    $approvedAt = [DateTimeOffset]$plan.approval.approvedAtUtc
     $startedAt = [DateTimeOffset]$ObservationStartedAtUtc
     $endedAt = [DateTimeOffset]$ObservationEndedAtUtc
 }
@@ -169,13 +173,13 @@ if (
     $startedAt -lt $approvedAt -or
     $endedAt -lt $startedAt -or
     $endedAt -gt $collectedAt -or
-    $observedDuration.TotalMinutes -lt [int]$expansionPlan.observationMinutes
+    $observedDuration.TotalMinutes -lt [int]$plan.observationMinutes
 ) {
     throw 'The observation must begin after approval, end no later than collection, and cover the full approved window.'
 }
 
-$expansionPlanHash = (Get-FileHash -LiteralPath $resolvedExpansionPlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
-$expansionPlanRelativePath = [System.IO.Path]::GetRelativePath($repoRoot, $resolvedExpansionPlanPath).Replace('\', '/')
+$planHash = (Get-FileHash -LiteralPath $resolvedPlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$planRelativePath = [System.IO.Path]::GetRelativePath($repoRoot, $resolvedPlanPath).Replace('\', '/')
 $hasFailure = (
     $ErrorBudgetStatus -eq 'exhausted' -or
     $AlertStatus -eq 'firing' -or
@@ -193,22 +197,22 @@ $hasUnknown = @(
 $outcome = if ($hasFailure) { 'failed' } elseif ($hasUnknown) { 'unknown' } else { 'passed' }
 
 $integrity = [ordered]@{
-    expansionPlanSha256 = $expansionPlanHash
-    expansionPlanIntegrityDigest = [string]$expansionPlan.integrityDigest
-    expansionPlanApprovalDigest = [string]$expansionPlan.approval.approvalDigest
+    progressivePlanSha256 = $planHash
+    progressivePlanIntegrityDigest = [string]$plan.integrityDigest
+    progressivePlanApprovalDigest = [string]$plan.approval.approvalDigest
     collectedAtUtc = $collectedAt.ToUniversalTime().ToString('o')
     productionContext = $ExpectedProductionContext
-    releaseVersion = [string]$expansionPlan.candidate.version
-    sourceTag = [string]$expansionPlan.candidate.sourceTag
-    controlPlaneImage = [string]$expansionPlan.candidate.controlPlaneImage
-    edgeImage = [string]$expansionPlan.candidate.edgeImage
-    policyVersion = [string]$expansionPlan.candidate.policyVersion
-    trafficController = [string]$expansionPlan.traffic.controller
-    previousTrafficPercent = [int]$expansionPlan.traffic.currentPercent
+    releaseVersion = [string]$plan.candidate.version
+    sourceTag = [string]$plan.candidate.sourceTag
+    controlPlaneImage = [string]$plan.candidate.controlPlaneImage
+    edgeImage = [string]$plan.candidate.edgeImage
+    policyVersion = [string]$plan.candidate.policyVersion
+    trafficController = [string]$plan.traffic.controller
+    previousTrafficPercent = [int]$plan.traffic.currentPercent
     observedTrafficPercent = $ObservedTrafficPercent
     observationStartedAtUtc = $startedAt.ToUniversalTime().ToString('o')
     observationEndedAtUtc = $endedAt.ToUniversalTime().ToString('o')
-    requiredObservationMinutes = [int]$expansionPlan.observationMinutes
+    requiredObservationMinutes = [int]$plan.observationMinutes
     errorBudgetStatus = $ErrorBudgetStatus
     alertStatus = $AlertStatus
     functionalStatus = $FunctionalStatus
@@ -224,35 +228,35 @@ $integrityDigest = Get-Sha256Text -Text ($integrity | ConvertTo-Json -Depth 4 -C
 $evidence = [ordered]@{
     schemaVersion = 1
     environment = 'production'
-    evidenceType = 'first-expansion-observation'
+    evidenceType = 'progressive-expansion-observation'
     outcome = $outcome
     collectedAtUtc = $collectedAt.ToString('o')
     productionContext = $ExpectedProductionContext
     namespace = 'shieldward'
-    expansionPlan = [ordered]@{
-        relativePath = $expansionPlanRelativePath
-        sha256 = $expansionPlanHash
-        integrityDigest = [string]$expansionPlan.integrityDigest
-        approvalDigest = [string]$expansionPlan.approval.approvalDigest
-        changeId = [string]$expansionPlan.changeId
+    progressivePlan = [ordered]@{
+        relativePath = $planRelativePath
+        sha256 = $planHash
+        integrityDigest = [string]$plan.integrityDigest
+        approvalDigest = [string]$plan.approval.approvalDigest
+        changeId = [string]$plan.changeId
     }
     candidate = [ordered]@{
-        version = [string]$expansionPlan.candidate.version
-        sourceTag = [string]$expansionPlan.candidate.sourceTag
-        controlPlaneImage = [string]$expansionPlan.candidate.controlPlaneImage
-        edgeImage = [string]$expansionPlan.candidate.edgeImage
-        policyVersion = [string]$expansionPlan.candidate.policyVersion
+        version = [string]$plan.candidate.version
+        sourceTag = [string]$plan.candidate.sourceTag
+        controlPlaneImage = [string]$plan.candidate.controlPlaneImage
+        edgeImage = [string]$plan.candidate.edgeImage
+        policyVersion = [string]$plan.candidate.policyVersion
     }
     traffic = [ordered]@{
-        controller = [string]$expansionPlan.traffic.controller
+        controller = [string]$plan.traffic.controller
         externallyEnforced = $true
     }
     observation = [ordered]@{
-        previousTrafficPercent = [int]$expansionPlan.traffic.currentPercent
+        previousTrafficPercent = [int]$plan.traffic.currentPercent
         observedTrafficPercent = $ObservedTrafficPercent
         startedAtUtc = $startedAt.ToUniversalTime().ToString('o')
         endedAtUtc = $endedAt.ToUniversalTime().ToString('o')
-        requiredMinutes = [int]$expansionPlan.observationMinutes
+        requiredMinutes = [int]$plan.observationMinutes
         observedMinutes = [int][Math]::Floor($observedDuration.TotalMinutes)
     }
     signals = [ordered]@{
@@ -272,10 +276,11 @@ $evidence = [ordered]@{
         trafficControllerExternallyEnforced = $true
     }
     rollback = [ordered]@{
-        mode = [string]$expansionPlan.rollback.mode
-        targetState = [string]$expansionPlan.rollback.targetState
-        authority = [string]$expansionPlan.rollback.authority
-        procedureReference = [string]$expansionPlan.rollback.procedureReference
+        mode = [string]$plan.rollback.mode
+        targetPercent = [int]$plan.rollback.targetPercent
+        emergencyTargetPercent = [int]$plan.rollback.emergencyTargetPercent
+        authority = [string]$plan.rollback.authority
+        procedureReference = [string]$plan.rollback.procedureReference
     }
     integrityDigest = $integrityDigest
 }
@@ -283,7 +288,7 @@ $evidence = [ordered]@{
 $resolvedOutputDirectory = Resolve-LocalStatePath -Path $OutputDirectory -Description 'OutputDirectory'
 $evidencePath = Join-Path $resolvedOutputDirectory 'evidence.json'
 if ((Test-Path -LiteralPath $evidencePath) -and -not $Force) {
-    throw "Production first-expansion evidence already exists: $evidencePath. Use -Force only to replace this generated record."
+    throw "Production progressive evidence already exists: $evidencePath. Use -Force only to replace this generated record."
 }
 New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
 [System.IO.File]::WriteAllText(
@@ -292,7 +297,7 @@ New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
     [System.Text.UTF8Encoding]::new($false)
 )
 
-Write-Host "Production first-expansion evidence recorded at $evidencePath with outcome '$outcome'."
+Write-Host "Production progressive expansion evidence recorded at $evidencePath with outcome '$outcome'."
 Write-Host 'No cluster or traffic changes were made.'
 if ($outcome -ne 'passed') {
     Write-Warning 'Further expansion is blocked. Restore the previous cohort or disable traffic through the authoritative controller.'

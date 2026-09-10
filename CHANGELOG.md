@@ -23,6 +23,8 @@ versioning.
   states and a separately approved first expansion capped at 25 percent.
 - Tamper-detecting first-expansion evidence and a separately approved
   progressive step limited to 25 percentage points and 50 percent total traffic.
+- Tamper-detecting progressive expansion evidence and a separately approved
+  second step limited to 25 percentage points and 75 percent total traffic.
 
 ## [1.0.0] - 2026-09-09
 

@@ -164,7 +164,7 @@ $observedDuration = $endedAt.ToUniversalTime() - $startedAt.ToUniversalTime()
 if (
     $startedAt -lt $approvedAt -or
     $endedAt -lt $startedAt -or
-    $endedAt -gt $collectedAt.AddMinutes(5) -or
+    $endedAt -gt $collectedAt -or
     $observedDuration.TotalMinutes -lt [int]$trafficPlan.observationMinutes
 ) {
     throw 'The observation must begin after approval, end no later than the collection time, and cover the full approved window.'
