@@ -1098,6 +1098,90 @@ func TestProductionSteadyStateContracts(t *testing.T) {
 	}
 }
 
+func TestContinuousProductionAssuranceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-evidence.ps1"),
+			expected: []string{
+				"ValidateRange(100, 100)",
+				"ongoing-production-assurance",
+				"ValidationPurpose = 'OngoingAssurance'",
+				"reaccept-before-continuing",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-evidence.ps1"),
+			expected: []string{
+				"ongoing-production-assurance",
+				"observedTrafficPercent -ne 100",
+				"materialDriftDetected",
+				"expectedOutcome",
+				"does not change production or replace external monitoring",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"reacceptanceRequired",
+				"stale or its next review is overdue",
+				"does not authorize drift or change production state",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-contract.ps1"),
+			expected: []string{
+				"unknownSignalRejected",
+				"materialDriftRejected",
+				"failedHealthRejected",
+				"certificateRiskRejected",
+				"incompleteEvidenceRejected",
+				"staleEvidenceRejected",
+				"decisionMismatchRejected",
+				"evidenceTamperingRejected",
+				"acceptedBaselineTamperingRejected",
+				"Continuous production assurance and drift detection contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance.md"),
+			expected: []string{
+				"read-only",
+				"exactly 100 percent traffic",
+				"Unknown, missing, failed, stale, overdue, or tampered evidence",
+				"re-acceptance through the applicable production rollout gate",
+				"approved external operations system",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test continuous production assurance contract",
+				"test-production-assurance-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read continuous production assurance artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("continuous production assurance artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1135,6 +1219,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-second-expansion.md"),
 		filepath.Join("docs", "production-final-expansion.md"),
 		filepath.Join("docs", "production-steady-state.md"),
+		filepath.Join("docs", "production-assurance.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

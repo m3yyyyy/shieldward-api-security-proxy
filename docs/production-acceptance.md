@@ -119,3 +119,8 @@ After the complete 100 percent observation window, use
 controller actually enforced full traffic and applies a fail-closed
 steady-state acceptance gate. An approved expansion plan alone is not
 enforcement evidence.
+
+After steady-state acceptance, use `docs/production-assurance.md` for periodic
+read-only health and drift evidence. A historical acceptance artifact does not
+prove ongoing health, and material image, policy, configuration, identity, or
+routing drift requires re-acceptance.

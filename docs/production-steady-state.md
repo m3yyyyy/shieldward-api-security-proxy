@@ -169,3 +169,7 @@ the prior 75 percent cohort through the authoritative controller. For a
 security, correctness, policy-drift, identity, or unknown-state failure,
 disable traffic first, confirm zero traffic, and invoke the approved removal
 procedure if necessary. Preserve the evidence and all external audit records.
+
+Continue with `docs/production-assurance.md` after acceptance. Its periodic
+snapshots bind back to this evidence while requiring current health, traffic,
+certificate, and drift signals; this historical artifact is not ongoing proof.

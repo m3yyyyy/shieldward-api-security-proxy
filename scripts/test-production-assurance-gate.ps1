@@ -1,6 +1,10 @@
 [CmdletBinding()]
 param(
-    [string]$EvidencePath = '.shieldward/production-full-traffic-evidence/evidence.json',
+    [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
+    [string]$EvidencePath,
+
+    [string]$AcceptedFullTrafficEvidencePath = '',
     [string]$FinalExpansionPlanPath = '',
     [string]$SecondExpansionEvidencePath = '',
     [string]$SecondExpansionPlanPath = '',
@@ -20,9 +24,6 @@ param(
 
     [ValidateRange(5, 10080)]
     [int]$MaxEvidenceAgeMinutes = 1440,
-
-    [ValidateSet('InitialAcceptance', 'OngoingAssurance')]
-    [string]$ValidationPurpose = 'InitialAcceptance',
 
     [switch]$CheckCluster
 )
@@ -52,6 +53,7 @@ $validationArguments = @{
     CheckCluster = $CheckCluster
 }
 foreach ($optionalPath in @(
+    [pscustomobject]@{ Name = 'AcceptedFullTrafficEvidencePath'; Value = $AcceptedFullTrafficEvidencePath }
     [pscustomobject]@{ Name = 'FinalExpansionPlanPath'; Value = $FinalExpansionPlanPath }
     [pscustomobject]@{ Name = 'SecondExpansionEvidencePath'; Value = $SecondExpansionEvidencePath }
     [pscustomobject]@{ Name = 'SecondExpansionPlanPath'; Value = $SecondExpansionPlanPath }
@@ -69,36 +71,43 @@ foreach ($optionalPath in @(
         $validationArguments[$optionalPath.Name] = $optionalPath.Value
     }
 }
-& (Join-Path $PSScriptRoot 'test-production-full-traffic-evidence.ps1') @validationArguments | Out-Null
+& (Join-Path $PSScriptRoot 'test-production-assurance-evidence.ps1') @validationArguments | Out-Null
 $evidence = Get-Content -Raw -LiteralPath $resolvedEvidencePath | ConvertFrom-Json
 
 if ([string]$evidence.outcome -ne 'passed') {
-    throw "Production steady-state acceptance requires passed full-traffic evidence; outcome is '$($evidence.outcome)'."
+    throw "Production assurance requires passed evidence; outcome is '$($evidence.outcome)'."
 }
 if (
-    [int]$evidence.observation.observedTrafficPercent -ne 100 -or
+    [bool]$evidence.decision.reacceptanceRequired -ne $false -or
+    [string]$evidence.decision.requiredAction -ne 'continue-monitoring'
+) {
+    throw 'Production assurance is blocked until the recorded re-acceptance or response action is complete.'
+}
+if (
+    [int]$evidence.traffic.observedTrafficPercent -ne 100 -or
     [bool]$evidence.traffic.externallyEnforced -ne $true -or
     [bool]$evidence.checks.trafficControllerExternallyEnforced -ne $true
 ) {
-    throw 'Production steady-state acceptance requires externally enforced, observed 100 percent traffic.'
+    throw 'Production assurance requires externally enforced, observed 100 percent traffic.'
 }
 
-$collectedAt = [DateTimeOffset]$evidence.collectedAtUtc
-$endedAt = [DateTimeOffset]$evidence.observation.endedAtUtc
+try {
+    $collectedAt = [DateTimeOffset]$evidence.collectedAtUtc
+    $nextReviewDueAt = [DateTimeOffset]$evidence.schedule.nextReviewDueAtUtc
+}
+catch {
+    throw 'Production assurance evidence contains an invalid freshness boundary.'
+}
 $now = [DateTimeOffset]::UtcNow
-$collectedAge = $now - $collectedAt.ToUniversalTime()
-$observationAge = $now - $endedAt.ToUniversalTime()
+$evidenceAge = $now - $collectedAt.ToUniversalTime()
 if (
-    $ValidationPurpose -eq 'InitialAcceptance' -and
-    (
-        $collectedAge.TotalMinutes -lt -5 -or
-        $collectedAge.TotalMinutes -gt $MaxEvidenceAgeMinutes -or
-        $observationAge.TotalMinutes -lt -5 -or
-        $observationAge.TotalMinutes -gt $MaxEvidenceAgeMinutes
-    )
+    $evidenceAge.TotalMinutes -lt -5 -or
+    $evidenceAge.TotalMinutes -gt $MaxEvidenceAgeMinutes -or
+    $now -gt $nextReviewDueAt.AddMinutes(5)
 ) {
-    throw "Production full-traffic evidence is outside the accepted age of $MaxEvidenceAgeMinutes minutes."
+    throw 'Production assurance evidence is stale or its next review is overdue.'
 }
 
-Write-Host "Production steady-state acceptance passed for release $($evidence.candidate.version) at 100% traffic."
-Write-Host 'This gate verifies recorded evidence; it does not enforce traffic or replace the authoritative change system.'
+Write-Host "Production assurance gate passed for release $($evidence.candidate.version) at 100% traffic."
+Write-Host "Next review is due at $($nextReviewDueAt.ToUniversalTime().ToString('o'))."
+Write-Host 'This gate is read-only and does not authorize drift or change production state.'

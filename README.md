@@ -52,6 +52,7 @@ directory. It is for local testing only.
 - [Production progressive evidence and second expansion gate](docs/production-second-expansion.md)
 - [Production second-expansion evidence and final expansion gate](docs/production-final-expansion.md)
 - [Production full-traffic evidence and steady-state acceptance](docs/production-steady-state.md)
+- [Continuous production assurance and drift detection](docs/production-assurance.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

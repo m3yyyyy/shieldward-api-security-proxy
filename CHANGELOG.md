@@ -30,6 +30,9 @@ versioning.
 - Tamper-detecting full-traffic observation evidence and a fail-closed
   steady-state acceptance gate that requires externally enforced 100 percent
   traffic, complete healthy signals, and an explicit rollback path.
+- Freshness-bound continuous production assurance evidence with explicit
+  image, policy, configuration, identity, certificate, and routing drift
+  states plus mandatory re-acceptance for material drift.
 
 ## [1.0.0] - 2026-09-09
 

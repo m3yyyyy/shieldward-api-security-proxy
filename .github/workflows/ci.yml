@@ -64,6 +64,9 @@ jobs:
       - name: Test production steady-state acceptance contract
         shell: pwsh
         run: ./scripts/test-production-steady-state-contract.ps1
+      - name: Test continuous production assurance contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})
