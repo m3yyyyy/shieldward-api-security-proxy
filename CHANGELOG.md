@@ -36,6 +36,9 @@ versioning.
 - Tamper-evident production incident response plans that bind failed or unknown
   assurance evidence to an explicit action, recorded authority, bounded
   deadline, and approval without mutating production.
+- Freshness-bound production incident containment evidence that proves exact
+  hold-at-100, rollback-to-75, or disable-to-zero response enforcement before
+  recovery can begin.
 
 ## [1.0.0] - 2026-09-09
 

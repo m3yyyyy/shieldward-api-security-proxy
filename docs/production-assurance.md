@@ -194,3 +194,7 @@ Use `docs/production-incident-response.md` to convert a current failed or
 unknown snapshot into a tamper-evident, explicitly approved response plan. Its
 scripts remain read-only; execution stays with the authoritative incident,
 traffic, deployment, and identity systems.
+
+After external execution, use `docs/production-incident-containment.md` to
+prove that the approved response reached its exact traffic boundary. Approval
+alone is not containment evidence.

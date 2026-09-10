@@ -143,6 +143,10 @@ boundaries:
 Preserve command output, platform audit events, traffic confirmation, workload
 digests, and incident timestamps outside the repository.
 
+Then follow `docs/production-incident-containment.md` to bind those records to
+the approved plan and prove the exact response boundary. Do not begin recovery
+from approval or command output alone.
+
 ## 8. Recover and close
 
 After containment or remediation, collect a new assurance snapshot. Material

@@ -129,3 +129,7 @@ When assurance fails or becomes unknown, preserve the snapshot and follow
 `docs/production-incident-response.md`. The response plan binds one explicit
 action and deadline to the recorded incident authority but never executes a
 production change.
+
+After that approved response is executed externally, use
+`docs/production-incident-containment.md` to prove the exact 100, 75, or 0
+percent boundary with current, tamper-detecting evidence before recovery.

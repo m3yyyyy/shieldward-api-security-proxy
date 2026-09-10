@@ -1263,6 +1263,90 @@ func TestProductionIncidentResponseContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentContainmentContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-containment-evidence.ps1"),
+			expected: []string{
+				"incident-response-containment",
+				"deadlineMet",
+				"trafficMatchesPlan",
+				"escalate-and-verify-containment",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-containment-evidence.ps1"),
+			expected: []string{
+				"RequiredState Approved",
+				"exact 0, 75, or 100 percent traffic boundary",
+				"expectedOutcome",
+				"integrity digest is invalid",
+				"read-only and does not enforce or change production traffic",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-containment-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"containment is not proven",
+				"does not authorize recovery or change production state",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-containment-contract.ps1"),
+			expected: []string{
+				"pendingPlanRejected",
+				"holdEvidencePath",
+				"rollbackEvidencePath",
+				"disableEvidencePath",
+				"mismatchedTrafficPath",
+				"failedVerificationPath",
+				"unknownVerificationPath",
+				"Unknown traffic enforcement was incorrectly recorded as externally enforced",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production incident containment evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-containment.md"),
+			expected: []string{
+				"100, 75, or 0 percent traffic boundary",
+				"A plan proves approval",
+				"late, mismatched, or tampered evidence fails closed",
+				"never continue from the failed artifact",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production incident containment evidence contract",
+				"test-production-incident-containment-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident containment artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident containment artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1302,6 +1386,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-steady-state.md"),
 		filepath.Join("docs", "production-assurance.md"),
 		filepath.Join("docs", "production-incident-response.md"),
+		filepath.Join("docs", "production-incident-containment.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

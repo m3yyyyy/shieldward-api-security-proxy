@@ -85,6 +85,8 @@ After acceptance, retain ongoing health and drift evidence through
 Failed or unknown assurance proceeds through the explicit, tamper-evident
 response plan in `docs/production-incident-response.md`; repository scripts do
 not execute the production action.
+After external execution, require the exact, freshness-bound response evidence
+in `docs/production-incident-containment.md` before recovery or restoration.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

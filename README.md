@@ -54,6 +54,7 @@ directory. It is for local testing only.
 - [Production full-traffic evidence and steady-state acceptance](docs/production-steady-state.md)
 - [Continuous production assurance and drift detection](docs/production-assurance.md)
 - [Production incident response planning](docs/production-incident-response.md)
+- [Production incident containment evidence](docs/production-incident-containment.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)
