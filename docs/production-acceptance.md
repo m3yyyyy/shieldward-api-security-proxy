@@ -124,3 +124,8 @@ After steady-state acceptance, use `docs/production-assurance.md` for periodic
 read-only health and drift evidence. A historical acceptance artifact does not
 prove ongoing health, and material image, policy, configuration, identity, or
 routing drift requires re-acceptance.
+
+When assurance fails or becomes unknown, preserve the snapshot and follow
+`docs/production-incident-response.md`. The response plan binds one explicit
+action and deadline to the recorded incident authority but never executes a
+production change.

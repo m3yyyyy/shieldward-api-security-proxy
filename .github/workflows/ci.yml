@@ -67,6 +67,9 @@ jobs:
       - name: Test continuous production assurance contract
         shell: pwsh
         run: ./scripts/test-production-assurance-contract.ps1
+      - name: Test production incident response planning contract
+        shell: pwsh
+        run: ./scripts/test-production-incident-response-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

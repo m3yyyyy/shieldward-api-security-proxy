@@ -33,6 +33,9 @@ versioning.
 - Freshness-bound continuous production assurance evidence with explicit
   image, policy, configuration, identity, certificate, and routing drift
   states plus mandatory re-acceptance for material drift.
+- Tamper-evident production incident response plans that bind failed or unknown
+  assurance evidence to an explicit action, recorded authority, bounded
+  deadline, and approval without mutating production.
 
 ## [1.0.0] - 2026-09-09
 

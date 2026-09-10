@@ -1182,6 +1182,87 @@ func TestContinuousProductionAssuranceContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentResponseContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-response-plan.ps1"),
+			expected: []string{
+				"production-incident-response",
+				"failed or unknown assurance evidence",
+				"rollback-to-75-and-investigate",
+				"explicit-response-action",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-response-plan.ps1"),
+			expected: []string{
+				"RequiredState",
+				"pending incident response plan has exceeded its response deadline",
+				"externalIncidentSystemRequired",
+				"integrity digest is invalid",
+				"read-only and does not authorize or execute production changes",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-incident-response-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement must exactly match",
+				"approvalDigest",
+				"external incident and change systems remain authoritative",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-response-contract.ps1"),
+			expected: []string{
+				"passedEvidenceRejected",
+				"actionMismatchRejected",
+				"staleEvidenceRejected",
+				"planTamperingRejected",
+				"evidenceTamperingRejected",
+				"incorrectApprovalRejected",
+				"Production incident response planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-response.md"),
+			expected: []string{
+				"failed` or `unknown",
+				"authoritative incident record",
+				"Use the assurance snapshot's `decision.requiredAction`",
+				"externally enforced zero traffic",
+				"never executes a production change",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production incident response planning contract",
+				"test-production-incident-response-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident response artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident response artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1220,6 +1301,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-final-expansion.md"),
 		filepath.Join("docs", "production-steady-state.md"),
 		filepath.Join("docs", "production-assurance.md"),
+		filepath.Join("docs", "production-incident-response.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

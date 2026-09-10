@@ -82,6 +82,9 @@ approval gate, then close the rollout with the externally enforced full-traffic
 evidence and fail-closed acceptance in `docs/production-steady-state.md`.
 After acceptance, retain ongoing health and drift evidence through
 `docs/production-assurance.md`; material drift requires re-acceptance.
+Failed or unknown assurance proceeds through the explicit, tamper-evident
+response plan in `docs/production-incident-response.md`; repository scripts do
+not execute the production action.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

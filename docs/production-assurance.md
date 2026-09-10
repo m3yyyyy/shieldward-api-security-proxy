@@ -189,3 +189,8 @@ snapshot overdue; it must never be treated as continuing evidence.
   confirm zero traffic, and follow the approved removal procedure if needed.
 
 Preserve failed snapshots. They are audit evidence, not files to overwrite.
+
+Use `docs/production-incident-response.md` to convert a current failed or
+unknown snapshot into a tamper-evident, explicitly approved response plan. Its
+scripts remain read-only; execution stays with the authoritative incident,
+traffic, deployment, and identity systems.
