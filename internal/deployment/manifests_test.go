@@ -1014,6 +1014,90 @@ func TestProductionFinalExpansionContracts(t *testing.T) {
 	}
 }
 
+func TestProductionSteadyStateContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-full-traffic-evidence.ps1"),
+			expected: []string{
+				"ValidateRange(100, 100)",
+				"full-traffic-observation",
+				"ValidationPurpose = 'PostExpansionEvidence'",
+				"CapacityStatus",
+				"SecurityStatus",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-full-traffic-evidence.ps1"),
+			expected: []string{
+				"full-traffic-observation",
+				"observedTrafficPercent -ne 100",
+				"expectedOutcome",
+				"trafficControllerExternallyEnforced",
+				"authoritative external record",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-steady-state-acceptance.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"outcome -ne 'passed'",
+				"observedTrafficPercent -ne 100",
+				"does not enforce traffic",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-steady-state-contract.ps1"),
+			expected: []string{
+				"unknownFullTrafficRejected",
+				"failedFullTrafficRejected",
+				"incompleteEvidenceRejected",
+				"staleEvidenceRejected",
+				"nonFullTrafficRejected",
+				"externalEnforcementRequired",
+				"evidenceTamperingRejected",
+				"planTamperingRejected",
+				"Production full-traffic evidence and steady-state acceptance contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-steady-state.md"),
+			expected: []string{
+				"read-only",
+				"exactly 100 percent traffic",
+				"Missing, unknown, failed, stale, tampered, or incomplete evidence",
+				"approved final expansion plan proves authorization only",
+				"prior 75 percent cohort",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production steady-state acceptance contract",
+				"test-production-steady-state-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production steady-state artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production steady-state artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1050,6 +1134,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-progressive-expansion.md"),
 		filepath.Join("docs", "production-second-expansion.md"),
 		filepath.Join("docs", "production-final-expansion.md"),
+		filepath.Join("docs", "production-steady-state.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

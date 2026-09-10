@@ -199,3 +199,8 @@ the previous 75 percent cohort through the authoritative controller. For a
 security, correctness, policy-drift, identity, or unknown-state failure,
 disable traffic first, confirm zero traffic, and invoke the approved removal
 procedure if necessary. Preserve all evidence and external audit records.
+
+After 100 percent traffic has been externally enforced and the complete
+observation window has elapsed, continue with
+`docs/production-steady-state.md`. The approved plan is authorization, not
+proof of enforcement or steady-state health.

@@ -27,6 +27,9 @@ versioning.
   second step limited to 25 percentage points and 75 percent total traffic.
 - Tamper-detecting 75 percent observation evidence and a separately approved,
   exact final expansion from 75 to 100 percent with rollback to the prior cohort.
+- Tamper-detecting full-traffic observation evidence and a fail-closed
+  steady-state acceptance gate that requires externally enforced 100 percent
+  traffic, complete healthy signals, and an explicit rollback path.
 
 ## [1.0.0] - 2026-09-09
 

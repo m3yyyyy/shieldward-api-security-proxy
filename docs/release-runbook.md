@@ -78,7 +78,8 @@ for the next evidence-bound step, capped at 50 percent total traffic, followed
 by `docs/production-second-expansion.md` for the separately approved step capped
 at 75 percent total traffic. After its full observation window, use
 `docs/production-final-expansion.md` for the separate, exact 75-to-100-percent
-approval gate.
+approval gate, then close the rollout with the externally enforced full-traffic
+evidence and fail-closed acceptance in `docs/production-steady-state.md`.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

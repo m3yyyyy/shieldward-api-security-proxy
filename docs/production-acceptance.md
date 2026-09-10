@@ -113,3 +113,9 @@ After the 75 percent observation completes, use
 `docs/production-final-expansion.md`. It records tamper-detecting evidence and
 requires a new exact approval for the final 75-to-100-percent step. The scripts
 remain read-only; only the authoritative external controller may change traffic.
+
+After the complete 100 percent observation window, use
+`docs/production-steady-state.md`. It records evidence that the external
+controller actually enforced full traffic and applies a fail-closed
+steady-state acceptance gate. An approved expansion plan alone is not
+enforcement evidence.

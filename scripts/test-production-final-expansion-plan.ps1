@@ -20,6 +20,9 @@ param(
     [ValidateSet('Pending', 'Approved', 'Either')]
     [string]$RequiredState = 'Approved',
 
+    [ValidateSet('PreExpansion', 'PostExpansionEvidence')]
+    [string]$ValidationPurpose = 'PreExpansion',
+
     [switch]$CheckCluster
 )
 
@@ -198,10 +201,13 @@ $evidenceAge = [DateTimeOffset]::UtcNow - $collectedAt.ToUniversalTime()
 $observationEndedAt = [DateTimeOffset]$evidence.observation.endedAtUtc
 $observationAge = [DateTimeOffset]::UtcNow - $observationEndedAt.ToUniversalTime()
 if (
-    $evidenceAge.TotalMinutes -lt -5 -or
-    $evidenceAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes -or
-    $observationAge.TotalMinutes -lt -5 -or
-    $observationAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes
+    $ValidationPurpose -eq 'PreExpansion' -and
+    (
+        $evidenceAge.TotalMinutes -lt -5 -or
+        $evidenceAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes -or
+        $observationAge.TotalMinutes -lt -5 -or
+        $observationAge.TotalMinutes -gt [int]$plan.maxEvidenceAgeMinutes
+    )
 ) {
     throw 'The production second expansion evidence is stale. Final expansion is blocked.'
 }
@@ -243,6 +249,9 @@ if ((Get-Sha256Text -Text ($integrity | ConvertTo-Json -Depth 4 -Compress)) -ne 
 
 $state = [string]$plan.state
 $approvalStatus = [string]$plan.approval.status
+if ($ValidationPurpose -eq 'PostExpansionEvidence' -and $RequiredState -ne 'Approved') {
+    throw 'Post-expansion evidence requires an approved final expansion plan.'
+}
 if ($RequiredState -eq 'Pending' -and ($state -ne 'pending' -or $approvalStatus -ne 'pending')) {
     throw "The production final expansion plan is '$state'; expected pending."
 }
