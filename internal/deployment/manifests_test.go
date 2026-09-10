@@ -1441,6 +1441,93 @@ func TestProductionIncidentRecoveryContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-evidence.ps1"),
+			expected: []string{
+				"incident-recovery-execution",
+				"trafficMatchesPlan",
+				"recoveryGateReference",
+				"restore-contained-boundary-and-escalate",
+				"fullTrafficRestored",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-evidence.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"approved production incident recovery plan no longer matches",
+				"recoveryGateReference",
+				"recovery execution rollback evidence is inconsistent",
+				"recovery evidence integrity digest is invalid",
+				"does not authorize further traffic expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"recovery execution is not proven",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-evidence-contract.ps1"),
+			expected: []string{
+				"zeroEvidencePath",
+				"rollbackEvidencePath",
+				"holdEvidencePath",
+				"pendingPlanRejected",
+				"blockedPlanRejected",
+				"mismatchedTrafficPath",
+				"failedWorkloadPath",
+				"unknownTrafficPath",
+				"rollbackNotReadyPath",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production incident recovery execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-evidence.md"),
+			expected: []string{
+				"Approval proves intent",
+				"A zero-traffic recovery remains a 1-10%",
+				"A green execution gate proves only the recorded target",
+				"target execution as incident closure",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production incident recovery execution evidence contract",
+				"test-production-incident-recovery-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
@@ -1482,6 +1569,7 @@ func TestProductionReleaseDocumentsExist(t *testing.T) {
 		filepath.Join("docs", "production-incident-response.md"),
 		filepath.Join("docs", "production-incident-containment.md"),
 		filepath.Join("docs", "production-incident-recovery.md"),
+		filepath.Join("docs", "production-incident-recovery-evidence.md"),
 	} {
 		t.Run(relativePath, func(t *testing.T) {
 			contents, err := os.ReadFile(filepath.Join(repositoryRoot, relativePath))

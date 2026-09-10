@@ -42,6 +42,9 @@ versioning.
 - Tamper-evident production incident recovery plans with separate change
   approval, fail-closed readiness checks, bounded zero-to-canary restoration,
   exact 75-to-100 recovery, and rollback to the contained boundary.
+- Freshness-bound production incident recovery execution evidence that proves
+  the exact externally enforced target, healthy verification, rollback
+  readiness, and completed incident/change records without closing incidents.
 
 ## [1.0.0] - 2026-09-09
 

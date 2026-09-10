@@ -90,6 +90,9 @@ in `docs/production-incident-containment.md` before recovery or restoration.
 Then use `docs/production-incident-recovery.md` for a separate, tamper-evident
 recovery change and bounded restoration approval. Repository scripts never
 apply the traffic change.
+After external execution, require
+`docs/production-incident-recovery-evidence.md` to prove the exact target,
+healthy signals, and rollback readiness before any later step or closure.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

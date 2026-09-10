@@ -192,3 +192,7 @@ boundary and generate a new plan.
 The gate does not prove restoration. Preserve the external execution event,
 observed traffic, workload health, rollback readiness, and incident update as
 separate post-execution evidence before declaring recovery complete.
+
+Use `docs/production-incident-recovery-evidence.md` to create and validate that
+post-execution record. Do not expand traffic, resume assurance, or close the
+incident from this approved plan alone.

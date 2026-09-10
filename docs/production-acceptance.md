@@ -138,3 +138,8 @@ Only after containment passes, use `docs/production-incident-recovery.md` to
 bind current remediation, re-acceptance, health evidence, and a separate
 recovery change to one bounded restoration target. Approval does not itself
 change traffic or prove recovery.
+
+After the owning platform executes that target, use
+`docs/production-incident-recovery-evidence.md` to prove exact external
+enforcement, healthy signals, and rollback readiness. Target execution is not
+incident closure or authorization for another traffic step.

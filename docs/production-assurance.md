@@ -202,3 +202,7 @@ alone is not containment evidence.
 When containment passes, follow `docs/production-incident-recovery.md`. Its
 fail-closed readiness and approval gate is required before any externally
 controlled traffic restoration.
+
+After execution, require `docs/production-incident-recovery-evidence.md` before
+resuming assurance or considering another bounded recovery step. An approved
+recovery plan alone is not execution evidence.
