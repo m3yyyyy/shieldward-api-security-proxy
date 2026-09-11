@@ -48,6 +48,9 @@ versioning.
 - Tamper-evident recovery canary observation and a separately approved
   re-expansion capped at 25 percent, with rollback to the proven canary or
   emergency disable-to-zero and no automatic production mutation.
+- Freshness-bound recovery expansion execution evidence that proves the exact
+  externally enforced target, healthy error-budget and operational signals,
+  ready rollback, and updated incident/change records.
 
 ## [1.0.0] - 2026-09-09
 

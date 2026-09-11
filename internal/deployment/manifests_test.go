@@ -1620,6 +1620,90 @@ func TestProductionIncidentRecoveryExpansionContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryExpansionEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-expansion-evidence.ps1"),
+			expected: []string{
+				"incident-recovery-expansion-execution",
+				"trafficMatchesPlan",
+				"expansionGateReference",
+				"observe-recovery-expansion-before-next-step",
+				"restore-recovery-canary-and-escalate",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-evidence.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"approved production recovery expansion plan no longer matches",
+				"expansionGateReference",
+				"recovery expansion rollback evidence is inconsistent",
+				"recovery expansion evidence integrity digest is invalid",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"recovery expansion execution is not proven",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-evidence-contract.ps1"),
+			expected: []string{
+				"pendingPlanRejected",
+				"mismatchedTrafficPath",
+				"failedWorkloadPath",
+				"unknownTrafficPath",
+				"exhaustedBudgetPath",
+				"rollbackNotReadyPath",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production recovery expansion execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-expansion-evidence.md"),
+			expected: []string{
+				"approved plan proves intent",
+				"observed traffic must later equal",
+				"Unknown enforcement must never be represented as successful",
+				"Another expansion requires a separate observation",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery expansion execution evidence contract",
+				"test-production-incident-recovery-expansion-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery expansion evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery expansion evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

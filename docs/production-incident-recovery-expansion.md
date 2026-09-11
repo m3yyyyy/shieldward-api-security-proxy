@@ -177,4 +177,6 @@ the plan, approval, gate output, controller audit record, monitoring evidence,
 and incident/change updates.
 
 After execution, collect a new immutable artifact before any later expansion
-or incident closure. An approved plan is intent, not execution evidence.
+or incident closure by following
+`docs/production-incident-recovery-expansion-evidence.md`.
+An approved plan is intent, not execution evidence.

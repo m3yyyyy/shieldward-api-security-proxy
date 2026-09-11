@@ -82,6 +82,9 @@ jobs:
       - name: Test production recovery canary observation and expansion contract
         shell: pwsh
         run: ./scripts/test-production-incident-recovery-expansion-contract.ps1
+      - name: Test production recovery expansion execution evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-incident-recovery-expansion-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

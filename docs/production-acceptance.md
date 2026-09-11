@@ -148,3 +148,8 @@ If that evidence proves a 1-10 percent recovery canary, use
 `docs/production-incident-recovery-expansion.md` to record its full observation
 and require a separate exact approval for one expansion capped at 25 percent.
 The repository gate remains read-only and cannot prove that expansion occurred.
+
+After external execution, require
+`docs/production-incident-recovery-expansion-evidence.md` to prove the exact
+target, current healthy signals, rollback readiness, and completed records.
+That artifact does not authorize another expansion or close the incident.

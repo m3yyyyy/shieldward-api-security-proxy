@@ -211,3 +211,8 @@ When that evidence proves a 1-10 percent recovery canary, follow
 `docs/production-incident-recovery-expansion.md`. It binds a complete healthy
 canary observation to one separately approved expansion capped at 25 percent;
 it does not route traffic or close the incident.
+
+After the external controller executes that approved target, require
+`docs/production-incident-recovery-expansion-evidence.md`. Its freshness-bound
+gate proves only the exact recorded percentage and preserves rollback; another
+increase and incident closure remain separate decisions.
