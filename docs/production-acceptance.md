@@ -143,3 +143,8 @@ After the owning platform executes that target, use
 `docs/production-incident-recovery-evidence.md` to prove exact external
 enforcement, healthy signals, and rollback readiness. Target execution is not
 incident closure or authorization for another traffic step.
+
+If that evidence proves a 1-10 percent recovery canary, use
+`docs/production-incident-recovery-expansion.md` to record its full observation
+and require a separate exact approval for one expansion capped at 25 percent.
+The repository gate remains read-only and cannot prove that expansion occurred.

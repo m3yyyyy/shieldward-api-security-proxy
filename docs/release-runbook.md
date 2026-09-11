@@ -93,6 +93,9 @@ apply the traffic change.
 After external execution, require
 `docs/production-incident-recovery-evidence.md` to prove the exact target,
 healthy signals, and rollback readiness before any later step or closure.
+For a passed 1-10 percent recovery canary, continue with
+`docs/production-incident-recovery-expansion.md` to bind the completed
+observation to a separate exact expansion approval capped at 25 percent.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

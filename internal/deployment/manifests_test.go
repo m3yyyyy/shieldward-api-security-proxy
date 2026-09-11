@@ -1528,6 +1528,98 @@ func TestProductionIncidentRecoveryEvidenceContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryExpansionContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-expansion-plan.ps1"),
+			expected: []string{
+				"incident-recovery-canary-expansion",
+				"Recovery re-expansion requires an externally enforced 1-10 percent recovery canary",
+				"maximum-twenty-five-percent-traffic",
+				"await-independent-recovery-expansion-approval",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-plan.ps1"),
+			expected: []string{
+				"RequiredState",
+				"passed immutable recovery execution evidence no longer matches",
+				"Failed or unknown recovery canary observation must remain blocked",
+				"recovery expansion plan integrity digest is invalid",
+				"does not change or prove expanded production traffic",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-incident-recovery-expansion-plan.ps1"),
+			expected: []string{
+				"Only a passed production recovery expansion plan may be approved",
+				"approvalDigest",
+				"external incident and change systems remain authoritative",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-gate.ps1"),
+			expected: []string{
+				"MaxPlanAgeMinutes",
+				"stale, future-dated, or expired",
+				"hold the recovery canary and preserve evidence",
+				"does not change traffic, prove expansion, or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-expansion-contract.ps1"),
+			expected: []string{
+				"fullTrafficEvidencePath",
+				"oversized-target",
+				"mismatched-observation",
+				"degradedPlanPath",
+				"unknownPlanPath",
+				"pendingChangePlanPath",
+				"short-observation",
+				"planTamperingRejected",
+				"evidenceTamperingRejected",
+				"Production recovery canary observation and expansion planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-expansion.md"),
+			expected: []string{
+				"1-10 percent recovery canary",
+				"no higher than 25 percent",
+				"healthy observation does not itself authorize",
+				"An approved plan is intent, not execution evidence",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery canary observation and expansion contract",
+				"test-production-incident-recovery-expansion-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery expansion artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery expansion artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

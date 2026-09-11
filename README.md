@@ -57,6 +57,7 @@ directory. It is for local testing only.
 - [Production incident containment evidence](docs/production-incident-containment.md)
 - [Production incident recovery planning](docs/production-incident-recovery.md)
 - [Production incident recovery execution evidence](docs/production-incident-recovery-evidence.md)
+- [Production recovery canary observation and expansion gate](docs/production-incident-recovery-expansion.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

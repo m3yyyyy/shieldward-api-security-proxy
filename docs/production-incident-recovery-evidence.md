@@ -171,3 +171,9 @@ A green execution gate proves only the recorded target at the recorded time.
 Incident closure requires a separate review of sustained health, rollback
 availability, follow-up actions, and retained audit evidence. Do not represent
 target execution as incident closure.
+
+For a passed 1-10 percent recovery canary, continue with
+`docs/production-incident-recovery-expansion.md`. That procedure requires a
+complete healthy observation and a new exact approval before any external
+increase, capped at 25 percent. A 100 percent recovery instead returns to
+continuous production assurance.

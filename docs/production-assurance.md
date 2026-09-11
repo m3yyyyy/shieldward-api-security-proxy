@@ -206,3 +206,8 @@ controlled traffic restoration.
 After execution, require `docs/production-incident-recovery-evidence.md` before
 resuming assurance or considering another bounded recovery step. An approved
 recovery plan alone is not execution evidence.
+
+When that evidence proves a 1-10 percent recovery canary, follow
+`docs/production-incident-recovery-expansion.md`. It binds a complete healthy
+canary observation to one separately approved expansion capped at 25 percent;
+it does not route traffic or close the incident.

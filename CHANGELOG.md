@@ -45,6 +45,9 @@ versioning.
 - Freshness-bound production incident recovery execution evidence that proves
   the exact externally enforced target, healthy verification, rollback
   readiness, and completed incident/change records without closing incidents.
+- Tamper-evident recovery canary observation and a separately approved
+  re-expansion capped at 25 percent, with rollback to the proven canary or
+  emergency disable-to-zero and no automatic production mutation.
 
 ## [1.0.0] - 2026-09-09
 
