@@ -1963,6 +1963,90 @@ func TestProductionIncidentRecoverySecondExpansionContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoverySecondExpansionEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-second-expansion-evidence.ps1"),
+			expected: []string{
+				"incident-recovery-second-expansion-execution",
+				"trafficMatchesPlan",
+				"secondExpansionGateReference",
+				"observe-recovery-second-expansion-before-next-step",
+				"restore-previous-recovery-boundary-and-escalate",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-second-expansion-evidence.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"approved production recovery second expansion plan no longer matches",
+				"secondExpansionGateReference",
+				"recovery second expansion rollback evidence is inconsistent",
+				"recovery second expansion evidence integrity digest is invalid",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-second-expansion-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"second expansion execution is not proven",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-second-expansion-evidence-contract.ps1"),
+			expected: []string{
+				"pendingPlanRejected",
+				"mismatchedTrafficPath",
+				"failedWorkloadPath",
+				"unknownTrafficPath",
+				"exhaustedBudgetPath",
+				"rollbackNotReadyPath",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production recovery second expansion execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-second-expansion-evidence.md"),
+			expected: []string{
+				"approved plan proves intent",
+				"observed traffic must later equal",
+				"Unknown enforcement must never be represented as successful",
+				"does not authorize another increase",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery second expansion execution evidence contract",
+				"test-production-incident-recovery-second-expansion-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery second expansion evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery second expansion evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

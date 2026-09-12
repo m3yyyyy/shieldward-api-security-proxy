@@ -112,6 +112,10 @@ For passed progressive evidence at 3-50 percent, continue with
 `docs/production-incident-recovery-second-expansion.md` to observe the proven
 boundary and require a separate exact approval for a step of at most 25
 percentage points, capped at 75 percent total traffic.
+After external execution, require
+`docs/production-incident-recovery-second-expansion-evidence.md` to prove exact
+enforcement, healthy signals, rollback readiness, and completed records before
+any later recovery step or closure.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

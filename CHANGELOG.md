@@ -60,6 +60,9 @@ versioning.
 - A tamper-evident second recovery expansion gate that observes the proven
   progressive boundary, limits the next step to 25 percentage points and 75
   percent total traffic, requires separate exact approval, and preserves rollback.
+- Freshness-bound second recovery expansion execution evidence that proves the
+  exact externally enforced target, healthy verification, rollback to the
+  progressive boundary, and completed incident/change records.
 
 ## [1.0.0] - 2026-09-09
 

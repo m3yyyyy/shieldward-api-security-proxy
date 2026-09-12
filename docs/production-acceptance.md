@@ -170,3 +170,9 @@ If that evidence proves a healthy 3-50 percent boundary, use
 boundary and require a separate approval for one increase of at most 25
 percentage points, capped at 75 percent total traffic. The gate remains
 read-only and preserves rollback to the proven boundary or emergency disable.
+
+After the owning controller executes that approved target, require
+`docs/production-incident-recovery-second-expansion-evidence.md`. Its
+freshness-bound gate proves only the exact externally enforced percentage,
+healthy signals, ready rollback, and completed records. It does not authorize
+another increase or close the incident.

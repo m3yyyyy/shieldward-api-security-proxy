@@ -94,6 +94,9 @@ jobs:
       - name: Test production recovery second expansion observation and planning contract
         shell: pwsh
         run: ./scripts/test-production-incident-recovery-second-expansion-contract.ps1
+      - name: Test production recovery second expansion execution evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-incident-recovery-second-expansion-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

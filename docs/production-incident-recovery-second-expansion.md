@@ -181,7 +181,8 @@ security, correctness, identity, policy, certificate, or unknown-state risk.
 Preserve the plan, approval, gate output, controller audit record, monitoring
 evidence, and incident/change updates.
 
-After execution, collect a new immutable execution-evidence artifact before
-any later expansion or incident closure. Do not reuse the progressive evidence
-as proof of this second-expansion action. An approved plan is intent, not
-execution evidence.
+After execution, follow
+`docs/production-incident-recovery-second-expansion-evidence.md` and collect a
+new immutable execution-evidence artifact before any later expansion or
+incident closure. Do not reuse the progressive evidence as proof of this
+second-expansion action. An approved plan is intent, not execution evidence.

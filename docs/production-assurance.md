@@ -233,3 +233,9 @@ For passed progressive evidence at 3-50 percent, follow
 binds a complete healthy observation to one separately approved increase of no
 more than 25 percentage points and no more than 75 percent total traffic.
 Approval remains intent, not execution evidence or incident closure.
+
+After external execution, require
+`docs/production-incident-recovery-second-expansion-evidence.md`. Its
+freshness-bound gate proves only the exact recorded target and preserves
+rollback to the progressive boundary; any later recovery step and incident
+closure remain separate decisions.
