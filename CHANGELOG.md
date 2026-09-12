@@ -51,6 +51,9 @@ versioning.
 - Freshness-bound recovery expansion execution evidence that proves the exact
   externally enforced target, healthy error-budget and operational signals,
   ready rollback, and updated incident/change records.
+- A tamper-evident progressive recovery gate that observes the proven expansion
+  boundary, limits the next step to 25 percentage points and 50 percent total
+  traffic, requires a separate exact approval, and preserves rollback.
 
 ## [1.0.0] - 2026-09-09
 

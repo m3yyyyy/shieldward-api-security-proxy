@@ -153,3 +153,9 @@ After external execution, require
 `docs/production-incident-recovery-expansion-evidence.md` to prove the exact
 target, current healthy signals, rollback readiness, and completed records.
 That artifact does not authorize another expansion or close the incident.
+
+If that evidence proves a healthy 2-25 percent boundary, use
+`docs/production-incident-recovery-progressive.md` to record a complete
+observation and require a separate exact approval. The next increase is limited
+to 25 percentage points and 50 percent total traffic, with rollback to the
+proven boundary and emergency disable-to-zero.

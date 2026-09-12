@@ -175,3 +175,7 @@ A green execution gate proves only the recorded target at the recorded time.
 Another expansion requires a separate observation, plan, approval, and
 execution-evidence cycle. Incident closure requires its own sustained-health
 review and retained audit evidence.
+
+For a passed 2-25 percent artifact, begin that separate decision with
+`docs/production-incident-recovery-progressive.md`. Its capped plan remains
+read-only and preserves this artifact as the immutable prior boundary.
