@@ -180,3 +180,6 @@ review and retained audit evidence.
 For passed evidence, begin another bounded observation before proposing any
 later recovery step. Preserve this artifact as the immutable prior boundary;
 do not treat it as approval for a further increase.
+
+Follow `docs/production-incident-recovery-second-expansion.md` to bind that
+observation to a separate exact approval for one step capped at 75 percent.

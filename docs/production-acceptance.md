@@ -164,3 +164,9 @@ After that approved step is executed externally, require
 `docs/production-incident-recovery-progressive-evidence.md`. It proves the exact
 target, current healthy signals, rollback readiness, and completed records.
 The artifact does not authorize another increase or close the incident.
+
+If that evidence proves a healthy 3-50 percent boundary, use
+`docs/production-incident-recovery-second-expansion.md` to observe the exact
+boundary and require a separate approval for one increase of at most 25
+percentage points, capped at 75 percent total traffic. The gate remains
+read-only and preserves rollback to the proven boundary or emergency disable.
