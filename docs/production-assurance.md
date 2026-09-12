@@ -222,3 +222,8 @@ For passed expansion evidence at 2-25 percent, follow
 healthy observation to one separately approved increase of no more than 25
 percentage points and no more than 50 percent total traffic. Approval is not
 execution evidence or incident closure.
+
+After external execution, require
+`docs/production-incident-recovery-progressive-evidence.md`. Its freshness-bound
+gate proves only the exact recorded target and preserves rollback to the prior
+boundary; further recovery and incident closure remain separate decisions.

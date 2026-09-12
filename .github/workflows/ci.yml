@@ -88,6 +88,9 @@ jobs:
       - name: Test production recovery progressive observation and expansion contract
         shell: pwsh
         run: ./scripts/test-production-incident-recovery-progressive-contract.ps1
+      - name: Test production recovery progressive expansion execution evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-incident-recovery-progressive-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

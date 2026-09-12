@@ -179,5 +179,7 @@ the plan, approval, gate output, controller audit record, monitoring evidence,
 and incident/change updates.
 
 After execution, collect a new immutable artifact before any later expansion
-or incident closure. Do not reuse the prior expansion evidence as proof of this
-progressive action. An approved plan is intent, not execution evidence.
+or incident closure by following
+`docs/production-incident-recovery-progressive-evidence.md`. Do not reuse the
+prior expansion evidence as proof of this progressive action.
+An approved plan is intent, not execution evidence.

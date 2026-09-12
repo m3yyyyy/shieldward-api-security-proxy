@@ -159,3 +159,8 @@ If that evidence proves a healthy 2-25 percent boundary, use
 observation and require a separate exact approval. The next increase is limited
 to 25 percentage points and 50 percent total traffic, with rollback to the
 proven boundary and emergency disable-to-zero.
+
+After that approved step is executed externally, require
+`docs/production-incident-recovery-progressive-evidence.md`. It proves the exact
+target, current healthy signals, rollback readiness, and completed records.
+The artifact does not authorize another increase or close the incident.

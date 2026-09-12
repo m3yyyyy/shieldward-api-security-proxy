@@ -1796,6 +1796,90 @@ func TestProductionIncidentRecoveryProgressiveContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryProgressiveEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-progressive-evidence.ps1"),
+			expected: []string{
+				"incident-recovery-progressive-execution",
+				"trafficMatchesPlan",
+				"progressiveGateReference",
+				"observe-recovery-progressive-expansion-before-next-step",
+				"restore-previous-recovery-boundary-and-escalate",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-progressive-evidence.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"approved production recovery progressive plan no longer matches",
+				"progressiveGateReference",
+				"recovery progressive expansion rollback evidence is inconsistent",
+				"recovery progressive evidence integrity digest is invalid",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-progressive-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"progressive expansion execution is not proven",
+				"does not authorize further expansion or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-progressive-evidence-contract.ps1"),
+			expected: []string{
+				"pendingPlanRejected",
+				"mismatchedTrafficPath",
+				"failedWorkloadPath",
+				"unknownTrafficPath",
+				"exhaustedBudgetPath",
+				"rollbackNotReadyPath",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production recovery progressive expansion execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-progressive-evidence.md"),
+			expected: []string{
+				"approved plan proves intent",
+				"observed traffic must later equal",
+				"Unknown enforcement must never be represented as successful",
+				"does not authorize another increase",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery progressive expansion execution evidence contract",
+				"test-production-incident-recovery-progressive-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery progressive evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery progressive evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
