@@ -116,6 +116,11 @@ After external execution, require
 `docs/production-incident-recovery-second-expansion-evidence.md` to prove exact
 enforcement, healthy signals, rollback readiness, and completed records before
 any later recovery step or closure.
+For passed second-expansion evidence at exactly 75 percent, continue with
+`docs/production-incident-recovery-final-expansion.md` to observe the proven
+boundary and require a separate exact approval for 100 percent traffic. Keep
+rollback to 75 percent and emergency disable-to-zero available; the repository
+gate remains read-only and does not prove execution or close the incident.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

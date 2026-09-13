@@ -239,3 +239,9 @@ After external execution, require
 freshness-bound gate proves only the exact recorded target and preserves
 rollback to the progressive boundary; any later recovery step and incident
 closure remain separate decisions.
+
+For passed second-expansion evidence at exactly 75 percent, follow
+`docs/production-incident-recovery-final-expansion.md`. Its read-only gate
+binds a complete healthy observation to separate exact approval for 100
+percent traffic while preserving rollback to 75 percent or emergency disable.
+Approval remains intent, not execution evidence or incident closure.

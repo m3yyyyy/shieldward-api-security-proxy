@@ -168,6 +168,11 @@ records, a passed outcome, and current evidence.
 - Unknown evidence holds the safest confirmed boundary while missing evidence
   is collected. Unknown enforcement must never be represented as successful.
 
+When passed evidence proves the exact healthy 75 percent boundary, continue
+with `docs/production-incident-recovery-final-expansion.md`. That procedure
+requires a fresh observation and separate exact approval before 100 percent
+traffic; this evidence alone does not authorize the increase.
+
 Attach the immutable artifact and gate output to the incident and recovery
 second expansion change records.
 

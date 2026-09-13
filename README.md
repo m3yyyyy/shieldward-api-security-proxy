@@ -63,6 +63,7 @@ directory. It is for local testing only.
 - [Production recovery progressive expansion execution evidence](docs/production-incident-recovery-progressive-evidence.md)
 - [Production recovery second expansion observation and gate](docs/production-incident-recovery-second-expansion.md)
 - [Production recovery second expansion execution evidence](docs/production-incident-recovery-second-expansion-evidence.md)
+- [Production recovery final expansion observation and gate](docs/production-incident-recovery-final-expansion.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

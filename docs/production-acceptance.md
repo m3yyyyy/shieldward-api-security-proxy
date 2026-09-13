@@ -176,3 +176,9 @@ After the owning controller executes that approved target, require
 freshness-bound gate proves only the exact externally enforced percentage,
 healthy signals, ready rollback, and completed records. It does not authorize
 another increase or close the incident.
+
+If that evidence proves the exact healthy 75 percent boundary, use
+`docs/production-incident-recovery-final-expansion.md` to record the complete
+observation and require a separate exact approval for 100 percent traffic. The
+read-only gate preserves rollback to 75 percent or emergency disable-to-zero;
+approval remains intent and does not prove execution or close the incident.
