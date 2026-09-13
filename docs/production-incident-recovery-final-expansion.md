@@ -183,6 +183,7 @@ evidence, and incident/change updates.
 
 After execution, follow
 `docs/production-incident-recovery-final-expansion-evidence.md` and collect a
-new immutable execution-evidence artifact before any later expansion or
-incident closure. Do not reuse the second-expansion evidence as proof of this
-final-expansion action. An approved plan is intent, not execution evidence.
+new immutable execution-evidence artifact before production re-acceptance or
+incident-closure review. Do not reuse the second-expansion evidence as proof
+of this final-expansion action. An approved plan is intent, not execution
+evidence, and reaching 100 percent does not automatically close the incident.

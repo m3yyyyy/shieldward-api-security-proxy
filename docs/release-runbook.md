@@ -121,6 +121,11 @@ For passed second-expansion evidence at exactly 75 percent, continue with
 boundary and require a separate exact approval for 100 percent traffic. Keep
 rollback to 75 percent and emergency disable-to-zero available; the repository
 gate remains read-only and does not prove execution or close the incident.
+After external execution, require
+`docs/production-incident-recovery-final-expansion-evidence.md` to prove exact
+100 percent enforcement, healthy signals, rollback readiness, and completed
+records. Only passed current evidence may begin independent production
+re-acceptance and incident-closure review; it does not itself close the incident.
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

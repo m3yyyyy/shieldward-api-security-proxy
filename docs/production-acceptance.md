@@ -182,3 +182,10 @@ If that evidence proves the exact healthy 75 percent boundary, use
 observation and require a separate exact approval for 100 percent traffic. The
 read-only gate preserves rollback to 75 percent or emergency disable-to-zero;
 approval remains intent and does not prove execution or close the incident.
+
+After the owning controller executes that exact target, require
+`docs/production-incident-recovery-final-expansion-evidence.md`. Its
+freshness-bound gate proves externally enforced 100 percent traffic, healthy
+signals, ready rollback to 75 percent, and completed records. Only then may an
+independent production re-acceptance and incident-closure review begin; the
+evidence does not itself close the incident.

@@ -66,6 +66,9 @@ versioning.
 - A tamper-evident final recovery expansion gate that requires a healthy
   observation at the proven 75 percent boundary, separate exact approval for
   100 percent traffic, rollback to 75 percent, and no automatic mutation.
+- Freshness-bound final recovery expansion execution evidence that proves
+  externally enforced 100 percent traffic, healthy verification, rollback to
+  75 percent, and completed records without automatically closing the incident.
 
 ## [1.0.0] - 2026-09-09
 

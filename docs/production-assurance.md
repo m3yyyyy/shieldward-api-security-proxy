@@ -245,3 +245,10 @@ For passed second-expansion evidence at exactly 75 percent, follow
 binds a complete healthy observation to separate exact approval for 100
 percent traffic while preserving rollback to 75 percent or emergency disable.
 Approval remains intent, not execution evidence or incident closure.
+
+After external execution, require
+`docs/production-incident-recovery-final-expansion-evidence.md`. Its
+freshness-bound gate proves the exact externally enforced 100 percent target,
+healthy verification, ready rollback to 75 percent, and completed records.
+The result permits independent re-acceptance and closure review to begin but
+does not itself authorize incident closure.
