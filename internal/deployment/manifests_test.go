@@ -2215,6 +2215,97 @@ func TestProductionIncidentRecoveryFinalExpansionEvidenceContracts(t *testing.T)
 	}
 }
 
+func TestProductionIncidentRecoveryClosureContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-closure-plan.ps1"),
+			expected: []string{
+				"incident-recovery-closure",
+				"currentPercent -ne 100",
+				"trafficMutationPercentagePoints = 0",
+				"ReacceptanceStatus",
+				"rollbackTargetPercent",
+				"APPROVE RECOVERY INCIDENT CLOSURE",
+				"No cluster or traffic changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-plan.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"requiredHoldPercent -ne 100",
+				"rollback.targetPercent -ne 75",
+				"observation.reacceptance",
+				"externalIncidentSystemRequired",
+				"does not change traffic or close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-incident-recovery-closure-plan.ps1"),
+			expected: []string{
+				"RequiredState = 'Pending'",
+				"ApprovalStatement must exactly match",
+				"close the recovery incident through the authoritative system after independent review",
+				"this script does not close the incident",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-gate.ps1"),
+			expected: []string{
+				"MaxPlanAgeMinutes",
+				"observation.reacceptance -ne 'passed'",
+				"trafficMutationPercentagePoints -ne 0",
+				"rollback.targetPercent -ne 75",
+				"This gate is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-contract.ps1"),
+			expected: []string{
+				"failed-reacceptance",
+				"pending-change",
+				"planTamperingRejected",
+				"evidenceTamperingRejected",
+				"Production recovery incident closure observation and planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-closure.md"),
+			expected: []string{
+				"holds that boundary",
+				"independent production re-acceptance",
+				"rollback-to-75 procedure ready",
+				"does not close anything or change traffic",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery incident closure observation and planning contract",
+				"test-production-incident-recovery-closure-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery closure artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery closure artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

@@ -69,6 +69,10 @@ versioning.
 - Freshness-bound final recovery expansion execution evidence that proves
   externally enforced 100 percent traffic, healthy verification, rollback to
   75 percent, and completed records without automatically closing the incident.
+- A tamper-evident recovery incident-closure gate that holds proven 100 percent
+  traffic without mutation, requires sustained health and independent
+  re-acceptance, preserves rollback to 75 percent, and authorizes only a
+  separately approved external closure action.
 
 ## [1.0.0] - 2026-09-09
 

@@ -183,10 +183,12 @@ recorded time. Incident closure requires independent production re-acceptance,
 a sustained-health review, completed external incident/change approvals, and
 retained audit evidence.
 
-For passed evidence, follow `docs/production-acceptance.md`, then retain the
-required assurance evidence from `docs/production-assurance.md`. Keep rollback
-to 75 percent or emergency disable-to-zero available until the independent
-review authorizes closure.
+For passed evidence, follow
+`docs/production-incident-recovery-closure.md`. That gate binds the sustained
+100 percent observation, independent production re-acceptance, separate closure
+change, and exact approval without changing traffic or closing the incident.
+Keep rollback to 75 percent or emergency disable-to-zero available until the
+authoritative incident system records closure.
 
 Preserve this artifact as execution evidence only; never represent it as an
 automatic incident-closure decision.

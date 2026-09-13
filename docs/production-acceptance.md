@@ -189,3 +189,11 @@ freshness-bound gate proves externally enforced 100 percent traffic, healthy
 signals, ready rollback to 75 percent, and completed records. Only then may an
 independent production re-acceptance and incident-closure review begin; the
 evidence does not itself close the incident.
+
+Complete that review with
+`docs/production-incident-recovery-closure.md`. Its tamper-evident, read-only
+gate holds the proven 100 percent boundary with zero traffic mutation, requires
+sustained healthy signals and passed independent re-acceptance, preserves
+rollback to 75 percent, and binds a separate exact closure approval. Passing
+the gate authorizes only the recorded action in the authoritative incident
+system; it does not close the incident itself.

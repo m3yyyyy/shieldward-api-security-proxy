@@ -252,3 +252,10 @@ freshness-bound gate proves the exact externally enforced 100 percent target,
 healthy verification, ready rollback to 75 percent, and completed records.
 The result permits independent re-acceptance and closure review to begin but
 does not itself authorize incident closure.
+
+For passed current evidence, follow
+`docs/production-incident-recovery-closure.md`. Its read-only closure gate
+requires a sustained healthy 100 percent observation, passed independent
+production re-acceptance, updated incident records, a separate approved closure
+change, and exact closure approval. It keeps rollback to 75 percent ready and
+does not mutate traffic or close the incident.

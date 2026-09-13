@@ -126,6 +126,13 @@ After external execution, require
 100 percent enforcement, healthy signals, rollback readiness, and completed
 records. Only passed current evidence may begin independent production
 re-acceptance and incident-closure review; it does not itself close the incident.
+Complete that separate review with
+`docs/production-incident-recovery-closure.md`. Its read-only gate holds traffic
+at 100 percent, requires sustained health and passed independent re-acceptance,
+preserves rollback to 75 percent, and binds an exact approval before an operator
+acts in the authoritative incident system. The repository never closes the
+incident automatically.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small
