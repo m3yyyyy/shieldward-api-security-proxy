@@ -204,3 +204,10 @@ gate proves the external incident is recorded as closed, the closure change is
 completed, post-closure monitoring is healthy, traffic remains exactly 100
 percent without mutation, and rollback evidence is retained. Approval or a
 green readiness gate alone is never closure evidence.
+
+After that closure evidence passes, follow
+`docs/production-post-incident-assurance.md`. Its freshness-bound artifact
+requires a completed assurance window, healthy error-budget and security
+evidence, a recorded retrospective with tracked corrective actions, exact
+100 percent traffic, retained rollback, and complete audit evidence. Unknown
+post-incident state remains incomplete and cannot resume normal assurance.

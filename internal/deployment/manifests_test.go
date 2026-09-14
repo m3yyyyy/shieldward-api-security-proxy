@@ -2390,6 +2390,88 @@ func TestProductionIncidentRecoveryClosureEvidenceContracts(t *testing.T) {
 	}
 }
 
+func TestProductionPostIncidentAssuranceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-post-incident-assurance-evidence.ps1"),
+			expected: []string{
+				"post-incident-assurance-and-retrospective",
+				"closureEvidenceIntegrityDigest",
+				"MinimumAssuranceWindowHours",
+				"trafficMatchesClosure",
+				"resume-continuous-production-assurance",
+				"No cluster, traffic, incident, change-record, or retrospective-system changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-post-incident-assurance-evidence.ps1"),
+			expected: []string{
+				"approved production recovery closure evidence no longer matches",
+				"authoritativeExternalSystemRequired",
+				"treat-assurance-as-incomplete-and-collect-evidence",
+				"post-incident assurance evidence integrity digest is invalid",
+				"does not change traffic, incidents, external records, or rollback state",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-post-incident-assurance-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"incident.status -ne 'closed'",
+				"rollback.targetPercent -ne 75",
+				"proves only recorded assurance and retrospective evidence",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-post-incident-assurance-contract.ps1"),
+			expected: []string{
+				"reopenedIncidentPath",
+				"unknownSecurityPath",
+				"incompleteRetrospectivePath",
+				"missingRollbackPath",
+				"evidenceTamperingRejected",
+				"closureEvidenceTamperingRejected",
+				"Production post-incident assurance and retrospective evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-post-incident-assurance.md"),
+			expected: []string{
+				"Unknown assurance or retrospective state is not success",
+				"repository intentionally provides no command",
+				"Never edit generated JSON",
+				"does not guarantee future health",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production post-incident assurance and retrospective evidence contract",
+				"test-production-post-incident-assurance-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production post-incident assurance artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production post-incident assurance artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

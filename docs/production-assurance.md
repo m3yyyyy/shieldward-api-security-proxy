@@ -266,3 +266,10 @@ freshness-bound artifact binds the approved closure plan to the authoritative
 closed incident, completed change, healthy post-closure monitoring, exact
 100 percent traffic, retained rollback, and complete audit evidence. Missing
 or unknown closure proof means the incident remains open.
+
+For passed closure evidence, follow
+`docs/production-post-incident-assurance.md`. Its immutable artifact binds that
+closure to a minimum post-incident observation window, healthy error-budget
+and security evidence, completed root-cause analysis and retrospective,
+tracked corrective actions, and retained rollback. Only a fresh passed gate
+resumes this continuous assurance loop; unknown evidence fails closed.

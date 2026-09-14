@@ -140,6 +140,13 @@ post-closure monitoring is healthy, traffic remains exactly 100 percent with
 zero mutation, rollback is retained, and audit evidence is complete. Missing
 or unknown proof means the incident remains open.
 
+After that evidence passes, follow
+`docs/production-post-incident-assurance.md`. Require its minimum assurance
+window, sustained health and error-budget evidence, completed security review,
+root-cause analysis and retrospective, tracked corrective actions, retained
+rollback, and complete audit record. The repository remains read-only; only a
+fresh passed gate resumes continuous production assurance.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

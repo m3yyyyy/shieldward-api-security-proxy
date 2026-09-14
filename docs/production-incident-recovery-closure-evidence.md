@@ -157,3 +157,9 @@ authorize a traffic change, or allow rollback evidence to be discarded.
 Attach the immutable artifact and gate output to the incident and closure
 change records. Continue production assurance and retain rollback evidence
 according to organizational retention policy.
+
+For passed closure evidence, continue with
+`docs/production-post-incident-assurance.md`. That separate freshness-bound
+gate proves the later health window, error-budget and security review,
+root-cause analysis, tracked corrective actions, completed retrospective, and
+retained rollback. Closure alone does not prove those post-incident outcomes.

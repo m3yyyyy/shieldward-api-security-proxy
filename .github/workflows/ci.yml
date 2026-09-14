@@ -109,6 +109,9 @@ jobs:
       - name: Test production recovery incident closure execution evidence contract
         shell: pwsh
         run: ./scripts/test-production-incident-recovery-closure-evidence-contract.ps1
+      - name: Test production post-incident assurance and retrospective evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-post-incident-assurance-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

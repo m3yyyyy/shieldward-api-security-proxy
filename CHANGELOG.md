@@ -77,6 +77,9 @@ versioning.
   authoritative external incident and change records completed, verifies
   healthy post-closure monitoring and retained rollback, and treats unknown
   closure state as an open incident.
+- Freshness-bound post-incident assurance and retrospective evidence that
+  binds authoritative closure to sustained health, error-budget and security
+  review, tracked corrective actions, retained rollback, and tamper detection.
 
 ## [1.0.0] - 2026-09-09
 
