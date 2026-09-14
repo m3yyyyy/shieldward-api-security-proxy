@@ -83,6 +83,9 @@ versioning.
 - A freshness- and schedule-bound continuous assurance resumption bridge that
   binds passed post-incident evidence to complete monitoring, no drift, exact
   full traffic, retained rollback, and the existing periodic assurance loop.
+- Scheduled production assurance continuity evidence that derives the first
+  review deadline from resumption, detects late or missed execution, and
+  requires current healthy, no-drift, full-traffic, and rollback proof.
 
 ## [1.0.0] - 2026-09-09
 

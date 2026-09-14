@@ -153,6 +153,12 @@ requires no drift, externally enforced 100 percent traffic, retained rollback,
 and a future next-review deadline before returning to the existing periodic
 assurance runbook.
 
+At that first deadline, require
+`docs/production-assurance-continuity.md`. It derives the expected time from
+the resumption artifact and fails closed for late, missed, unknown, unhealthy,
+drifted, non-full-traffic, or missing-rollback evidence. A passed result returns
+all later reviews to the ordinary assurance runbook.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

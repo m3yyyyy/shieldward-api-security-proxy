@@ -189,3 +189,8 @@ After a passed gate, follow `docs/production-assurance.md` for each scheduled
 snapshot. A missed or overdue review, a failed signal, confirmed drift, or an
 unknown state follows that runbook's fail-closed response. Attach the immutable
 resumption artifact and gate output to the incident and operational records.
+
+For the first recorded deadline, use
+`docs/production-assurance-continuity.md`. Its gate proves that the review
+actually completed on time with current healthy, no-drift, full-traffic, and
+rollback evidence before later snapshots continue under the ordinary loop.

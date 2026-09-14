@@ -279,3 +279,8 @@ Before returning from that post-incident sequence to this periodic loop, use
 bridge proves monitoring coverage, an active external scheduler, no material
 drift, exact 100 percent traffic, and retained rollback. A passed bridge hands
 control back to this runbook; it does not itself schedule future reviews.
+
+The first review after that bridge follows
+`docs/production-assurance-continuity.md`. It proves the recorded deadline was
+met and binds current health, drift, traffic, and rollback evidence to that
+review. After its gate passes, later snapshots use this runbook directly.

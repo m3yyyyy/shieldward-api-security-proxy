@@ -217,3 +217,8 @@ Once that post-incident gate passes, use
 schedule and complete signal coverage are active for the same candidate. Its
 read-only gate requires no drift, exact full traffic, retained rollback, and a
 current next-review deadline before normal continuous assurance resumes.
+
+Use `docs/production-assurance-continuity.md` at that first deadline. Its
+freshness-bound gate derives the expected time from resumption and requires an
+on-time completed review, healthy signals, no drift, exact 100 percent traffic,
+and retained rollback before ordinary periodic assurance continues.
