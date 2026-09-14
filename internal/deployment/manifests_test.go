@@ -2306,6 +2306,90 @@ func TestProductionIncidentRecoveryClosureContracts(t *testing.T) {
 	}
 }
 
+func TestProductionIncidentRecoveryClosureEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-incident-recovery-closure-evidence.ps1"),
+			expected: []string{
+				"incident-recovery-closure-execution",
+				"closurePlanApprovalDigest",
+				"IncidentClosureStatus",
+				"trafficMatchesPlan",
+				"begin-post-incident-assurance-and-retrospective",
+				"No cluster, traffic, change-record, or incident-system changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-evidence.ps1"),
+			expected: []string{
+				"RequiredState = 'Approved'",
+				"approved production recovery closure plan no longer matches",
+				"authoritativeExternalSystemRequired",
+				"treat-incident-as-open-and-collect-closure-evidence",
+				"incident-closure evidence integrity digest is invalid",
+				"does not close or reopen the incident, change traffic, or discard rollback",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"closure.incidentStatus -ne 'closed'",
+				"rollback.targetPercent -ne 75",
+				"proves only the recorded external closure",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-incident-recovery-closure-evidence-contract.ps1"),
+			expected: []string{
+				"pendingPlan",
+				"openIncidentPath",
+				"unknownClosurePath",
+				"missingRollbackPath",
+				"incompleteAuditPath",
+				"evidenceTamperingRejected",
+				"approvedPlanTamperingRejected",
+				"Production recovery incident closure execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-incident-recovery-closure-evidence.md"),
+			expected: []string{
+				"approved plan proves intent",
+				"Unknown closure state must be treated as an open incident",
+				"repository intentionally provides no command",
+				"does not perform closure",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production recovery incident closure execution evidence contract",
+				"test-production-incident-recovery-closure-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production incident recovery closure evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production incident recovery closure evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

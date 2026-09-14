@@ -133,6 +133,13 @@ preserves rollback to 75 percent, and binds an exact approval before an operator
 acts in the authoritative incident system. The repository never closes the
 incident automatically.
 
+After the operator records closure externally, require
+`docs/production-incident-recovery-closure-evidence.md`. Its freshness-bound
+gate must prove the incident is closed, the change record is completed,
+post-closure monitoring is healthy, traffic remains exactly 100 percent with
+zero mutation, rollback is retained, and audit evidence is complete. Missing
+or unknown proof means the incident remains open.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

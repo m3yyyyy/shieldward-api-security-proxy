@@ -180,3 +180,10 @@ identity, policy, certificate, or unknown-state risk. Preserve the final
 expansion evidence, closure plan, approval digest, gate output, independent
 re-acceptance, monitoring evidence, and incident/change records. Never treat
 the local plan or gate output as proof that the external incident was closed.
+
+After the authoritative external systems record closure, follow
+`docs/production-incident-recovery-closure-evidence.md`. Its collector and
+freshness gate bind the external closed incident, completed closure change,
+post-closure monitoring, exact traffic state, retained rollback, and audit
+references into immutable evidence. Chapter 48 approval is never execution
+proof.

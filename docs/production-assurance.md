@@ -259,3 +259,10 @@ requires a sustained healthy 100 percent observation, passed independent
 production re-acceptance, updated incident records, a separate approved closure
 change, and exact closure approval. It keeps rollback to 75 percent ready and
 does not mutate traffic or close the incident.
+
+After an authorized operator records closure externally, require
+`docs/production-incident-recovery-closure-evidence.md`. Its immutable,
+freshness-bound artifact binds the approved closure plan to the authoritative
+closed incident, completed change, healthy post-closure monitoring, exact
+100 percent traffic, retained rollback, and complete audit evidence. Missing
+or unknown closure proof means the incident remains open.

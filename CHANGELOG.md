@@ -73,6 +73,10 @@ versioning.
   traffic without mutation, requires sustained health and independent
   re-acceptance, preserves rollback to 75 percent, and authorizes only a
   separately approved external closure action.
+- Freshness-bound recovery incident-closure execution evidence that proves the
+  authoritative external incident and change records completed, verifies
+  healthy post-closure monitoring and retained rollback, and treats unknown
+  closure state as an open incident.
 
 ## [1.0.0] - 2026-09-09
 

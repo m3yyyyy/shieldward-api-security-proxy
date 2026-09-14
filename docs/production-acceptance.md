@@ -197,3 +197,10 @@ sustained healthy signals and passed independent re-acceptance, preserves
 rollback to 75 percent, and binds a separate exact closure approval. Passing
 the gate authorizes only the recorded action in the authoritative incident
 system; it does not close the incident itself.
+
+After the authorized external closure action, require
+`docs/production-incident-recovery-closure-evidence.md`. Its freshness-bound
+gate proves the external incident is recorded as closed, the closure change is
+completed, post-closure monitoring is healthy, traffic remains exactly 100
+percent without mutation, and rollback evidence is retained. Approval or a
+green readiness gate alone is never closure evidence.
