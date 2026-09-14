@@ -273,3 +273,9 @@ closure to a minimum post-incident observation window, healthy error-budget
 and security evidence, completed root-cause analysis and retrospective,
 tracked corrective actions, and retained rollback. Only a fresh passed gate
 resumes this continuous assurance loop; unknown evidence fails closed.
+
+Before returning from that post-incident sequence to this periodic loop, use
+`docs/production-assurance-resumption.md`. Its freshness- and schedule-bound
+bridge proves monitoring coverage, an active external scheduler, no material
+drift, exact 100 percent traffic, and retained rollback. A passed bridge hands
+control back to this runbook; it does not itself schedule future reviews.

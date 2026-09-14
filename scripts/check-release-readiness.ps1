@@ -92,6 +92,7 @@ foreach ($requiredText in @(
     'test-production-incident-recovery-closure-contract.ps1'
     'test-production-incident-recovery-closure-evidence-contract.ps1'
     'test-production-post-incident-assurance-contract.ps1'
+    'test-production-assurance-resumption-contract.ps1'
 )) {
     if (-not $continuousIntegration.Contains($requiredText, [StringComparison]::Ordinal)) {
         throw "Continuous Integration workflow is missing required contract '$requiredText'."
@@ -141,6 +142,7 @@ foreach ($relativePath in @(
     'docs/production-incident-recovery-closure.md'
     'docs/production-incident-recovery-closure-evidence.md'
     'docs/production-post-incident-assurance.md'
+    'docs/production-assurance-resumption.md'
     'scripts/new-staging-overlay.ps1'
     'scripts/invoke-staging-rollout.ps1'
     'scripts/new-production-promotion-plan.ps1'
@@ -255,6 +257,10 @@ foreach ($relativePath in @(
     'scripts/test-production-post-incident-assurance-evidence.ps1'
     'scripts/test-production-post-incident-assurance-gate.ps1'
     'scripts/test-production-post-incident-assurance-contract.ps1'
+    'scripts/new-production-assurance-resumption-evidence.ps1'
+    'scripts/test-production-assurance-resumption-evidence.ps1'
+    'scripts/test-production-assurance-resumption-gate.ps1'
+    'scripts/test-production-assurance-resumption-contract.ps1'
 )) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relativePath) -PathType Leaf)) {
         throw "Required release artifact is missing: $relativePath"

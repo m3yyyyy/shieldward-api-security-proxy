@@ -211,3 +211,9 @@ requires a completed assurance window, healthy error-budget and security
 evidence, a recorded retrospective with tracked corrective actions, exact
 100 percent traffic, retained rollback, and complete audit evidence. Unknown
 post-incident state remains incomplete and cannot resume normal assurance.
+
+Once that post-incident gate passes, use
+`docs/production-assurance-resumption.md` to prove the approved monitoring
+schedule and complete signal coverage are active for the same candidate. Its
+read-only gate requires no drift, exact full traffic, retained rollback, and a
+current next-review deadline before normal continuous assurance resumes.

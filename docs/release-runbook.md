@@ -147,6 +147,12 @@ root-cause analysis and retrospective, tracked corrective actions, retained
 rollback, and complete audit record. The repository remains read-only; only a
 fresh passed gate resumes continuous production assurance.
 
+Then use `docs/production-assurance-resumption.md` to bind that passed outcome
+to an active approved scheduler and current complete monitoring. Its gate
+requires no drift, externally enforced 100 percent traffic, retained rollback,
+and a future next-review deadline before returning to the existing periodic
+assurance runbook.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

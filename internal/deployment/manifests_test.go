@@ -2472,6 +2472,89 @@ func TestProductionPostIncidentAssuranceContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceResumptionContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-resumption-evidence.ps1"),
+			expected: []string{
+				"continuous-production-assurance-resumption",
+				"postIncidentEvidenceIntegrityDigest",
+				"AssuranceScheduleStatus",
+				"trafficMatchesPostIncident",
+				"continue-scheduled-production-assurance",
+				"No scheduler, cluster, traffic, incident, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-resumption-evidence.ps1"),
+			expected: []string{
+				"passed post-incident assurance evidence no longer matches",
+				"reaccept-before-continuing",
+				"investigate-and-refresh-evidence",
+				"production assurance resumption evidence integrity digest is invalid",
+				"does not activate schedulers, change production, or remove rollback",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-resumption-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale, future-dated, or already overdue",
+				"schedule.status -ne 'active'",
+				"rollback.targetPercent -ne 75",
+				"proves only recorded resumption evidence",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-resumption-contract.ps1"),
+			expected: []string{
+				"inactiveSchedulePath",
+				"unknownMonitoringPath",
+				"driftEvidencePath",
+				"securityIncidentPath",
+				"missingRollbackPath",
+				"evidenceTamperingRejected",
+				"postIncidentTamperingRejected",
+				"Continuous production assurance resumption evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-resumption.md"),
+			expected: []string{
+				"active scheduler is not proof",
+				"repository intentionally provides no command",
+				"Never edit generated JSON",
+				"does not activate a scheduler",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test continuous production assurance resumption evidence contract",
+				"test-production-assurance-resumption-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance resumption artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance resumption artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

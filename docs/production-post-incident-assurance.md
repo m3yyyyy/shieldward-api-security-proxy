@@ -190,3 +190,9 @@ work, mutate traffic, reopen or close incidents, or authorize rollback removal.
 
 Attach the immutable artifact and gate output to the incident, retrospective,
 and corrective-action records.
+
+For passed evidence, continue with
+`docs/production-assurance-resumption.md`. That separate bridge verifies an
+active approved scheduler, complete current monitoring, no drift, exact full
+traffic, and retained rollback before handing control back to the ordinary
+continuous production assurance loop.

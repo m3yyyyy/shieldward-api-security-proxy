@@ -68,6 +68,7 @@ directory. It is for local testing only.
 - [Production recovery re-acceptance and incident-closure gate](docs/production-incident-recovery-closure.md)
 - [Production recovery incident-closure execution evidence](docs/production-incident-recovery-closure-evidence.md)
 - [Production post-incident assurance and retrospective evidence](docs/production-post-incident-assurance.md)
+- [Continuous production assurance resumption evidence](docs/production-assurance-resumption.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

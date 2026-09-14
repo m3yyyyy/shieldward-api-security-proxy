@@ -80,6 +80,9 @@ versioning.
 - Freshness-bound post-incident assurance and retrospective evidence that
   binds authoritative closure to sustained health, error-budget and security
   review, tracked corrective actions, retained rollback, and tamper detection.
+- A freshness- and schedule-bound continuous assurance resumption bridge that
+  binds passed post-incident evidence to complete monitoring, no drift, exact
+  full traffic, retained rollback, and the existing periodic assurance loop.
 
 ## [1.0.0] - 2026-09-09
 
