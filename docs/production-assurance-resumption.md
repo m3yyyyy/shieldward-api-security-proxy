@@ -179,9 +179,9 @@ pwsh -NoProfile -File .\scripts\test-production-assurance-resumption-gate.ps1 `
   -CheckCluster
 ```
 
-A green gate proves only the recorded resumption state. It does not activate a
-scheduler, guarantee the next review, authorize drift, mutate traffic, or
-permit rollback evidence to be removed.
+A green gate proves only the recorded resumption state. It does not activate a scheduler,
+guarantee the next review, authorize drift, mutate traffic, or permit rollback
+evidence to be removed.
 
 ## 8. Continue the existing assurance loop
 
