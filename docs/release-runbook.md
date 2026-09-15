@@ -156,8 +156,10 @@ assurance runbook.
 At that first deadline, require
 `docs/production-assurance-continuity.md`. It derives the expected time from
 the resumption artifact and fails closed for late, missed, unknown, unhealthy,
-drifted, non-full-traffic, or missing-rollback evidence. A passed result returns
-all later reviews to the ordinary assurance runbook.
+drifted, non-full-traffic, or missing-rollback evidence. Then require
+`docs/production-assurance-recurring.md` for sequence 2 and every later
+review so gaps, deadline resets, failed predecessors, and chain tampering fail
+closed.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

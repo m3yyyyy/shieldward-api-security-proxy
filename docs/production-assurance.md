@@ -283,4 +283,6 @@ control back to this runbook; it does not itself schedule future reviews.
 The first review after that bridge follows
 `docs/production-assurance-continuity.md`. It proves the recorded deadline was
 met and binds current health, drift, traffic, and rollback evidence to that
-review. After its gate passes, later snapshots use this runbook directly.
+review. After its gate passes, use
+`docs/production-assurance-recurring.md` so each later review binds the exact
+previous passed artifact and cannot reset the sequence or deadline.

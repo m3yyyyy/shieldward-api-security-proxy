@@ -193,4 +193,6 @@ resumption artifact and gate output to the incident and operational records.
 For the first recorded deadline, use
 `docs/production-assurance-continuity.md`. Its gate proves that the review
 actually completed on time with current healthy, no-drift, full-traffic, and
-rollback evidence before later snapshots continue under the ordinary loop.
+rollback evidence. Then use `docs/production-assurance-recurring.md` so
+every later review extends the exact passed chain without skipping a sequence
+or resetting its deadline.

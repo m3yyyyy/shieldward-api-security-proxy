@@ -118,6 +118,9 @@ jobs:
       - name: Test scheduled production assurance continuity evidence contract
         shell: pwsh
         run: ./scripts/test-production-assurance-continuity-contract.ps1
+      - name: Test recurring production assurance continuity evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-recurring-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

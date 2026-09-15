@@ -196,10 +196,10 @@ A green gate proves only the recorded first-review evidence. It does not schedul
 guarantee later execution, authorize drift, mutate traffic, or allow rollback
 evidence to be removed.
 
-## 8. Continue ordinary assurance
+## 8. Continue the recurring assurance chain
 
-After a passed gate, use `docs/production-assurance.md` for every later
-scheduled snapshot. Late or missed reviews require external escalation;
-unhealthy or drifted evidence follows the response action recorded by the
-artifact. Attach the continuity artifact and gate output to the incident and
-ongoing operational record.
+After a passed gate, use `docs/production-assurance-recurring.md` for
+review sequence 2 and every later scheduled review. Each artifact must bind the
+exact previous passed artifact and derive its sequence and deadline. Late,
+missed, unhealthy, unknown, or drifted evidence cannot become the next chain
+boundary.

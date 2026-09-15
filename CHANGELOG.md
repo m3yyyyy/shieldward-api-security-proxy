@@ -86,6 +86,9 @@ versioning.
 - Scheduled production assurance continuity evidence that derives the first
   review deadline from resumption, detects late or missed execution, and
   requires current healthy, no-drift, full-traffic, and rollback proof.
+- A tamper-evident recurring production assurance chain that derives every
+  later review sequence and deadline from the exact previous passed artifact,
+  rejects gaps or failed predecessors, and preserves full traffic and rollback.
 
 ## [1.0.0] - 2026-09-09
 

@@ -221,4 +221,6 @@ current next-review deadline before normal continuous assurance resumes.
 Use `docs/production-assurance-continuity.md` at that first deadline. Its
 freshness-bound gate derives the expected time from resumption and requires an
 on-time completed review, healthy signals, no drift, exact 100 percent traffic,
-and retained rollback before ordinary periodic assurance continues.
+and retained rollback. For sequence 2 and every later review, use
+`docs/production-assurance-recurring.md` to bind the exact previous passed
+artifact and derive the next sequence and deadline.
