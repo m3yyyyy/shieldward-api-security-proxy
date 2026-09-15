@@ -182,6 +182,12 @@ Continue later custody reviews with
 sequence gaps, changed predecessors, late reviews, failed controls, and
 retention deadlines that cannot contain the following review.
 
+Audit that custody-review chain with
+`docs/production-assurance-custody-chain-audit.md` at each approved governance
+checkpoint. The audit requires a contiguous inventory, unchanged root custody,
+retained evidence, independent review, least-privilege access, and successful
+restore proof without modifying the archive or production.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

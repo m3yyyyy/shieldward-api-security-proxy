@@ -303,3 +303,8 @@ review boundary.
 For sequence 2 and every later custody review, use
 `docs/production-assurance-custody-recurring.md`. It binds each review to its
 exact predecessor and preserves the original custody and retention identity.
+
+Use `docs/production-assurance-custody-chain-audit.md` after recurring custody
+evidence exists. Its governance checkpoint proves that the full custody-review
+chain and original custody identity remain present, contiguous, retained,
+access-controlled, restorable, and tamper-evident.

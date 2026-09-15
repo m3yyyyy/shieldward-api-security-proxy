@@ -183,3 +183,12 @@ unknown reviews cannot become the predecessor of another review. When
 remaining retention is insufficient or the following deadline no longer fits
 inside retention, complete the approved external retention-renewal procedure
 and establish new evidence before continuing.
+
+## 9. Audit the complete custody-review chain
+
+After at least one recurring review passes, use
+`docs/production-assurance-custody-chain-audit.md` on the approved governance
+schedule. Its read-only checkpoint inventories sequence 1 through the selected
+head, verifies the unchanged root custody and retention boundary, and requires
+independent retention, access, and restore audit evidence. It does not replace
+the recurring review schedule.

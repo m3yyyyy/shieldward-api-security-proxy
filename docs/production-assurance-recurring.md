@@ -209,3 +209,8 @@ deadlines; neither substitutes for the other.
 After that first custody review, follow
 `docs/production-assurance-custody-recurring.md` for every later external
 custody-review deadline without resetting its sequence or retention boundary.
+
+At approved custody governance checkpoints, follow
+`docs/production-assurance-custody-chain-audit.md`. It audits the separate
+custody-review chain and its root storage-control evidence without replacing
+the operational assurance schedule described here.

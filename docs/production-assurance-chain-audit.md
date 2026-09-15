@@ -174,3 +174,8 @@ remaining retention are still recorded.
 Use `docs/production-assurance-custody-recurring.md` for sequence 2 and later
 custody reviews so every checkpoint remains linked to the original custody
 record and the immediately previous passed review.
+
+After recurring custody-review evidence exists, use
+`docs/production-assurance-custody-chain-audit.md` at the approved governance
+checkpoint to inventory that separate chain and verify its unchanged root
+custody, retention, access, and restore boundary.

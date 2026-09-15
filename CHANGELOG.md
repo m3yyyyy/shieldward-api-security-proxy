@@ -101,6 +101,9 @@ versioning.
 - Recurring production assurance custody-review evidence that derives each
   sequence and deadline from the exact previous review while preserving the
   original custody checksum, chain digest, and retention boundary.
+- Immutable production assurance custody chain-audit checkpoints that inventory
+  every review from sequence 1 through a recurring head and independently
+  verify root custody, retention, access, restore, and tamper evidence.
 
 ## [1.0.0] - 2026-09-09
 

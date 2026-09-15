@@ -182,3 +182,7 @@ After this first review passes, use
 later custody review. Each recurring artifact derives its sequence and
 deadline from the exact previous passed review and preserves this review's
 original custody and retention boundary.
+
+Once recurring custody evidence exists, use
+`docs/production-assurance-custody-chain-audit.md` for independent governance
+checkpoints over the complete custody-review chain.

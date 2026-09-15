@@ -191,3 +191,8 @@ and requires the next review to remain inside the retention window.
 After the first review, continue with
 `docs/production-assurance-custody-recurring.md`. Failed or unknown reviews
 cannot be used to reset the custody-review sequence or retention deadline.
+
+After at least one recurring custody review passes, use
+`docs/production-assurance-custody-chain-audit.md` at the approved governance
+checkpoint. The audit binds the full review inventory back to this exact root
+custody checksum, chain digest, and retention deadline.

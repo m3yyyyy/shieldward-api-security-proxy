@@ -242,3 +242,9 @@ date does not prove that external archive controls remain effective.
 Use `docs/production-assurance-custody-recurring.md` after the first review
 so later custody evidence cannot skip a sequence, reset a deadline, or extend
 the original retention boundary through local metadata.
+
+After recurring custody evidence exists, use
+`docs/production-assurance-custody-chain-audit.md` at each approved custody
+governance checkpoint. It independently inventories the complete review chain,
+revalidates the unchanged root custody boundary, and requires current
+retention, access, and restore audit evidence.
