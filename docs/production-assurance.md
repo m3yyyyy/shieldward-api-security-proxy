@@ -290,3 +290,7 @@ previous passed artifact and cannot reset the sequence or deadline.
 Use `docs/production-assurance-chain-audit.md` for approved governance
 checkpoints after recurring evidence exists. It inventories and verifies the
 retained chain but does not replace or reschedule an assurance review.
+
+When that checkpoint is retained externally, use
+`docs/production-assurance-evidence-custody.md` to bind its exact checksum
+and chain digest to current storage-control and restore evidence.

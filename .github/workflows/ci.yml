@@ -124,6 +124,9 @@ jobs:
       - name: Test production assurance chain audit evidence contract
         shell: pwsh
         run: ./scripts/test-production-assurance-chain-audit-contract.ps1
+      - name: Test production assurance evidence custody contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-custody-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

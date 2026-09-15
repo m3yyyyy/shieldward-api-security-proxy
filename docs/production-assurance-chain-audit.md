@@ -157,3 +157,11 @@ Continue `docs/production-assurance-recurring.md` at the next recorded
 deadline. Create a new audit checkpoint whenever the approved governance
 schedule requires one. Failed or unknown audit evidence cannot authorize
 continuation; preserve the chain and follow the recorded response action.
+
+## 9. Record external evidence custody
+
+After a passed checkpoint is archived through an approved external procedure,
+use `docs/production-assurance-evidence-custody.md`. Its read-only record
+binds the exact audit checksum and chain digest to object-lock, retention,
+encryption, access-review, and restore-test evidence. It does not upload or
+configure the external archive.

@@ -167,6 +167,11 @@ sequence, bind its aggregate digest, and require independent retention and
 access review. This audit checkpoint is read-only and does not replace the
 recurring review gate.
 
+For externally retained checkpoints, follow
+`docs/production-assurance-evidence-custody.md`. It requires byte-identical
+audit and chain digests plus recorded object-lock, retention, encryption,
+least-privilege access, and restore proof without performing those operations.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

@@ -92,6 +92,9 @@ versioning.
 - Immutable production assurance chain-audit checkpoints that inventory every
   retained review from sequence 1 through a recurring head, detect gaps,
   cycles, missing evidence, access failures, and lineage tampering.
+- Tamper-evident production assurance evidence-custody records that bind an
+  audited chain to external archive checksums, object lock, retention,
+  encryption, least-privilege access, and restore verification.
 
 ## [1.0.0] - 2026-09-09
 

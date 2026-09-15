@@ -2799,6 +2799,86 @@ func TestProductionAssuranceChainAuditContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceEvidenceCustodyContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-custody-evidence.ps1"),
+			expected: []string{
+				"production-assurance-evidence-custody",
+				"ArchivedAuditSha256",
+				"retentionMeetsPolicy",
+				"quarantine-and-rebuild-archive",
+				"No archive upload, object-lock, retention, access, restore, cluster, traffic, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-evidence.ps1"),
+			expected: []string{
+				"exact passed production assurance chain audit no longer matches",
+				"archived checksum, chain digest, or retention decision is inconsistent",
+				"restrict-access-and-investigate",
+				"evidence custody integrity digest is invalid",
+				"does not upload, retain, delete, restore, or change production evidence",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"retentionUntil -le",
+				"outside its retention window",
+				"archive.objectLockStatus -ne 'enforced'",
+				"recorded external custody evidence",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-contract.ps1"),
+			expected: []string{
+				"checksumMismatchPath",
+				"chainDigestMismatchPath",
+				"shortRetentionPath",
+				"custodyTamperingRejected",
+				"auditTamperingRejected",
+				"Production assurance evidence custody contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-evidence-custody.md"),
+			expected: []string{
+				"Archive registration is not enforcement",
+				"repository does not upload",
+				"Never edit generated JSON",
+				"proves only recorded external custody evidence",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production assurance evidence custody contract",
+				"test-production-assurance-custody-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance evidence custody artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance evidence custody artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

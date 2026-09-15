@@ -195,3 +195,8 @@ schedule. Its read-only checkpoint inventories the retained sequence from 1
 through the selected head and rejects gaps, cycles, missing predecessors,
 failed access or retention controls, and tampering. The checkpoint does not
 replace the recurring review schedule.
+
+For checkpoints archived outside the repository, follow
+`docs/production-assurance-evidence-custody.md` after the chain audit
+passes. External archive registration alone is not evidence that retention,
+encryption, access, and restore controls are enforced.

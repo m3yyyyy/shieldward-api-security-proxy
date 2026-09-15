@@ -229,3 +229,8 @@ After recurring evidence exists, use
 `docs/production-assurance-chain-audit.md` at each approved governance
 checkpoint to prove the complete sequence remains retained, contiguous, and
 tamper-evident. The audit cannot substitute for a scheduled assurance review.
+
+If the checkpoint is archived externally, require
+`docs/production-assurance-evidence-custody.md`. Its gate fails closed
+unless the exact audit checksum and chain digest, retention duration, immutable
+lock, encryption, access review, and restore verification are recorded.
