@@ -104,6 +104,9 @@ versioning.
 - Immutable production assurance custody chain-audit checkpoints that inventory
   every review from sequence 1 through a recurring head and independently
   verify root custody, retention, access, restore, and tamper evidence.
+- Approval-gated production assurance retention-renewal plans that bind an
+  exact failed custody audit to a minimum extension, next-review coverage,
+  named authorities, and a tamper-evident independent approval.
 
 ## [1.0.0] - 2026-09-09
 

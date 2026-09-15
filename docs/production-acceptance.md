@@ -248,3 +248,8 @@ After recurring custody evidence exists, use
 governance checkpoint. It independently inventories the complete review chain,
 revalidates the unchanged root custody boundary, and requires current
 retention, access, and restore audit evidence.
+
+If that audit requires retention renewal, use
+`docs/production-assurance-retention-renewal.md` before any external archive
+change. Its exact approval authorizes only the recorded procedure and cannot
+serve as renewed-retention evidence.

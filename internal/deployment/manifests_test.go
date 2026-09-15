@@ -3120,6 +3120,93 @@ func TestProductionAssuranceCustodyChainAuditContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceRetentionRenewalPlanningContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-retention-renewal-plan.ps1"),
+			expected: []string{
+				"production-assurance-retention-renewal-plan",
+				"failed custody chain-audit evidence",
+				"minimumRequestedRetention",
+				"obtain-independent-retention-renewal-approval",
+				"No archive, object-lock, retention, access, restore, scheduler, cluster, traffic, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-plan.ps1"),
+			expected: []string{
+				"exact failed custody chain-audit trigger no longer matches",
+				"changed the root custody or review-chain identity",
+				"retention-renewal duration, review coverage, or timing boundary is invalid",
+				"retention-renewal plan integrity digest is invalid",
+				"does not renew retention, alter archives, restore evidence, or change production",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-assurance-retention-renewal-plan.ps1"),
+			expected: []string{
+				"ApprovedBy must exactly match",
+				"ApprovalStatement must exactly match",
+				"execute-approved-external-retention-renewal",
+				"external change and archive systems remain authoritative",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-gate.ps1"),
+			expected: []string{
+				"MaxPlanAgeMinutes",
+				"stale, future-dated, expired, or insufficient",
+				"externalExecutionAuthorized -ne $true",
+				"does not prove retention was renewed",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-contract.ps1"),
+			expected: []string{
+				"invalid-trigger",
+				"short-extension",
+				"planTamperingRejected",
+				"triggerTamperingRejected",
+				"Production assurance retention-renewal planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-retention-renewal.md"),
+			expected: []string{
+				"local plan is not proof",
+				"Registration is not enforcement",
+				"Never edit generated JSON",
+				"Execute externally and preserve evidence",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production assurance retention renewal planning contract",
+				"test-production-assurance-retention-renewal-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance retention-renewal artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance retention-renewal artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

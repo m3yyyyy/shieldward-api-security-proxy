@@ -163,3 +163,7 @@ Continue `docs/production-assurance-custody-recurring.md` at the next recorded
 deadline. Create another custody audit checkpoint whenever the approved
 governance schedule requires one. Failed or unknown audit evidence cannot
 authorize continuation; preserve the chain and follow the recorded action.
+
+When the action is `renew-retention-before-continuing`, stop the custody-review
+chain and follow `docs/production-assurance-retention-renewal.md`. Its approval
+gate plans the external renewal but does not claim that retention changed.

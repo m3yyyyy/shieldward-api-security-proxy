@@ -182,7 +182,9 @@ At the next deadline, use the artifact just created as
 unknown reviews cannot become the predecessor of another review. When
 remaining retention is insufficient or the following deadline no longer fits
 inside retention, complete the approved external retention-renewal procedure
-and establish new evidence before continuing.
+and establish new evidence before continuing. Begin that approval boundary with
+`docs/production-assurance-retention-renewal.md`; a plan alone is not evidence
+that the archive changed.
 
 ## 9. Audit the complete custody-review chain
 

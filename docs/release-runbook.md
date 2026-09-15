@@ -188,6 +188,11 @@ checkpoint. The audit requires a contiguous inventory, unchanged root custody,
 retained evidence, independent review, least-privilege access, and successful
 restore proof without modifying the archive or production.
 
+When the custody audit requires renewal, use
+`docs/production-assurance-retention-renewal.md`. Its tamper-evident approval
+binds the exact failed audit, requested extension, next-review coverage, and
+named authorities before any external archive procedure begins.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

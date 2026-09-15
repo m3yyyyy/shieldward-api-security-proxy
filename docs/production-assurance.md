@@ -308,3 +308,7 @@ Use `docs/production-assurance-custody-chain-audit.md` after recurring custody
 evidence exists. Its governance checkpoint proves that the full custody-review
 chain and original custody identity remain present, contiguous, retained,
 access-controlled, restorable, and tamper-evident.
+
+When retention is missing or insufficient, stop and use
+`docs/production-assurance-retention-renewal.md` to create an independently
+approved external renewal plan. Approval is not proof of execution.

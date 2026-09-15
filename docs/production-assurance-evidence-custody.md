@@ -196,3 +196,7 @@ After at least one recurring custody review passes, use
 `docs/production-assurance-custody-chain-audit.md` at the approved governance
 checkpoint. The audit binds the full review inventory back to this exact root
 custody checksum, chain digest, and retention deadline.
+
+If that checkpoint records `renew-retention-before-continuing`, follow
+`docs/production-assurance-retention-renewal.md` and do not treat its approved
+plan as evidence that this custody boundary was extended.
