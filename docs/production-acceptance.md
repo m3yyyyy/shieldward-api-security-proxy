@@ -253,3 +253,9 @@ If that audit requires retention renewal, use
 `docs/production-assurance-retention-renewal.md` before any external archive
 change. Its exact approval authorizes only the recorded procedure and cannot
 serve as renewed-retention evidence.
+
+After execution, use
+`docs/production-assurance-retention-renewal-evidence.md` to prove the exact
+approved result, extended date, immutable controls, complete inventory,
+least-privilege access, and restore verification before rebuilding the review
+baseline.

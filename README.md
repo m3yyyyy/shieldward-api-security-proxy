@@ -77,6 +77,7 @@ directory. It is for local testing only.
 - [Recurring production assurance custody reviews](docs/production-assurance-custody-recurring.md)
 - [Production assurance custody chain audit](docs/production-assurance-custody-chain-audit.md)
 - [Production assurance retention-renewal plan](docs/production-assurance-retention-renewal.md)
+- [Production assurance retention-renewal evidence](docs/production-assurance-retention-renewal-evidence.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

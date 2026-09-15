@@ -161,3 +161,8 @@ system. Preserve the external change result, new immutable retention proof,
 object-lock state, complete inventory, access review, and independent restore
 verification. Do not resume custody reviews or report renewed retention until
 that execution has separate validated evidence.
+
+Record and gate that result with
+`docs/production-assurance-retention-renewal-evidence.md`. It binds the exact
+approved plan to the externally observed date and current storage-control,
+inventory, access, and restore evidence.

@@ -200,3 +200,5 @@ custody checksum, chain digest, and retention deadline.
 If that checkpoint records `renew-retention-before-continuing`, follow
 `docs/production-assurance-retention-renewal.md` and do not treat its approved
 plan as evidence that this custody boundary was extended.
+Use `docs/production-assurance-retention-renewal-evidence.md` after external
+execution to record the observed result without rewriting this original root.

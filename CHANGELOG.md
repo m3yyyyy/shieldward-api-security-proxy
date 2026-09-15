@@ -107,6 +107,9 @@ versioning.
 - Approval-gated production assurance retention-renewal plans that bind an
   exact failed custody audit to a minimum extension, next-review coverage,
   named authorities, and a tamper-evident independent approval.
+- Production assurance retention-renewal execution evidence that binds the
+  exact approved plan to observed immutable retention, complete inventory,
+  encryption, least-privilege access, and independent restore verification.
 
 ## [1.0.0] - 2026-09-09
 

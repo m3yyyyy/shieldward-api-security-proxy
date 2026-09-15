@@ -139,6 +139,9 @@ jobs:
       - name: Test production assurance retention renewal planning contract
         shell: pwsh
         run: ./scripts/test-production-assurance-retention-renewal-contract.ps1
+      - name: Test production assurance retention renewal evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-retention-renewal-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

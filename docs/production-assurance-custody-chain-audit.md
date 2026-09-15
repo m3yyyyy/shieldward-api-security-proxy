@@ -167,3 +167,6 @@ authorize continuation; preserve the chain and follow the recorded action.
 When the action is `renew-retention-before-continuing`, stop the custody-review
 chain and follow `docs/production-assurance-retention-renewal.md`. Its approval
 gate plans the external renewal but does not claim that retention changed.
+After external execution, require
+`docs/production-assurance-retention-renewal-evidence.md` before establishing
+a renewed custody-review baseline.

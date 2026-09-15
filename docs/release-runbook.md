@@ -192,6 +192,9 @@ When the custody audit requires renewal, use
 `docs/production-assurance-retention-renewal.md`. Its tamper-evident approval
 binds the exact failed audit, requested extension, next-review coverage, and
 named authorities before any external archive procedure begins.
+After execution, follow
+`docs/production-assurance-retention-renewal-evidence.md`; only passed, fresh,
+tamper-evident results may establish a renewed custody-review baseline.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

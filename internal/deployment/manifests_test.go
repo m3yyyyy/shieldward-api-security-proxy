@@ -3207,6 +3207,85 @@ func TestProductionAssuranceRetentionRenewalPlanningContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceRetentionRenewalEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"production-assurance-retention-renewal-evidence",
+				"execution must follow approval",
+				"observedMeetsApprovedBoundary",
+				"establish-renewed-custody-review-baseline",
+				"No archive, object-lock, retention, access, restore, scheduler, cluster, traffic, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"exact approved retention-renewal plan no longer matches",
+				"changed the original custody or review-chain identity",
+				"retention-renewal execution, duration, or freshness boundary is invalid",
+				"retention-renewal evidence integrity digest is invalid",
+				"does not renew retention, alter archives, restore evidence, or change production",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"overdue for the next custody review",
+				"decision.retentionRenewalProven -ne $true",
+				"does not change retention, reset custody lineage, or change production",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-retention-renewal-evidence-contract.ps1"),
+			expected: []string{
+				"failed-change",
+				"insufficient-retention",
+				"pending-plan",
+				"evidenceTamperingRejected",
+				"planTamperingRejected",
+				"Production assurance retention-renewal execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-retention-renewal-evidence.md"),
+			expected: []string{
+				"approved plan is not execution evidence",
+				"Unknown states fail closed",
+				"Never edit generated JSON",
+				"Establish a renewed review baseline",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production assurance retention renewal evidence contract",
+				"test-production-assurance-retention-renewal-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance retention-renewal evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance retention-renewal evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
