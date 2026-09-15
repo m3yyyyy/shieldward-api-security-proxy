@@ -130,6 +130,9 @@ jobs:
       - name: Test scheduled production assurance custody review contract
         shell: pwsh
         run: ./scripts/test-production-assurance-custody-review-contract.ps1
+      - name: Test recurring production assurance custody review contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-custody-recurring-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

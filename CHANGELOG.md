@@ -98,6 +98,9 @@ versioning.
 - Scheduled production assurance custody-review evidence that revalidates the
   exact custody record, archive inventory and controls, remaining retention,
   and a next-review deadline inside the retention window.
+- Recurring production assurance custody-review evidence that derives each
+  sequence and deadline from the exact previous review while preserving the
+  original custody checksum, chain digest, and retention boundary.
 
 ## [1.0.0] - 2026-09-09
 

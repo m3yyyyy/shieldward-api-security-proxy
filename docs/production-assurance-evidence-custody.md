@@ -187,3 +187,7 @@ Use `docs/production-assurance-custody-review.md` at the first approved
 custody-review deadline. Its read-only checkpoint binds this exact custody
 record, rechecks archive inventory and controls, measures remaining retention,
 and requires the next review to remain inside the retention window.
+
+After the first review, continue with
+`docs/production-assurance-custody-recurring.md`. Failed or unknown reviews
+cannot be used to reset the custody-review sequence or retention deadline.

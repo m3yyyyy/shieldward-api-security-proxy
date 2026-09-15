@@ -238,3 +238,7 @@ lock, encryption, access review, and restore verification are recorded.
 Continue with `docs/production-assurance-custody-review.md` at the first
 approved custody-review deadline. A stale custody record or a future review
 date does not prove that external archive controls remain effective.
+
+Use `docs/production-assurance-custody-recurring.md` after the first review
+so later custody evidence cannot skip a sequence, reset a deadline, or extend
+the original retention boundary through local metadata.

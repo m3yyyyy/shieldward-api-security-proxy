@@ -205,3 +205,7 @@ After initial custody passes, use
 `docs/production-assurance-custody-review.md` for the first scheduled external
 custody review. Operational assurance reviews and custody reviews are separate
 deadlines; neither substitutes for the other.
+
+After that first custody review, follow
+`docs/production-assurance-custody-recurring.md` for every later external
+custody-review deadline without resetting its sequence or retention boundary.

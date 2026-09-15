@@ -177,6 +177,11 @@ At the first scheduled external custody review, follow
 record, current archive inventory and controls, remaining retention, and the
 next review deadline without changing the archive or production.
 
+Continue later custody reviews with
+`docs/production-assurance-custody-recurring.md`. Its read-only chain rejects
+sequence gaps, changed predecessors, late reviews, failed controls, and
+retention deadlines that cannot contain the following review.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

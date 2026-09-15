@@ -174,3 +174,11 @@ deadline. Complete the next custody review before the recorded custody-review
 deadline and strictly before retention expires. A failed or unknown review
 requires the recorded remediation and cannot support a custody-continuity
 claim.
+
+## 9. Continue the custody-review chain
+
+After this first review passes, use
+`docs/production-assurance-custody-recurring.md` for sequence 2 and every
+later custody review. Each recurring artifact derives its sequence and
+deadline from the exact previous passed review and preserves this review's
+original custody and retention boundary.

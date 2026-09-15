@@ -299,3 +299,7 @@ At the first approved custody-review deadline, follow
 `docs/production-assurance-custody-review.md` to revalidate availability,
 inventory, storage controls, restorability, remaining retention, and the next
 review boundary.
+
+For sequence 2 and every later custody review, use
+`docs/production-assurance-custody-recurring.md`. It binds each review to its
+exact predecessor and preserves the original custody and retention identity.

@@ -170,3 +170,7 @@ After custody is established, use
 `docs/production-assurance-custody-review.md` at the approved review deadline
 to prove that archive availability, controls, restorability, and sufficient
 remaining retention are still recorded.
+
+Use `docs/production-assurance-custody-recurring.md` for sequence 2 and later
+custody reviews so every checkpoint remains linked to the original custody
+record and the immediately previous passed review.
