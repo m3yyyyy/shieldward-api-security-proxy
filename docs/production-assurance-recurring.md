@@ -186,3 +186,12 @@ At the next deadline, use the artifact just created as
 reviews require external escalation. Failed or unknown reviews cannot become
 the predecessor of a later review; follow their recorded response action and
 establish a separately approved recovery or re-acceptance boundary.
+
+## 9. Create governance audit checkpoints
+
+After at least one recurring review passes, use
+`docs/production-assurance-chain-audit.md` on the approved governance
+schedule. Its read-only checkpoint inventories the retained sequence from 1
+through the selected head and rejects gaps, cycles, missing predecessors,
+failed access or retention controls, and tampering. The checkpoint does not
+replace the recurring review schedule.

@@ -89,6 +89,9 @@ versioning.
 - A tamper-evident recurring production assurance chain that derives every
   later review sequence and deadline from the exact previous passed artifact,
   rejects gaps or failed predecessors, and preserves full traffic and rollback.
+- Immutable production assurance chain-audit checkpoints that inventory every
+  retained review from sequence 1 through a recurring head, detect gaps,
+  cycles, missing evidence, access failures, and lineage tampering.
 
 ## [1.0.0] - 2026-09-09
 

@@ -2719,6 +2719,86 @@ func TestProductionAssuranceRecurringContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceChainAuditContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-chain-audit-evidence.ps1"),
+			expected: []string{
+				"production-assurance-chain-audit",
+				"review chain contains a cycle",
+				"chainEntryCount",
+				"restore-evidence-and-investigate",
+				"No scheduler, cluster, traffic, incident, evidence-retention, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-chain-audit-evidence.ps1"),
+			expected: []string{
+				"exact passed production assurance chain head no longer matches",
+				"recurring assurance chain contains a sequence gap",
+				"chain inventory, digest, or entry count is invalid",
+				"chain audit evidence integrity digest is invalid",
+				"does not schedule reviews, retain evidence, change production, or remove rollback",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-chain-audit-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"stale or future-dated",
+				"chain.headSequence -lt 2",
+				"audit.chainInventoryStatus -ne 'complete'",
+				"recorded audit checkpoint",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-chain-audit-contract.ps1"),
+			expected: []string{
+				"passed-sequence-3",
+				"invalid-head",
+				"incomplete-inventory",
+				"auditTamperingRejected",
+				"interiorTamperingRejected",
+				"Production assurance chain audit evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-chain-audit.md"),
+			expected: []string{
+				"inventories the entire",
+				"no gap or cycle",
+				"Never edit generated JSON",
+				"does not schedule a",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production assurance chain audit evidence contract",
+				"test-production-assurance-chain-audit-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance chain audit artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance chain audit artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

@@ -224,3 +224,8 @@ on-time completed review, healthy signals, no drift, exact 100 percent traffic,
 and retained rollback. For sequence 2 and every later review, use
 `docs/production-assurance-recurring.md` to bind the exact previous passed
 artifact and derive the next sequence and deadline.
+
+After recurring evidence exists, use
+`docs/production-assurance-chain-audit.md` at each approved governance
+checkpoint to prove the complete sequence remains retained, contiguous, and
+tamper-evident. The audit cannot substitute for a scheduled assurance review.

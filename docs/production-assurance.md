@@ -286,3 +286,7 @@ met and binds current health, drift, traffic, and rollback evidence to that
 review. After its gate passes, use
 `docs/production-assurance-recurring.md` so each later review binds the exact
 previous passed artifact and cannot reset the sequence or deadline.
+
+Use `docs/production-assurance-chain-audit.md` for approved governance
+checkpoints after recurring evidence exists. It inventories and verifies the
+retained chain but does not replace or reschedule an assurance review.

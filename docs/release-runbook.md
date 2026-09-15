@@ -161,6 +161,12 @@ drifted, non-full-traffic, or missing-rollback evidence. Then require
 review so gaps, deadline resets, failed predecessors, and chain tampering fail
 closed.
 
+At the approved governance interval, use
+`docs/production-assurance-chain-audit.md` to inventory the full retained
+sequence, bind its aggregate digest, and require independent retention and
+access review. This audit checkpoint is read-only and does not replace the
+recurring review gate.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

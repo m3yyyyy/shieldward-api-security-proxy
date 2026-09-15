@@ -71,6 +71,7 @@ directory. It is for local testing only.
 - [Continuous production assurance resumption evidence](docs/production-assurance-resumption.md)
 - [Scheduled production assurance continuity evidence](docs/production-assurance-continuity.md)
 - [Recurring production assurance continuity evidence](docs/production-assurance-recurring.md)
+- [Production assurance chain audit evidence](docs/production-assurance-chain-audit.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)
