@@ -155,6 +155,7 @@ foreach ($relativePath in @(
     'docs/production-assurance-evidence-custody.md'
     'docs/production-assurance-custody-review.md'
     'docs/production-assurance-custody-recurring.md'
+    'docs/production-assurance-renewed-custody-baseline.md'
     'scripts/new-staging-overlay.ps1'
     'scripts/invoke-staging-rollout.ps1'
     'scripts/new-production-promotion-plan.ps1'
@@ -310,6 +311,10 @@ foreach ($relativePath in @(
     'scripts/test-production-assurance-retention-renewal-evidence.ps1'
     'scripts/test-production-assurance-retention-renewal-evidence-gate.ps1'
     'scripts/test-production-assurance-retention-renewal-evidence-contract.ps1'
+    'scripts/new-production-assurance-renewed-custody-baseline.ps1'
+    'scripts/test-production-assurance-renewed-custody-baseline.ps1'
+    'scripts/test-production-assurance-renewed-custody-baseline-gate.ps1'
+    'scripts/test-production-assurance-renewed-custody-baseline-contract.ps1'
 )) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relativePath) -PathType Leaf)) {
         throw "Required release artifact is missing: $relativePath"

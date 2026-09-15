@@ -195,6 +195,9 @@ named authorities before any external archive procedure begins.
 After execution, follow
 `docs/production-assurance-retention-renewal-evidence.md`; only passed, fresh,
 tamper-evident results may establish a renewed custody-review baseline.
+Create that bridge with
+[the renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+before resuming the inherited review sequence.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

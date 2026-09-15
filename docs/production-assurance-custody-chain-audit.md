@@ -170,3 +170,6 @@ gate plans the external renewal but does not claim that retention changed.
 After external execution, require
 `docs/production-assurance-retention-renewal-evidence.md` before establishing
 a renewed custody-review baseline.
+Establish that bridge with the
+[renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+procedure before any later custody review resumes.

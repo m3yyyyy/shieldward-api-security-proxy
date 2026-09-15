@@ -3286,6 +3286,83 @@ func TestProductionAssuranceRetentionRenewalEvidenceContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceRenewedCustodyBaselineContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-renewed-custody-baseline.ps1"),
+			expected: []string{
+				"production-assurance-renewed-custody-baseline",
+				"priorReviewChainDigest",
+				"resume-scheduled-custody-reviews",
+				"No review was scheduled, no prior evidence was rewritten",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-baseline.ps1"),
+			expected: []string{
+				"exact passed retention-renewal evidence no longer matches",
+				"rewrote the original custody or prior review-chain identity",
+				"baseline timing, sequence, or retention boundary is invalid",
+				"baseline integrity digest is invalid",
+				"does not schedule reviews, rewrite evidence, or change archives",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-baseline-gate.ps1"),
+			expected: []string{
+				"MaxBaselineAgeMinutes",
+				"overdue for review",
+				"decision.priorReviewChainPreserved -ne $true",
+				"authorizes only resuming the existing review process",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-baseline-contract.ps1"),
+			expected: []string{
+				"failed-renewal",
+				"early-baseline",
+				"baselineTamperingRejected",
+				"renewalTamperingRejected",
+				"Production assurance renewed custody-review baseline contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-renewed-custody-baseline.md"),
+			expected: []string{
+				"Passing renewal evidence is not permission to rewrite history",
+				"Never edit generated JSON",
+				"Resume without resetting history",
+				"resume-scheduled-custody-reviews",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test production assurance renewed custody baseline contract",
+				"test-production-assurance-renewed-custody-baseline-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read production assurance renewed custody baseline artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("production assurance renewed custody baseline artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

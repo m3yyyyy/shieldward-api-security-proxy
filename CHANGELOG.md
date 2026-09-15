@@ -110,6 +110,9 @@ versioning.
 - Production assurance retention-renewal execution evidence that binds the
   exact approved plan to observed immutable retention, complete inventory,
   encryption, least-privilege access, and independent restore verification.
+- A tamper-evident renewed custody-review baseline that preserves the original
+  custody and review-chain identity, binds the exact renewal evidence, and
+  derives the next sequence and deadline without rewriting history.
 
 ## [1.0.0] - 2026-09-09
 

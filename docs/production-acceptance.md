@@ -259,3 +259,8 @@ After execution, use
 approved result, extended date, immutable controls, complete inventory,
 least-privilege access, and restore verification before rebuilding the review
 baseline.
+
+Then follow the [renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+procedure. It preserves the original lineage, binds the exact passed renewal,
+and derives the next review sequence and inherited deadline without treating
+baseline creation as a completed review.

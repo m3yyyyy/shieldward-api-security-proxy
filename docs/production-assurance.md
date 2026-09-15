@@ -314,3 +314,6 @@ When retention is missing or insufficient, stop and use
 approved external renewal plan. Approval is not proof of execution.
 Require `docs/production-assurance-retention-renewal-evidence.md` after the
 external change and before establishing a renewed custody-review baseline.
+Use the
+[renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+to preserve the original chain while deriving the next sequence and deadline.

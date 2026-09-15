@@ -159,3 +159,6 @@ Preserve the original custody and review chain. Do not edit its retention date
 or append Chapter 60 evidence as though it were a normal recurring review.
 Use the passed execution evidence to establish a separately validated renewed
 custody-review baseline before scheduling or resuming later reviews.
+Follow the [renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+procedure for that bridge. It preserves the original root and prior review
+chain instead of editing either artifact.

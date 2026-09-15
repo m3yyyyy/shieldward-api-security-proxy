@@ -202,3 +202,6 @@ If that checkpoint records `renew-retention-before-continuing`, follow
 plan as evidence that this custody boundary was extended.
 Use `docs/production-assurance-retention-renewal-evidence.md` after external
 execution to record the observed result without rewriting this original root.
+After that evidence passes, use the
+[renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
+to bridge the new retention boundary back to this unchanged root.
