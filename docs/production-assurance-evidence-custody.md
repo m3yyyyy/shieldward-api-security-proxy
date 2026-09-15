@@ -180,3 +180,10 @@ Continue `docs/production-assurance-recurring.md` at every scheduled
 deadline. Repeat the chain audit and custody review according to the approved
 governance schedule. A failed or unknown custody record requires the recorded
 remediation before it can support an audit claim.
+
+## 9. Complete the first scheduled custody review
+
+Use `docs/production-assurance-custody-review.md` at the first approved
+custody-review deadline. Its read-only checkpoint binds this exact custody
+record, rechecks archive inventory and controls, measures remaining retention,
+and requires the next review to remain inside the retention window.

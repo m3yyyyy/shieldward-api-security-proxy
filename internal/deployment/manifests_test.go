@@ -2879,6 +2879,86 @@ func TestProductionAssuranceEvidenceCustodyContracts(t *testing.T) {
 	}
 }
 
+func TestScheduledProductionAssuranceCustodyReviewContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-custody-review-evidence.ps1"),
+			expected: []string{
+				"scheduled-production-assurance-custody-review",
+				"ScheduledReviewDueAtUtc",
+				"retentionRemainingMeetsPolicy",
+				"renew-retention-before-continuing",
+				"No archive, object-lock, retention, access, restore, cluster, traffic, or rollback changes were made",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-review-evidence.ps1"),
+			expected: []string{
+				"exact passed production assurance evidence custody no longer matches",
+				"custody review schedule or retention decision is inconsistent",
+				"escalate-missed-custody-review",
+				"custody review integrity digest is invalid",
+				"does not schedule reviews, alter archives, change production, or remove evidence",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-review-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"nextReviewDueAt -le",
+				"outside its retention schedule",
+				"controls.archiveAvailability -ne 'available'",
+				"recorded custody review",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-custody-review-contract.ps1"),
+			expected: []string{
+				"late-review",
+				"missing-archive",
+				"outside-retention",
+				"reviewTamperingRejected",
+				"custodyTamperingRejected",
+				"Scheduled production assurance custody review contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-custody-review.md"),
+			expected: []string{
+				"first scheduled review",
+				"scheduled review record is not enforcement",
+				"Never edit generated JSON",
+				"proves only the recorded custody review",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test scheduled production assurance custody review contract",
+				"test-production-assurance-custody-review-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read scheduled production assurance custody review artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("scheduled production assurance custody review artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

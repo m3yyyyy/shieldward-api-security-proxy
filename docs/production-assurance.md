@@ -294,3 +294,8 @@ retained chain but does not replace or reschedule an assurance review.
 When that checkpoint is retained externally, use
 `docs/production-assurance-evidence-custody.md` to bind its exact checksum
 and chain digest to current storage-control and restore evidence.
+
+At the first approved custody-review deadline, follow
+`docs/production-assurance-custody-review.md` to revalidate availability,
+inventory, storage controls, restorability, remaining retention, and the next
+review boundary.

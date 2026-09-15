@@ -172,6 +172,11 @@ For externally retained checkpoints, follow
 audit and chain digests plus recorded object-lock, retention, encryption,
 least-privilege access, and restore proof without performing those operations.
 
+At the first scheduled external custody review, follow
+`docs/production-assurance-custody-review.md`. It revalidates the exact custody
+record, current archive inventory and controls, remaining retention, and the
+next review deadline without changing the archive or production.
+
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
 read-only production-context and rollback-baseline preflight. Promote a small

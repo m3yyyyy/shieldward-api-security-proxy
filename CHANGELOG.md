@@ -95,6 +95,9 @@ versioning.
 - Tamper-evident production assurance evidence-custody records that bind an
   audited chain to external archive checksums, object lock, retention,
   encryption, least-privilege access, and restore verification.
+- Scheduled production assurance custody-review evidence that revalidates the
+  exact custody record, archive inventory and controls, remaining retention,
+  and a next-review deadline inside the retention window.
 
 ## [1.0.0] - 2026-09-09
 

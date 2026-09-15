@@ -200,3 +200,8 @@ For checkpoints archived outside the repository, follow
 `docs/production-assurance-evidence-custody.md` after the chain audit
 passes. External archive registration alone is not evidence that retention,
 encryption, access, and restore controls are enforced.
+
+After initial custody passes, use
+`docs/production-assurance-custody-review.md` for the first scheduled external
+custody review. Operational assurance reviews and custody reviews are separate
+deadlines; neither substitutes for the other.

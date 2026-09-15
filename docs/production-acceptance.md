@@ -234,3 +234,7 @@ If the checkpoint is archived externally, require
 `docs/production-assurance-evidence-custody.md`. Its gate fails closed
 unless the exact audit checksum and chain digest, retention duration, immutable
 lock, encryption, access review, and restore verification are recorded.
+
+Continue with `docs/production-assurance-custody-review.md` at the first
+approved custody-review deadline. A stale custody record or a future review
+date does not prove that external archive controls remain effective.

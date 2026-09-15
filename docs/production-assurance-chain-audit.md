@@ -165,3 +165,8 @@ use `docs/production-assurance-evidence-custody.md`. Its read-only record
 binds the exact audit checksum and chain digest to object-lock, retention,
 encryption, access-review, and restore-test evidence. It does not upload or
 configure the external archive.
+
+After custody is established, use
+`docs/production-assurance-custody-review.md` at the approved review deadline
+to prove that archive availability, controls, restorability, and sufficient
+remaining retention are still recorded.
