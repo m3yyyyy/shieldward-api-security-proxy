@@ -80,6 +80,7 @@ directory. It is for local testing only.
 - [Production assurance retention-renewal evidence](docs/production-assurance-retention-renewal-evidence.md)
 - [Production assurance renewed custody-review baseline](docs/production-assurance-renewed-custody-baseline.md)
 - [Production assurance renewed custody-review evidence](docs/production-assurance-renewed-custody-review.md)
+- [Recurring production assurance renewed custody reviews](docs/production-assurance-renewed-custody-recurring.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

@@ -320,3 +320,6 @@ to preserve the original chain while deriving the next sequence and deadline.
 At that deadline, use
 [renewed custody-review evidence](production-assurance-renewed-custody-review.md)
 to revalidate external controls and continue without resetting the sequence.
+Continue every later deadline with
+[recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md),
+using the exact latest passed review as the predecessor.

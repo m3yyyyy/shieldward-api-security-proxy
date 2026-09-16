@@ -3442,6 +3442,84 @@ func TestProductionAssuranceRenewedCustodyReviewContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceRecurringRenewedCustodyReviewContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-renewed-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"recurring-renewed-production-assurance-custody-review",
+				"exact passed previous review evidence",
+				"previousReviewEvidenceSha256",
+				"continue-renewed-custody-reviews",
+				"No scheduler, archive, object-lock, retention",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"exact previous renewed custody-review evidence no longer matches",
+				"changed the production identity or inherited custody lineage",
+				"timing, sequence, retention, or freshness boundary is invalid",
+				"recurring production assurance renewed custody-review integrity digest is invalid",
+				"does not schedule reviews, alter archives, change production",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-recurring-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"decision.predecessorLinkValid -ne $true",
+				"do not continue the review chain",
+				"proves only the recorded review",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-recurring-contract.ps1"),
+			expected: []string{
+				"passed-second",
+				"failed-predecessor",
+				"previousTamperingRejected",
+				"evidenceTamperingRejected",
+				"Recurring production assurance renewed custody-review contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-renewed-custody-recurring.md"),
+			expected: []string{
+				"exact passed Chapter 62 review",
+				"Unknown states fail closed",
+				"Never edit generated JSON",
+				"continue from the exact latest passed artifact",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test recurring production assurance renewed custody review contract",
+				"test-production-assurance-renewed-custody-recurring-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read recurring production assurance renewed custody-review artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("recurring production assurance renewed custody-review artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

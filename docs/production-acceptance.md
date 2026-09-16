@@ -269,3 +269,6 @@ Complete that inherited review with
 [renewed custody-review evidence](production-assurance-renewed-custody-review.md).
 Only a timely passed record with current archive controls may continue the
 renewed custody chain.
+For every later deadline, use
+[recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md).
+The sequence and deadline must be derived from the exact latest passed review.

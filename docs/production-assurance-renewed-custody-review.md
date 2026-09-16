@@ -174,3 +174,8 @@ deadline without resetting the sequence.
 
 Failed or unknown evidence requires its recorded remediation and cannot support
 a custody-continuity claim.
+
+Continue later deadlines with
+[recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md).
+Each recurrence must consume the exact latest passed review and derive the
+next sequence and deadline without resetting the renewed chain.

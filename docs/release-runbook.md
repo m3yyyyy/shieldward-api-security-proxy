@@ -201,6 +201,9 @@ before resuming the inherited review sequence.
 At its inherited deadline, record the review with
 [renewed custody-review evidence](production-assurance-renewed-custody-review.md);
 failed or unknown controls stop continuation.
+Continue subsequent deadlines with
+[recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md),
+never skipping or rewriting a predecessor.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

@@ -116,6 +116,9 @@ versioning.
 - Freshness-bound renewed custody-review evidence that continues at the exact
   inherited sequence and deadline, revalidates archive controls, and binds a
   new review-link digest without resetting pre-renewal lineage.
+- Recurring renewed custody-review evidence that accepts only the exact passed
+  predecessor, derives every later sequence and deadline, and preserves the
+  renewal baseline and original custody lineage across the continued chain.
 
 ## [1.0.0] - 2026-09-09
 
