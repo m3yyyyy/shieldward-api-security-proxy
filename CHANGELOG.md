@@ -129,6 +129,10 @@ versioning.
   renewal sequence 2 reached the approved boundary with immutable controls,
   complete inventory, least-privilege access, restore verification, and the
   unchanged original and renewed custody lineage before generation 3 begins.
+- A tamper-evident generation-3 custody baseline that binds the exact second
+  renewal evidence, preserves every original and renewed lineage digest, and
+  derives review sequence 7 at the inherited deadline without resetting the
+  review chain or extending retention locally.
 
 ## [1.0.0] - 2026-09-09
 

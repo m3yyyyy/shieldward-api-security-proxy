@@ -160,6 +160,9 @@ jobs:
       - name: Test renewed production assurance retention renewal evidence contract
         shell: pwsh
         run: ./scripts/test-production-assurance-renewed-retention-renewal-evidence-contract.ps1
+      - name: Test next renewed production assurance custody baseline contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-next-renewed-custody-baseline-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

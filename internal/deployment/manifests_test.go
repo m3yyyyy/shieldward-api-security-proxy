@@ -3761,6 +3761,83 @@ func TestProductionAssuranceRenewedRetentionRenewalEvidenceContracts(t *testing.
 	}
 }
 
+func TestProductionAssuranceNextRenewedCustodyBaselineContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-next-renewed-custody-baseline.ps1"),
+			expected: []string{
+				"production-assurance-next-renewed-custody-baseline",
+				"advance the baseline generation, renewal sequence, and retention boundary exactly once",
+				"resume-next-renewed-custody-review",
+				"No review was scheduled",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-custody-baseline.ps1"),
+			expected: []string{
+				"exact passed renewed retention-renewal evidence no longer matches",
+				"changed the production identity or inherited lineage",
+				"next renewed custody lineage digest is invalid",
+				"baseline integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-custody-baseline-gate.ps1"),
+			expected: []string{
+				"MaxBaselineAgeMinutes",
+				"generation -ne 3",
+				"renewalSequence -ne 2",
+				"authorizes only resuming the existing review process",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-custody-baseline-contract.ps1"),
+			expected: []string{
+				"nextReviewSequence -ne 7",
+				"unknown-renewal",
+				"baselineTamperingRejected",
+				"renewalTamperingRejected",
+				"Next renewed production assurance custody baseline contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-next-renewed-custody-baseline.md"),
+			expected: []string{
+				"generation-3 custody-review baseline",
+				"review-chain head at sequence 6",
+				"Never edit generated JSON",
+				"Chapter 68 must record",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test next renewed production assurance custody baseline contract",
+				"test-production-assurance-next-renewed-custody-baseline-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read next renewed production assurance custody baseline artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("next renewed production assurance custody baseline artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

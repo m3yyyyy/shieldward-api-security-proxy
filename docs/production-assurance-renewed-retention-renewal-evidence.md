@@ -110,5 +110,7 @@ $gateArguments.MaxEvidenceAgeMinutes = 60
 
 Only a fresh passed gate may hand off to Chapter 67. Chapter 67 must establish
 the next renewed custody-review baseline while preserving every original and
-renewed lineage digest. This evidence does not itself create that baseline or
-complete a custody review.
+renewed lineage digest. Follow the
+[next renewed custody baseline](production-assurance-next-renewed-custody-baseline.md)
+procedure. This evidence does not itself create that baseline or complete a
+custody review.
