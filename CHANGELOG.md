@@ -122,6 +122,9 @@ versioning.
 - A renewed custody chain-audit checkpoint that inventories every post-renewal
   review from the baseline sequence through the exact recurring head while
   preserving renewal evidence and the pre-renewal lineage digest.
+- Approval-gated subsequent retention-renewal plans that derive the next
+  baseline generation and renewal sequence from an exact at-risk renewed-chain
+  audit while preserving every original and renewed lineage digest.
 
 ## [1.0.0] - 2026-09-09
 

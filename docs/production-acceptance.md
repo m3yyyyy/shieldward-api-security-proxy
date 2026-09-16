@@ -275,3 +275,5 @@ The sequence and deadline must be derived from the exact latest passed review.
 Use the
 [renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md)
 to verify the complete post-renewal chain at each governance checkpoint.
+An at-risk retention result must stop continuation and use the
+[renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md).

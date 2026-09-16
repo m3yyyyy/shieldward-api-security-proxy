@@ -206,6 +206,9 @@ Continue subsequent deadlines with
 never skipping or rewriting a predecessor.
 At the approved checkpoint, record the complete sequence with the
 [renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md).
+If its action requires another renewal, use the
+[renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md)
+and do not treat approval as execution evidence.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

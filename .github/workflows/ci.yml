@@ -154,6 +154,9 @@ jobs:
       - name: Test renewed production assurance custody chain audit contract
         shell: pwsh
         run: ./scripts/test-production-assurance-renewed-custody-chain-audit-contract.ps1
+      - name: Test renewed production assurance retention renewal planning contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-renewed-retention-renewal-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

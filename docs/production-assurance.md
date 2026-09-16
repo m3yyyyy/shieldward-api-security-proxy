@@ -326,3 +326,6 @@ using the exact latest passed review as the predecessor.
 Audit that continued chain with the
 [renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md)
 at the approved governance checkpoint.
+If that audit reports retention at risk, use the
+[renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md)
+before any later external renewal procedure.
