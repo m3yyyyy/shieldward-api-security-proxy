@@ -204,6 +204,8 @@ failed or unknown controls stop continuation.
 Continue subsequent deadlines with
 [recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md),
 never skipping or rewriting a predecessor.
+At the approved checkpoint, record the complete sequence with the
+[renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md).
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

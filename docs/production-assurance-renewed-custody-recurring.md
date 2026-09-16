@@ -119,3 +119,8 @@ $gateArguments.MaxEvidenceAgeMinutes = 60
 A green gate proves only the recorded review. Preserve every predecessor and
 continue from the exact latest passed artifact. A failed or unknown result
 requires its recorded remediation and cannot support custody continuity.
+
+At the approved governance checkpoint, use the
+[renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md)
+to inventory the full post-renewal sequence without rewriting the baseline or
+pre-renewal lineage.

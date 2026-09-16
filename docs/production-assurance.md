@@ -323,3 +323,6 @@ to revalidate external controls and continue without resetting the sequence.
 Continue every later deadline with
 [recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md),
 using the exact latest passed review as the predecessor.
+Audit that continued chain with the
+[renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md)
+at the approved governance checkpoint.

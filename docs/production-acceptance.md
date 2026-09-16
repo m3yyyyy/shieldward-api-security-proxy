@@ -272,3 +272,6 @@ renewed custody chain.
 For every later deadline, use
 [recurring renewed custody reviews](production-assurance-renewed-custody-recurring.md).
 The sequence and deadline must be derived from the exact latest passed review.
+Use the
+[renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md)
+to verify the complete post-renewal chain at each governance checkpoint.

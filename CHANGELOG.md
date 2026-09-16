@@ -119,6 +119,9 @@ versioning.
 - Recurring renewed custody-review evidence that accepts only the exact passed
   predecessor, derives every later sequence and deadline, and preserves the
   renewal baseline and original custody lineage across the continued chain.
+- A renewed custody chain-audit checkpoint that inventories every post-renewal
+  review from the baseline sequence through the exact recurring head while
+  preserving renewal evidence and the pre-renewal lineage digest.
 
 ## [1.0.0] - 2026-09-09
 

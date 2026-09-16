@@ -81,6 +81,7 @@ directory. It is for local testing only.
 - [Production assurance renewed custody-review baseline](docs/production-assurance-renewed-custody-baseline.md)
 - [Production assurance renewed custody-review evidence](docs/production-assurance-renewed-custody-review.md)
 - [Recurring production assurance renewed custody reviews](docs/production-assurance-renewed-custody-recurring.md)
+- [Renewed production assurance custody chain audit](docs/production-assurance-renewed-custody-chain-audit.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

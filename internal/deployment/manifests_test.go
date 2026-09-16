@@ -3520,6 +3520,84 @@ func TestProductionAssuranceRecurringRenewedCustodyReviewContracts(t *testing.T)
 	}
 }
 
+func TestProductionAssuranceRenewedCustodyChainAuditContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-renewed-custody-chain-audit-evidence.ps1"),
+			expected: []string{
+				"renewed-production-assurance-custody-chain-audit",
+				"contains a cycle",
+				"not contiguous from its baseline sequence",
+				"continue-renewed-custody-reviews",
+				"No scheduler, archive, custody, retention",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-chain-audit-evidence.ps1"),
+			expected: []string{
+				"exact recurring renewed custody-review head no longer matches",
+				"changed its baseline, renewal, or original lineage",
+				"chain inventory entry at index",
+				"custody chain-audit integrity digest is invalid",
+				"does not schedule reviews, alter archives, change production",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-chain-audit-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"decision.originalLineageVerified -ne $true",
+				"do not continue renewed reviews",
+				"proves only the recorded audit",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-renewed-custody-chain-audit-contract.ps1"),
+			expected: []string{
+				"passed-short",
+				"invalid-head",
+				"headTamperingRejected",
+				"interiorTamperingRejected",
+				"Renewed production assurance custody chain-audit contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-renewed-custody-chain-audit.md"),
+			expected: []string{
+				"exact passed recurring renewed custody review",
+				"Unknown states fail closed",
+				"Never edit generated JSON",
+				"Continue without resetting the chain",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test renewed production assurance custody chain audit contract",
+				"test-production-assurance-renewed-custody-chain-audit-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read renewed production assurance custody chain-audit artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("renewed production assurance custody chain-audit artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
