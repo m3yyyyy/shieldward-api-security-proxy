@@ -113,6 +113,9 @@ versioning.
 - A tamper-evident renewed custody-review baseline that preserves the original
   custody and review-chain identity, binds the exact renewal evidence, and
   derives the next sequence and deadline without rewriting history.
+- Freshness-bound renewed custody-review evidence that continues at the exact
+  inherited sequence and deadline, revalidates archive controls, and binds a
+  new review-link digest without resetting pre-renewal lineage.
 
 ## [1.0.0] - 2026-09-09
 

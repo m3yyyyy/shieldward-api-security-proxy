@@ -264,3 +264,8 @@ Then follow the [renewed custody-review baseline](production-assurance-renewed-c
 procedure. It preserves the original lineage, binds the exact passed renewal,
 and derives the next review sequence and inherited deadline without treating
 baseline creation as a completed review.
+
+Complete that inherited review with
+[renewed custody-review evidence](production-assurance-renewed-custody-review.md).
+Only a timely passed record with current archive controls may continue the
+renewed custody chain.

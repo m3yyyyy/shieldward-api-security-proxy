@@ -145,6 +145,9 @@ jobs:
       - name: Test production assurance renewed custody baseline contract
         shell: pwsh
         run: ./scripts/test-production-assurance-renewed-custody-baseline-contract.ps1
+      - name: Test production assurance renewed custody review contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-renewed-custody-review-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

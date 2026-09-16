@@ -162,3 +162,6 @@ custody-review baseline before scheduling or resuming later reviews.
 Follow the [renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
 procedure for that bridge. It preserves the original root and prior review
 chain instead of editing either artifact.
+Complete the inherited next review with
+[renewed custody-review evidence](production-assurance-renewed-custody-review.md)
+after the baseline gate passes.

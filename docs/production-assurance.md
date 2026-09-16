@@ -317,3 +317,6 @@ external change and before establishing a renewed custody-review baseline.
 Use the
 [renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
 to preserve the original chain while deriving the next sequence and deadline.
+At that deadline, use
+[renewed custody-review evidence](production-assurance-renewed-custody-review.md)
+to revalidate external controls and continue without resetting the sequence.

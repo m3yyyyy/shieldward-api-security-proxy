@@ -198,6 +198,9 @@ tamper-evident results may establish a renewed custody-review baseline.
 Create that bridge with
 [the renewed custody-review baseline](production-assurance-renewed-custody-baseline.md)
 before resuming the inherited review sequence.
+At its inherited deadline, record the review with
+[renewed custody-review evidence](production-assurance-renewed-custody-review.md);
+failed or unknown controls stop continuation.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

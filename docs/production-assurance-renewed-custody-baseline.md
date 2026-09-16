@@ -143,5 +143,10 @@ nextReviewDueAtUtc for the next renewed custody review. Do not renumber prior
 reviews, replace the original custody checksum, or treat baseline creation as a
 completed review.
 
+At the inherited deadline, follow the
+[renewed custody-review evidence](production-assurance-renewed-custody-review.md)
+procedure. It derives the exact sequence and deadline from this baseline and
+records current external archive-control observations.
+
 No review was scheduled and no archive, retention, cluster, traffic, or
 rollback change was made by Chapter 61.
