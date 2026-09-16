@@ -277,3 +277,6 @@ Use the
 to verify the complete post-renewal chain at each governance checkpoint.
 An at-risk retention result must stop continuation and use the
 [renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md).
+The approved plan is not execution proof. Require fresh, passed
+[renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
+before creating another renewed custody baseline.

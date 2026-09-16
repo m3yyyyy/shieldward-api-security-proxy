@@ -132,4 +132,6 @@ $gateArguments = @{
 
 A green gate authorizes only the exact external procedure. Preserve the plan
 and all bound evidence. Chapter 66 must record independent execution evidence
-before any newer baseline or renewed review chain can be established.
+before any newer baseline or renewed review chain can be established. Follow
+the [renewed retention-renewal evidence procedure](production-assurance-renewed-retention-renewal-evidence.md)
+and do not treat approval alone as proof of execution.

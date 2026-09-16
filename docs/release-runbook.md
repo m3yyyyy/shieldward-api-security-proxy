@@ -208,7 +208,9 @@ At the approved checkpoint, record the complete sequence with the
 [renewed custody chain audit](production-assurance-renewed-custody-chain-audit.md).
 If its action requires another renewal, use the
 [renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md)
-and do not treat approval as execution evidence.
+and do not treat approval as execution evidence. After the external change,
+require [renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
+before establishing the next custody baseline.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

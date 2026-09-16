@@ -125,6 +125,10 @@ versioning.
 - Approval-gated subsequent retention-renewal plans that derive the next
   baseline generation and renewal sequence from an exact at-risk renewed-chain
   audit while preserving every original and renewed lineage digest.
+- Freshness-bound subsequent retention-renewal execution evidence that proves
+  renewal sequence 2 reached the approved boundary with immutable controls,
+  complete inventory, least-privilege access, restore verification, and the
+  unchanged original and renewed custody lineage before generation 3 begins.
 
 ## [1.0.0] - 2026-09-09
 

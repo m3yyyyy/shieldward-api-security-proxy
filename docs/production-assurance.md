@@ -328,4 +328,6 @@ Audit that continued chain with the
 at the approved governance checkpoint.
 If that audit reports retention at risk, use the
 [renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md)
-before any later external renewal procedure.
+before any later external renewal procedure. After external execution, require
+[renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
+before establishing the next custody baseline.
