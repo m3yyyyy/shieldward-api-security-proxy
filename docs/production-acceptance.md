@@ -286,3 +286,7 @@ Complete its inherited sequence-7 deadline with the
 failed or unknown controls stop continuation.
 Use [recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md)
 for sequence 8 and later without skipping or replacing a predecessor.
+At the approved checkpoint, require the
+[next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
+to verify the complete generation-3 chain and inherited lineage before relying
+on its recorded continuation action.

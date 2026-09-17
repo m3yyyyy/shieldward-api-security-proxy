@@ -338,3 +338,7 @@ to record sequence 7 and revalidate every external archive control.
 Continue sequence 8 and every later deadline with
 [recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md),
 always binding the exact latest passed predecessor.
+At the approved generation-3 governance checkpoint, use the
+[next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
+to inventory sequences 7 through the exact recurring head without resetting
+the chain or rewriting either renewal generation.

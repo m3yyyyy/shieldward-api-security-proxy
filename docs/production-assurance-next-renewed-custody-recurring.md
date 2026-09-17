@@ -114,5 +114,7 @@ $gateArguments.MaxEvidenceAgeMinutes = 60
 ```
 
 Only a fresh passed gate may become the next predecessor. Chapter 70 may audit
-the complete generation-3 chain at an approved governance checkpoint, but an
-audit must not replace or reschedule any custody review.
+the complete generation-3 chain with the
+[next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
+at an approved governance checkpoint, but an audit must not replace or
+reschedule any custody review.

@@ -139,6 +139,9 @@ versioning.
 - Recurring generation-3 custody-review evidence that accepts only the exact
   latest passed predecessor, derives sequences 8 and later without gaps or
   resets, and preserves both renewals plus the complete custody lineage.
+- A generation-3 custody chain-audit checkpoint that inventories sequences 7
+  through the exact recurring head, rejects gaps, cycles, substitutions, and
+  tampering, and preserves both renewals plus every earlier lineage digest.
 
 ## [1.0.0] - 2026-09-09
 

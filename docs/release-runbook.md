@@ -218,6 +218,10 @@ before any later review sequence continues.
 Continue each later deadline with
 [recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md),
 using the exact latest passed artifact as predecessor.
+At the approved checkpoint, run the
+[next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
+to verify sequences 7 through the exact recurring head, both renewals, and the
+complete inherited custody lineage.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
