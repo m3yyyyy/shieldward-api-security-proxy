@@ -290,3 +290,6 @@ At the approved checkpoint, require the
 [next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
 to verify the complete generation-3 chain and inherited lineage before relying
 on its recorded continuation action.
+An at-risk result must stop continuation and use the
+[next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md);
+the approved plan alone cannot establish generation 4.

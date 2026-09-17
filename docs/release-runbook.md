@@ -222,6 +222,9 @@ At the approved checkpoint, run the
 [next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
 to verify sequences 7 through the exact recurring head, both renewals, and the
 complete inherited custody lineage.
+If retention is at risk, stop and use the
+[next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md)
+before any third external renewal. Approval is not proof of execution.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

@@ -342,3 +342,7 @@ At the approved generation-3 governance checkpoint, use the
 [next-renewed custody chain audit](production-assurance-next-renewed-custody-chain-audit.md)
 to inventory sequences 7 through the exact recurring head without resetting
 the chain or rewriting either renewal generation.
+If it records retention at risk, stop and create the independently approved
+[next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md).
+Approval authorizes only the exact external procedure and is not execution
+evidence.

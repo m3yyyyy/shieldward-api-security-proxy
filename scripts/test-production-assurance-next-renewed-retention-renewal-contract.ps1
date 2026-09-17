@@ -1,0 +1,217 @@
+[CmdletBinding()]
+param()
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Assert-Rejected {
+    param([Parameter(Mandatory)][scriptblock]$Action, [Parameter(Mandatory)][string]$FailureMessage)
+
+    $rejected = $false
+    try { & $Action } catch { $rejected = $true }
+    if (-not $rejected) { throw $FailureMessage }
+}
+
+function New-TestNextRenewedRetentionRenewalPlan {
+    param(
+        [Parameter(Mandatory)][string]$TriggerEvidencePath,
+        [Parameter(Mandatory)][string]$ChainHeadEvidencePath,
+        [Parameter(Mandatory)][string]$BaselinePath,
+        [Parameter(Mandatory)][string]$RenewalEvidencePath,
+        [Parameter(Mandatory)][string]$PreviousRenewalPlanPath,
+        [Parameter(Mandatory)][string]$OutputDirectory,
+        [Parameter(Mandatory)][DateTimeOffset]$ReferenceTime,
+        [Parameter(Mandatory)][DateTimeOffset]$RequestedRetentionUntil,
+        [string]$ChangeId = 'CHG-CUSTODY-RENEWAL-003'
+    )
+
+    & (Join-Path $PSScriptRoot 'new-production-assurance-next-renewed-retention-renewal-plan.ps1') `
+        -TriggerEvidencePath $TriggerEvidencePath `
+        -ChainHeadEvidencePath $ChainHeadEvidencePath `
+        -BaselinePath $BaselinePath `
+        -RenewalEvidencePath $RenewalEvidencePath `
+        -PreviousRenewalPlanPath $PreviousRenewalPlanPath `
+        -ExpectedProductionContext 'production-contract' `
+        -ChangeId $ChangeId `
+        -RequestedRetentionUntilUtc $RequestedRetentionUntil `
+        -RenewalMethod 'extend-existing-object-lock' `
+        -ArchiveLocationReference 'ARCHIVE-IMMUTABLE-GENERATION-003' `
+        -ApprovalOwner 'Independent Renewed Retention Approver' `
+        -CustodyOwner 'Renewed Evidence Custody Owner' `
+        -RestoreAuthority 'Independent Renewed Restore Verifier' `
+        -MinimumExtensionDays 365 `
+        -MinimumRemainingDaysAfterNextReview 180 `
+        -OutputDirectory $OutputDirectory `
+        -ReferenceTimeUtc $ReferenceTime.ToUniversalTime().ToString('o') `
+        -Force 6>$null
+
+    $safeChangeId = $ChangeId -replace '[^A-Za-z0-9._-]', '-'
+    return (Join-Path $OutputDirectory "next-renewed-retention-renewal-$safeChangeId.json")
+}
+
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$auditRoot = Join-Path $repoRoot '.shieldward/production-assurance-next-renewed-custody-chain-audit-contract'
+$recurringRoot = Join-Path $repoRoot '.shieldward/production-assurance-next-renewed-custody-recurring-contract'
+$baselineRoot = Join-Path $repoRoot '.shieldward/production-assurance-next-renewed-custody-baseline-contract'
+$renewalRoot = Join-Path $repoRoot '.shieldward/production-assurance-renewed-retention-renewal-evidence-contract'
+$previousPlanRoot = Join-Path $repoRoot '.shieldward/production-assurance-renewed-retention-renewal-contract'
+$testRoot = Join-Path $repoRoot '.shieldward/production-assurance-next-renewed-retention-renewal-contract'
+New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
+
+& (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-custody-chain-audit-contract.ps1') 6>$null
+
+$triggerEvidencePath = (Get-ChildItem -LiteralPath (Join-Path $auditRoot 'retention-at-risk') -Filter 'next-renewed-custody-chain-audit-*.json' |
+    Sort-Object Name -Descending | Select-Object -First 1).FullName
+$passedAuditPath = (Get-ChildItem -LiteralPath (Join-Path $auditRoot 'passed') -Filter 'next-renewed-custody-chain-audit-*.json' |
+    Sort-Object Name -Descending | Select-Object -First 1).FullName
+$chainHeadPath = (Get-ChildItem -LiteralPath (Join-Path $recurringRoot 'passed-second') -Filter 'next-renewed-custody-review-*.json' |
+    Sort-Object Name -Descending | Select-Object -First 1).FullName
+$baselinePath = (Get-ChildItem -LiteralPath (Join-Path $baselineRoot 'passed') -Filter 'next-renewed-custody-baseline-*.json' |
+    Sort-Object Name -Descending | Select-Object -First 1).FullName
+$renewalEvidencePath = (Get-ChildItem -LiteralPath (Join-Path $renewalRoot 'passed') -Filter 'renewed-retention-renewal-evidence-*.json' |
+    Sort-Object Name -Descending | Select-Object -First 1).FullName
+$previousRenewalPlanPath = Join-Path $previousPlanRoot 'approved/renewed-retention-renewal-CHG-CUSTODY-RENEWAL-002.json'
+$trigger = Get-Content -Raw -LiteralPath $triggerEvidencePath | ConvertFrom-Json
+$planClock = ([DateTimeOffset]$trigger.collectedAtUtc).ToUniversalTime()
+$currentRetentionUntil = ([DateTimeOffset]$trigger.retention.untilUtc).ToUniversalTime()
+$requestedRetentionUntil = $currentRetentionUntil.AddDays(365)
+$commonArguments = @{
+    TriggerEvidencePath = $triggerEvidencePath
+    ChainHeadEvidencePath = $chainHeadPath
+    BaselinePath = $baselinePath
+    RenewalEvidencePath = $renewalEvidencePath
+    PreviousRenewalPlanPath = $previousRenewalPlanPath
+    OutputDirectory = Join-Path $testRoot 'approved'
+    ReferenceTime = $planClock
+    RequestedRetentionUntil = $requestedRetentionUntil
+}
+$planPath = New-TestNextRenewedRetentionRenewalPlan @commonArguments
+
+$validationArguments = @{
+    PlanPath = $planPath
+    TriggerEvidencePath = $triggerEvidencePath
+    ChainHeadEvidencePath = $chainHeadPath
+    BaselinePath = $baselinePath
+    RenewalEvidencePath = $renewalEvidencePath
+    PreviousRenewalPlanPath = $previousRenewalPlanPath
+    ExpectedProductionContext = 'production-contract'
+    RequiredState = 'Pending'
+    ReferenceTimeUtc = $planClock.ToString('o')
+}
+& (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-plan.ps1') @validationArguments 6>$null
+
+$pendingPlan = Get-Content -Raw -LiteralPath $planPath | ConvertFrom-Json
+if (
+    [string]$pendingPlan.state -ne 'pending' -or
+    [int]$pendingPlan.renewal.currentBaselineGeneration -ne 3 -or
+    [int]$pendingPlan.renewal.nextBaselineGeneration -ne 4 -or
+    [int]$pendingPlan.renewal.currentRenewalSequence -ne 2 -or
+    [int]$pendingPlan.renewal.renewalSequence -ne 3 -or
+    [bool]$pendingPlan.decision.lineagePreserved -ne $true -or
+    [bool]$pendingPlan.decision.externalExecutionAuthorized -ne $false -or
+    [string]$pendingPlan.decision.nextAction -ne 'obtain-independent-next-renewed-retention-renewal-approval'
+) {
+    throw 'A valid third renewal request did not derive generation 4 and the pending approval boundary.'
+}
+
+$approvalArguments = @{
+    PlanPath = $planPath
+    TriggerEvidencePath = $triggerEvidencePath
+    ChainHeadEvidencePath = $chainHeadPath
+    BaselinePath = $baselinePath
+    RenewalEvidencePath = $renewalEvidencePath
+    PreviousRenewalPlanPath = $previousRenewalPlanPath
+    ExpectedProductionContext = 'production-contract'
+    ApprovedBy = 'Independent Renewed Retention Approver'
+    ApprovedAtUtc = $planClock.AddMinutes(1).ToString('o')
+}
+Assert-Rejected -FailureMessage 'The next-renewed retention-renewal contract accepted an incorrect approval statement.' -Action {
+    $wrongApprovalArguments = $approvalArguments.Clone()
+    $wrongApprovalArguments.ApprovalStatement = 'APPROVE THE WRONG RENEWED RETENTION CHANGE'
+    & (Join-Path $PSScriptRoot 'approve-production-assurance-next-renewed-retention-renewal-plan.ps1') @wrongApprovalArguments 6>$null
+}
+
+$requiredStatement = 'APPROVE NEXT RENEWED RETENTION RENEWAL CHG-CUSTODY-RENEWAL-003 GENERATION 4 FOR production-contract UNTIL {0}' -f `
+    $requestedRetentionUntil.ToString('yyyy-MM-dd')
+$approvalArguments.ApprovalStatement = $requiredStatement
+& (Join-Path $PSScriptRoot 'approve-production-assurance-next-renewed-retention-renewal-plan.ps1') @approvalArguments 6>$null
+
+$gateArguments = $validationArguments.Clone()
+$gateArguments.RequiredState = 'Approved'
+$gateArguments.ReferenceTimeUtc = $planClock.AddMinutes(1).ToString('o')
+$gateArguments.Remove('RequiredState')
+& (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-gate.ps1') @gateArguments 6>$null
+
+$approvedPlan = Get-Content -Raw -LiteralPath $planPath | ConvertFrom-Json
+if (
+    [string]$approvedPlan.state -ne 'approved' -or
+    [string]$approvedPlan.approval.status -ne 'approved' -or
+    [bool]$approvedPlan.decision.lineagePreserved -ne $true -or
+    [bool]$approvedPlan.decision.externalExecutionAuthorized -ne $true -or
+    [string]$approvedPlan.decision.nextAction -ne 'execute-approved-external-next-renewed-retention-renewal'
+) {
+    throw 'The exact independent approval did not authorize only the recorded third renewal procedure.'
+}
+
+Assert-Rejected -FailureMessage 'A passed renewed custody chain audit was accepted as a renewal trigger.' -Action {
+    $invalidArguments = $commonArguments.Clone()
+    $invalidArguments.TriggerEvidencePath = $passedAuditPath
+    $invalidArguments.OutputDirectory = Join-Path $testRoot 'invalid-trigger'
+    New-TestNextRenewedRetentionRenewalPlan @invalidArguments | Out-Null
+}
+
+Assert-Rejected -FailureMessage 'A next-renewed retention-renewal plan accepted an inadequate extension.' -Action {
+    $shortArguments = $commonArguments.Clone()
+    $shortArguments.OutputDirectory = Join-Path $testRoot 'short-extension'
+    $shortArguments.RequestedRetentionUntil = $currentRetentionUntil.AddDays(364)
+    $shortArguments.ChangeId = 'CHG-CUSTODY-RENEWAL-003-SHORT'
+    New-TestNextRenewedRetentionRenewalPlan @shortArguments | Out-Null
+}
+
+$wrongContextArguments = $gateArguments.Clone()
+$wrongContextArguments.ExpectedProductionContext = 'wrong-production-context'
+$wrongContextArguments.Remove('ReferenceTimeUtc')
+Assert-Rejected -FailureMessage 'The next-renewed retention-renewal plan accepted the wrong production context.' -Action {
+    & (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-plan.ps1') @wrongContextArguments -RequiredState Approved 6>$null
+}
+
+$originalPlan = [System.IO.File]::ReadAllText($planPath)
+$planTamperingRejected = $false
+try {
+    $tamperedPlan = $originalPlan | ConvertFrom-Json -AsHashtable
+    $tamperedPlan['renewal']['nextBaselineGeneration'] = 5
+    [System.IO.File]::WriteAllText($planPath, (($tamperedPlan | ConvertTo-Json -Depth 9) + [Environment]::NewLine), [System.Text.UTF8Encoding]::new($false))
+    try {
+        & (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-plan.ps1') @gateArguments -RequiredState Approved 6>$null
+    }
+    catch { $planTamperingRejected = $true }
+}
+finally {
+    [System.IO.File]::WriteAllText($planPath, $originalPlan, [System.Text.UTF8Encoding]::new($false))
+}
+if (-not $planTamperingRejected) { throw 'Next-renewed retention-renewal plan tampering was not rejected.' }
+
+$originalTrigger = [System.IO.File]::ReadAllText($triggerEvidencePath)
+$triggerTamperingRejected = $false
+try {
+    [System.IO.File]::AppendAllText($triggerEvidencePath, ' ')
+    try {
+        & (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-plan.ps1') @gateArguments -RequiredState Approved 6>$null
+    }
+    catch { $triggerTamperingRejected = $true }
+}
+finally {
+    [System.IO.File]::WriteAllText($triggerEvidencePath, $originalTrigger, [System.Text.UTF8Encoding]::new($false))
+}
+if (-not $triggerTamperingRejected) { throw 'Changed generation-3 custody chain-audit trigger was not rejected.' }
+
+$staleGateArguments = $gateArguments.Clone()
+$staleGateArguments.MaxPlanAgeMinutes = 60
+$staleGateArguments.ReferenceTimeUtc = $planClock.AddMinutes(62).ToString('o')
+Assert-Rejected -FailureMessage 'The next-renewed retention-renewal gate accepted stale approval.' -Action {
+    & (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-gate.ps1') @staleGateArguments 6>$null
+}
+
+& (Join-Path $PSScriptRoot 'test-production-assurance-next-renewed-retention-renewal-gate.ps1') @gateArguments 6>$null
+
+Write-Host 'Next renewed production assurance retention-renewal planning contract passed.'

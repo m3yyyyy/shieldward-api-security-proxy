@@ -175,5 +175,5 @@ review. Failed or unknown evidence cannot authorize continuation; follow its
 recorded action and keep the complete chain intact.
 
 When the recorded action is `renew-retention-before-continuing`, stop and use
-the [renewed retention-renewal plan](production-assurance-renewed-retention-renewal.md).
+the [next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md).
 Its approval does not prove execution or permit the chain to resume.

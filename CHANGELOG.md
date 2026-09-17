@@ -142,6 +142,9 @@ versioning.
 - A generation-3 custody chain-audit checkpoint that inventories sequences 7
   through the exact recurring head, rejects gaps, cycles, substitutions, and
   tampering, and preserves both renewals plus every earlier lineage digest.
+- Approval-gated third retention-renewal plans that bind an exact at-risk
+  generation-3 audit, derive baseline generation 4 and renewal sequence 3,
+  and preserve both earlier renewals plus the complete custody lineage.
 
 ## [1.0.0] - 2026-09-09
 
