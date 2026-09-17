@@ -293,3 +293,7 @@ on its recorded continuation action.
 An at-risk result must stop continuation and use the
 [next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md);
 the approved plan alone cannot establish generation 4.
+Require
+[next-renewed retention-renewal evidence](production-assurance-next-renewed-retention-renewal-evidence.md)
+after the external change. Only fresh passed evidence may authorize creation of
+the generation-4 baseline; failed, unknown, or altered evidence stops progress.

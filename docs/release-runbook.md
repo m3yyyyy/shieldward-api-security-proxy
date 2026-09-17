@@ -225,6 +225,10 @@ complete inherited custody lineage.
 If retention is at risk, stop and use the
 [next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md)
 before any third external renewal. Approval is not proof of execution.
+After that external change, require
+[next-renewed retention-renewal evidence](production-assurance-next-renewed-retention-renewal-evidence.md)
+before creating a generation-4 custody baseline. The evidence gate must be
+fresh, passed, and bound to the exact approved plan and inherited lineage.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

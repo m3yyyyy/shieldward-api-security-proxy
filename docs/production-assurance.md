@@ -346,3 +346,7 @@ If it records retention at risk, stop and create the independently approved
 [next-renewed retention-renewal plan](production-assurance-next-renewed-retention-renewal.md).
 Approval authorizes only the exact external procedure and is not execution
 evidence.
+After external execution, require
+[next-renewed retention-renewal evidence](production-assurance-next-renewed-retention-renewal-evidence.md)
+before establishing a generation-4 custody baseline. A passed gate proves only
+the recorded result and preserves the full inherited lineage.

@@ -145,6 +145,9 @@ versioning.
 - Approval-gated third retention-renewal plans that bind an exact at-risk
   generation-3 audit, derive baseline generation 4 and renewal sequence 3,
   and preserve both earlier renewals plus the complete custody lineage.
+- Freshness-bound third retention-renewal execution evidence that binds the
+  exact approved procedure, proves immutable archive controls and the full
+  inherited lineage, and authorizes only creation of a generation-4 baseline.
 
 ## [1.0.0] - 2026-09-09
 

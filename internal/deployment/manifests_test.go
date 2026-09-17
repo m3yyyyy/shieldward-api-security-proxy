@@ -4157,6 +4157,83 @@ func TestProductionAssuranceNextRenewedRetentionRenewalContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceNextRenewedRetentionRenewalEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-next-renewed-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"production-assurance-next-renewed-retention-renewal-evidence",
+				"observedMeetsApprovedBoundary",
+				"establish-generation-4-custody-review-baseline",
+				"No archive, object-lock, retention",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"exact approved renewed retention-renewal plan",
+				"changed the production identity or inherited lineage",
+				"boundary decisions are inconsistent",
+				"evidence integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-retention-renewal-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"decision.lineagePreserved -ne $true",
+				"do not establish the generation-4 custody baseline",
+				"proves only the recorded external result",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-next-renewed-retention-renewal-evidence-contract.ps1"),
+			expected: []string{
+				"nextBaselineGeneration -ne 4",
+				"renewalSequence -ne 3",
+				"evidenceTamperingRejected",
+				"planTamperingRejected",
+				"Next renewed production assurance retention-renewal execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-next-renewed-retention-renewal-evidence.md"),
+			expected: []string{
+				"exact approved Chapter 71",
+				"Unknown states fail closed",
+				"Never edit generated JSON",
+				"Chapter 73",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test next renewed production assurance retention renewal evidence contract",
+				"test-production-assurance-next-renewed-retention-renewal-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read next-renewed production assurance retention-renewal evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("next-renewed production assurance retention-renewal evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
