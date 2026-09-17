@@ -281,3 +281,6 @@ The approved plan is not execution proof. Require fresh, passed
 [renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
 before creating the
 [next renewed custody baseline](production-assurance-next-renewed-custody-baseline.md).
+Complete its inherited sequence-7 deadline with the
+[next renewed custody review](production-assurance-next-renewed-custody-review.md);
+failed or unknown controls stop continuation.

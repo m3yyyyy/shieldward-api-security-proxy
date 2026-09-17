@@ -212,6 +212,9 @@ and do not treat approval as execution evidence. After the external change,
 require [renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
 before establishing the
 [next renewed custody baseline](production-assurance-next-renewed-custody-baseline.md).
+At its inherited deadline, require the
+[next renewed custody review](production-assurance-next-renewed-custody-review.md)
+before any later review sequence continues.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

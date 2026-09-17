@@ -332,3 +332,6 @@ before any later external renewal procedure. After external execution, require
 [renewed retention-renewal evidence](production-assurance-renewed-retention-renewal-evidence.md)
 before establishing the
 [next renewed custody baseline](production-assurance-next-renewed-custody-baseline.md).
+At its inherited deadline, use the
+[next renewed custody review](production-assurance-next-renewed-custody-review.md)
+to record sequence 7 and revalidate every external archive control.

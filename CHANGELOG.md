@@ -133,6 +133,9 @@ versioning.
   renewal evidence, preserves every original and renewed lineage digest, and
   derives review sequence 7 at the inherited deadline without resetting the
   review chain or extending retention locally.
+- Freshness-bound generation-3 custody-review evidence that completes sequence
+  7 at the inherited deadline, revalidates every external archive control, and
+  preserves the full original and renewed lineage before sequence 8 may begin.
 
 ## [1.0.0] - 2026-09-09
 

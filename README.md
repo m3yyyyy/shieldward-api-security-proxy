@@ -85,6 +85,7 @@ directory. It is for local testing only.
 - [Renewed production assurance retention-renewal plan](docs/production-assurance-renewed-retention-renewal.md)
 - [Renewed production assurance retention-renewal evidence](docs/production-assurance-renewed-retention-renewal-evidence.md)
 - [Next renewed production assurance custody baseline](docs/production-assurance-next-renewed-custody-baseline.md)
+- [Next renewed production assurance custody review](docs/production-assurance-next-renewed-custody-review.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)
