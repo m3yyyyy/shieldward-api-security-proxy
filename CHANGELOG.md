@@ -136,6 +136,9 @@ versioning.
 - Freshness-bound generation-3 custody-review evidence that completes sequence
   7 at the inherited deadline, revalidates every external archive control, and
   preserves the full original and renewed lineage before sequence 8 may begin.
+- Recurring generation-3 custody-review evidence that accepts only the exact
+  latest passed predecessor, derives sequences 8 and later without gaps or
+  resets, and preserves both renewals plus the complete custody lineage.
 
 ## [1.0.0] - 2026-09-09
 

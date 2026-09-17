@@ -284,3 +284,5 @@ before creating the
 Complete its inherited sequence-7 deadline with the
 [next renewed custody review](production-assurance-next-renewed-custody-review.md);
 failed or unknown controls stop continuation.
+Use [recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md)
+for sequence 8 and later without skipping or replacing a predecessor.

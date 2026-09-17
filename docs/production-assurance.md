@@ -335,3 +335,6 @@ before establishing the
 At its inherited deadline, use the
 [next renewed custody review](production-assurance-next-renewed-custody-review.md)
 to record sequence 7 and revalidate every external archive control.
+Continue sequence 8 and every later deadline with
+[recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md),
+always binding the exact latest passed predecessor.

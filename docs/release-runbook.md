@@ -215,6 +215,9 @@ before establishing the
 At its inherited deadline, require the
 [next renewed custody review](production-assurance-next-renewed-custody-review.md)
 before any later review sequence continues.
+Continue each later deadline with
+[recurring next-renewed custody reviews](production-assurance-next-renewed-custody-recurring.md),
+using the exact latest passed artifact as predecessor.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
