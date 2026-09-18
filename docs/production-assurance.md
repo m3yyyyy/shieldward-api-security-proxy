@@ -371,4 +371,6 @@ generation-5 retention boundary; failed, unknown, stale, insufficient, or
 altered evidence leaves the gate closed. Establish the
 [generation-5 custody baseline](production-assurance-generation-5-custody-baseline.md)
 only from that exact record. The baseline preserves review head 12 and derives
-sequence 13 without scheduling or completing a review.
+sequence 13 without scheduling or completing a review. Complete that inherited
+checkpoint through the [generation-5 custody review](production-assurance-generation-5-custody-review.md),
+which must revalidate every external archive control before continuation.

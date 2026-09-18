@@ -249,7 +249,10 @@ Proceed toward the generation-5 baseline only when that exact record is fresh,
 passed, and proves the approved boundary without changing inherited lineage.
 Then establish the
 [generation-5 custody baseline](production-assurance-generation-5-custody-baseline.md),
-preserving review head 12 and deriving sequence 13 without scheduling it.
+preserving review head 12 and deriving sequence 13 without scheduling it. At
+the inherited deadline, record the
+[generation-5 custody review](production-assurance-generation-5-custody-review.md)
+and continue only when every archive control passes.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

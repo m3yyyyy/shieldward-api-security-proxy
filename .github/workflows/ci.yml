@@ -199,6 +199,9 @@ jobs:
       - name: Test generation 5 production assurance custody baseline contract
         shell: pwsh
         run: ./scripts/test-production-assurance-generation-5-custody-baseline-contract.ps1
+      - name: Test generation 5 production assurance custody review contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-generation-5-custody-review-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})
