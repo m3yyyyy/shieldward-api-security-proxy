@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Recurring generation-4 production assurance custody reviews that bind the
+  exact latest passed predecessor, derive sequences 11 and later without gaps
+  or resets, preserve the full inherited lineage, and fail closed on stale,
+  altered, unknown, or unsafe archive evidence.
 - Guarded, digest-pinned Kubernetes staging overlays with exact-context rollout
   checks, fail-closed acceptance probes, an optional control-plane outage drill,
   sanitized evidence capture, and digest-based rollback guidance.

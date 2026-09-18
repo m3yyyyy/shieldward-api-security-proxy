@@ -4399,6 +4399,87 @@ func TestProductionAssuranceGeneration4CustodyReviewContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceGeneration4CustodyRecurringContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-4-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"recurring-generation-4-production-assurance-custody-review",
+				"generation4CustodyBaseline",
+				"previousReviewEvidence",
+				"continue-generation-4-custody-reviews",
+				"No review was scheduled",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"exact passed predecessor no longer matches",
+				"inheritedLineage.inheritedLineage",
+				"timing, sequence, schedule, or retention calculation is invalid",
+				"custody-review integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-recurring-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"generation -ne 4",
+				"renewalSequence -ne 3",
+				"review.sequence -lt 11",
+				"continue-generation-4-custody-reviews",
+				"proves only the recorded review",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-recurring-contract.ps1"),
+			expected: []string{
+				"review.sequence -ne 11",
+				"review.sequence -ne 12",
+				"Changed sequence-10 predecessor",
+				"evidenceTamperingRejected",
+				"Recurring generation-4 production assurance custody-review contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-4-custody-recurring.md"),
+			expected: []string{
+				"74 sequence-10 artifact",
+				"Sequence 11 must follow 10",
+				"sequence 12 must follow 11",
+				"Never edit generated JSON",
+				"Chapter 76",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test recurring generation 4 production assurance custody review contract",
+				"test-production-assurance-generation-4-custody-recurring-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read recurring generation-4 production assurance custody-review artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("recurring generation-4 production assurance custody-review artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

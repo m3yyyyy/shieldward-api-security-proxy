@@ -301,4 +301,7 @@ failed, unknown, or altered evidence stops progress, and baseline creation does
 not complete review sequence 10. Require the
 [generation-4 custody review](production-assurance-generation-4-custody-review.md)
 at the inherited deadline; only fresh passed evidence may continue to sequence
-11.
+11. Every later sequence must use the
+[recurring generation-4 custody review](production-assurance-generation-4-custody-recurring.md)
+gate and preserve the exact predecessor, deadline, retention boundary, and
+inherited lineage.

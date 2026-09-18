@@ -354,4 +354,7 @@ A passed baseline gate preserves the full inherited lineage and authorizes only
 continuation to
 [generation-4 custody review sequence 10](production-assurance-generation-4-custody-review.md).
 That review must revalidate every external archive control at the inherited
-deadline before any later sequence continues.
+deadline before any later sequence continues. Continue with
+[recurring generation-4 custody reviews](production-assurance-generation-4-custody-recurring.md),
+which bind the exact latest passed predecessor and derive sequences 11 and
+later without gaps, resets, or lineage changes.
