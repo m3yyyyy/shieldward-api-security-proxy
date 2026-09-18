@@ -4561,6 +4561,99 @@ func TestProductionAssuranceGeneration4CustodyChainAuditContracts(t *testing.T) 
 	}
 }
 
+func TestProductionAssuranceGeneration4RetentionRenewalContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-4-retention-renewal-plan.ps1"),
+			expected: []string{
+				"production-assurance-generation-4-retention-renewal-plan",
+				"generation4CustodyBaseline",
+				"currentBaselineGeneration",
+				"APPROVE GENERATION 4 RETENTION RENEWAL",
+				"obtain-independent-generation-4-retention-renewal-approval",
+				"No archive",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-retention-renewal-plan.ps1"),
+			expected: []string{
+				"exact failed retention-at-risk audit",
+				"generation4BaselineSha256",
+				"generation4ReviewHeadSequence",
+				"generation, extension, next-review coverage",
+				"retention-renewal plan integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "approve-production-assurance-generation-4-retention-renewal-plan.ps1"),
+			expected: []string{
+				"ApprovalStatement",
+				"approvalDigest",
+				"execute-approved-external-generation-4-retention-renewal",
+				"local audit record",
+				"No archive",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-retention-renewal-gate.ps1"),
+			expected: []string{
+				"MaxPlanAgeMinutes",
+				"lineagePreserved",
+				"externalExecutionAuthorized",
+				"execute-approved-external-generation-4-retention-renewal",
+				"does not prove retention changed",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-retention-renewal-contract.ps1"),
+			expected: []string{
+				"currentBaselineGeneration -ne 4",
+				"nextBaselineGeneration -ne 5",
+				"currentRenewalSequence -ne 3",
+				"renewalSequence -ne 4",
+				"planTamperingRejected",
+				"Generation-4 production assurance retention-renewal planning contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-4-retention-renewal.md"),
+			expected: []string{
+				"exact Chapter 76 generation-4 custody chain audit",
+				"next baseline generation and renewal sequence",
+				"Approval authorizes only the recorded procedure",
+				"Never edit generated JSON",
+				"Chapter 78",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test generation 4 production assurance retention renewal planning contract",
+				"test-production-assurance-generation-4-retention-renewal-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read generation-4 production assurance retention-renewal artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("generation-4 production assurance retention-renewal artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

@@ -360,4 +360,8 @@ which bind the exact latest passed predecessor and derive sequences 11 and
 later without gaps, resets, or lineage changes. At an approved checkpoint, use
 the [generation-4 custody chain audit](production-assurance-generation-4-custody-chain-audit.md)
 to reconstruct sequence 10 through the selected recurring head and verify the
-complete third-renewal lineage without scheduling or changing a review.
+complete third-renewal lineage without scheduling or changing a review. If
+that audit records retention at risk, stop and create the independently
+approved [generation-4 retention-renewal plan](production-assurance-generation-4-retention-renewal.md).
+Approval authorizes only the exact external procedure and is not execution
+evidence.

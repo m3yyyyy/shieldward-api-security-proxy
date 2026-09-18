@@ -239,7 +239,10 @@ using the exact latest passed predecessor without resetting the generation,
 renewal sequence, deadline, retention boundary, or inherited lineage. At an
 approved checkpoint, run the
 [generation-4 custody chain audit](production-assurance-generation-4-custody-chain-audit.md)
-to verify the complete sequence-10-through-head chain before continuation.
+to verify the complete sequence-10-through-head chain before continuation. If
+it records retention at risk, stop and use the
+[generation-4 retention-renewal plan](production-assurance-generation-4-retention-renewal.md);
+do not treat approval as proof that the external renewal ran.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

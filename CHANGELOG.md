@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- A generation-4 production assurance retention-renewal planning and approval
+  gate that binds the exact retention-at-risk chain audit, derives baseline
+  generation 5 and renewal sequence 4, and authorizes only the recorded
+  external procedure without claiming that retention changed.
 - A generation-4 production assurance custody chain audit that reconstructs
   sequences 10 through the selected recurring head, verifies every exact
   predecessor and digest without gaps or cycles, preserves the complete
