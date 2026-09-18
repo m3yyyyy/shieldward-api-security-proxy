@@ -298,4 +298,7 @@ Require
 after the external change. Only fresh passed evidence may create the
 [generation-4 custody baseline](production-assurance-generation-4-custody-baseline.md);
 failed, unknown, or altered evidence stops progress, and baseline creation does
-not complete review sequence 10.
+not complete review sequence 10. Require the
+[generation-4 custody review](production-assurance-generation-4-custody-review.md)
+at the inherited deadline; only fresh passed evidence may continue to sequence
+11.

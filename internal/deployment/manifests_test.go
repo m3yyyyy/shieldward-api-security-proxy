@@ -4316,6 +4316,89 @@ func TestProductionAssuranceGeneration4CustodyBaselineContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceGeneration4CustodyReviewContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-4-custody-review-evidence.ps1"),
+			expected: []string{
+				"generation-4-production-assurance-custody-review",
+				"generation4CustodyBaseline",
+				"reviewSequence",
+				"continue-generation-4-custody-reviews",
+				"No review was scheduled",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-review-evidence.ps1"),
+			expected: []string{
+				"exact passed generation-4 custody baseline",
+				"sequence-10 custody review changed the production identity or inherited lineage",
+				"timing, sequence, schedule, or retention calculation is invalid",
+				"custody-review evidence integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-review-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"generation -ne 4",
+				"renewalSequence -ne 3",
+				"review.sequence -ne 10",
+				"continue-generation-4-custody-reviews",
+				"proves only the recorded review",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-review-contract.ps1"),
+			expected: []string{
+				"generation -ne 4",
+				"renewalSequence -ne 3",
+				"review.sequence -ne 10",
+				"review.previousHeadSequence -ne 9",
+				"evidenceTamperingRejected",
+				"baselineTamperingRejected",
+				"Generation-4 production assurance custody-review evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-4-custody-review.md"),
+			expected: []string{
+				"exact Chapter 73 baseline",
+				"review sequence 10",
+				"Unknown",
+				"Never edit generated JSON",
+				"Chapter 75",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test generation 4 production assurance custody review contract",
+				"test-production-assurance-generation-4-custody-review-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read generation-4 production assurance custody-review artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("generation-4 production assurance custody-review artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

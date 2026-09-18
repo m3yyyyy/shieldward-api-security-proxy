@@ -105,5 +105,6 @@ $gateArguments.MaxBaselineAgeMinutes = 60
 
 A green gate authorizes only continuation of the inherited review process.
 Chapter 74 must record the actual sequence-10 custody review at the inherited
-deadline and revalidate all external archive controls. Chapter 73 neither
-schedules nor completes that review.
+deadline and revalidate all external archive controls. Follow the
+[generation-4 custody-review procedure](production-assurance-generation-4-custody-review.md).
+Chapter 73 neither schedules nor completes that review.

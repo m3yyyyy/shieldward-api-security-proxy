@@ -230,7 +230,9 @@ After that external change, require
 before creating the
 [generation-4 custody baseline](production-assurance-generation-4-custody-baseline.md).
 The evidence and baseline gates must be fresh, passed, and bound to the exact
-approved plan and inherited lineage before review sequence 10 continues.
+approved plan and inherited lineage before the
+[generation-4 custody review](production-assurance-generation-4-custody-review.md)
+records sequence 10 and revalidates every external archive control.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

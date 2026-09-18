@@ -151,6 +151,9 @@ versioning.
 - A tamper-evident generation-4 custody baseline that binds the exact third
   renewal evidence, preserves all prior baselines, renewals, and review-chain
   lineage, and derives sequence 10 without changing external retention.
+- Freshness-bound generation-4 custody-review evidence that completes sequence
+  10 at the inherited deadline, revalidates every external archive control,
+  and preserves the full lineage before sequence 11 may continue.
 
 ## [1.0.0] - 2026-09-09
 

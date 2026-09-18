@@ -351,4 +351,7 @@ After external execution, require
 before establishing the
 [generation-4 custody baseline](production-assurance-generation-4-custody-baseline.md).
 A passed baseline gate preserves the full inherited lineage and authorizes only
-continuation to review sequence 10.
+continuation to
+[generation-4 custody review sequence 10](production-assurance-generation-4-custody-review.md).
+That review must revalidate every external archive control at the inherited
+deadline before any later sequence continues.
