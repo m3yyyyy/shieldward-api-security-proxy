@@ -109,6 +109,6 @@ $gateArguments.MaxEvidenceAgeMinutes = 60
 ```
 
 Only a fresh passed gate may hand off to Chapter 73. Chapter 73 must establish
-the generation-4 custody-review baseline while preserving the complete
-inherited lineage. This evidence does not itself create that baseline or
-complete a custody review.
+the [generation-4 custody-review baseline](production-assurance-generation-4-custody-baseline.md)
+while preserving the complete inherited lineage. This evidence does not itself
+create that baseline or complete a custody review.

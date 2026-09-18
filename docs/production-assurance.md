@@ -348,5 +348,7 @@ Approval authorizes only the exact external procedure and is not execution
 evidence.
 After external execution, require
 [next-renewed retention-renewal evidence](production-assurance-next-renewed-retention-renewal-evidence.md)
-before establishing a generation-4 custody baseline. A passed gate proves only
-the recorded result and preserves the full inherited lineage.
+before establishing the
+[generation-4 custody baseline](production-assurance-generation-4-custody-baseline.md).
+A passed baseline gate preserves the full inherited lineage and authorizes only
+continuation to review sequence 10.

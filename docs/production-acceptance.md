@@ -295,5 +295,7 @@ An at-risk result must stop continuation and use the
 the approved plan alone cannot establish generation 4.
 Require
 [next-renewed retention-renewal evidence](production-assurance-next-renewed-retention-renewal-evidence.md)
-after the external change. Only fresh passed evidence may authorize creation of
-the generation-4 baseline; failed, unknown, or altered evidence stops progress.
+after the external change. Only fresh passed evidence may create the
+[generation-4 custody baseline](production-assurance-generation-4-custody-baseline.md);
+failed, unknown, or altered evidence stops progress, and baseline creation does
+not complete review sequence 10.

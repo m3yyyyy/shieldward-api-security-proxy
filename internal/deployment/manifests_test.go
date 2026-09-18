@@ -4234,6 +4234,88 @@ func TestProductionAssuranceNextRenewedRetentionRenewalEvidenceContracts(t *test
 	}
 }
 
+func TestProductionAssuranceGeneration4CustodyBaselineContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-4-custody-baseline.ps1"),
+			expected: []string{
+				"production-assurance-generation-4-custody-baseline",
+				"generation4Baseline",
+				"previousHeadReviewSequence",
+				"resume-generation-4-custody-review",
+				"No review was scheduled",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-baseline.ps1"),
+			expected: []string{
+				"exact passed next-renewed retention-renewal evidence",
+				"changed the production identity or inherited lineage",
+				"timing, generation, sequence, or retention boundary is invalid",
+				"custody baseline integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-baseline-gate.ps1"),
+			expected: []string{
+				"MaxBaselineAgeMinutes",
+				"generation -ne 4",
+				"renewalSequence -ne 3",
+				"decision.inheritedLineagePreserved -ne $true",
+				"authorizes only resuming the existing review process",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-baseline-contract.ps1"),
+			expected: []string{
+				"previousGeneration -ne 3",
+				"generation -ne 4",
+				"previousHeadReviewSequence -ne 9",
+				"nextReviewSequence -ne 10",
+				"baselineTamperingRejected",
+				"renewalTamperingRejected",
+				"Generation-4 production assurance custody baseline contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-4-custody-baseline.md"),
+			expected: []string{
+				"exact passed Chapter 72 evidence",
+				"renewal sequence 3",
+				"sequence 10",
+				"Never edit generated JSON",
+				"Chapter 74",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test generation 4 production assurance custody baseline contract",
+				"test-production-assurance-generation-4-custody-baseline-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read generation-4 production assurance custody baseline artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("generation-4 production assurance custody baseline artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

@@ -148,6 +148,9 @@ versioning.
 - Freshness-bound third retention-renewal execution evidence that binds the
   exact approved procedure, proves immutable archive controls and the full
   inherited lineage, and authorizes only creation of a generation-4 baseline.
+- A tamper-evident generation-4 custody baseline that binds the exact third
+  renewal evidence, preserves all prior baselines, renewals, and review-chain
+  lineage, and derives sequence 10 without changing external retention.
 
 ## [1.0.0] - 2026-09-09
 
