@@ -236,7 +236,10 @@ records sequence 10 and revalidates every external archive control.
 Continue sequences 11 and later only through
 [recurring generation-4 custody reviews](production-assurance-generation-4-custody-recurring.md),
 using the exact latest passed predecessor without resetting the generation,
-renewal sequence, deadline, retention boundary, or inherited lineage.
+renewal sequence, deadline, retention boundary, or inherited lineage. At an
+approved checkpoint, run the
+[generation-4 custody chain audit](production-assurance-generation-4-custody-chain-audit.md)
+to verify the complete sequence-10-through-head chain before continuation.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

@@ -357,4 +357,7 @@ That review must revalidate every external archive control at the inherited
 deadline before any later sequence continues. Continue with
 [recurring generation-4 custody reviews](production-assurance-generation-4-custody-recurring.md),
 which bind the exact latest passed predecessor and derive sequences 11 and
-later without gaps, resets, or lineage changes.
+later without gaps, resets, or lineage changes. At an approved checkpoint, use
+the [generation-4 custody chain audit](production-assurance-generation-4-custody-chain-audit.md)
+to reconstruct sequence 10 through the selected recurring head and verify the
+complete third-renewal lineage without scheduling or changing a review.

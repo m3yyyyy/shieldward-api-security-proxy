@@ -304,4 +304,7 @@ at the inherited deadline; only fresh passed evidence may continue to sequence
 11. Every later sequence must use the
 [recurring generation-4 custody review](production-assurance-generation-4-custody-recurring.md)
 gate and preserve the exact predecessor, deadline, retention boundary, and
-inherited lineage.
+inherited lineage. Require a fresh passed
+[generation-4 custody chain audit](production-assurance-generation-4-custody-chain-audit.md)
+at an approved governance checkpoint; failed, unknown, incomplete, stale, or
+altered audit evidence cannot authorize continuation.

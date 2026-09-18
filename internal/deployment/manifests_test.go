@@ -4480,6 +4480,87 @@ func TestProductionAssuranceGeneration4CustodyRecurringContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceGeneration4CustodyChainAuditContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-4-custody-chain-audit-evidence.ps1"),
+			expected: []string{
+				"generation-4-production-assurance-custody-chain-audit",
+				"Generation4ChainInventoryStatus",
+				"generation4CustodyBaseline",
+				"does not begin at the baseline next sequence",
+				"previousReviewChainDigest",
+				"No scheduler",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-chain-audit-evidence.ps1"),
+			expected: []string{
+				"exact recurring generation-4 custody-review head",
+				"chain inventory is not contiguous",
+				"generation4ChainInventoryStatus",
+				"custody chain-audit integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-chain-audit-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"generation4ChainInventoryStatus",
+				"chainVerified",
+				"continue-generation-4-custody-reviews",
+				"does not schedule",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-4-custody-chain-audit-contract.ps1"),
+			expected: []string{
+				"chain.initialSequence -ne 10",
+				"chain.headSequence -ne 12",
+				"chain.headSequence -ne 11",
+				"interiorTamperingRejected",
+				"Generation-4 production assurance custody chain-audit contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-4-custody-chain-audit.md"),
+			expected: []string{
+				"Chapter 76 inventories",
+				"exact Chapter 74 review",
+				"generation-4 chain inventory",
+				"Never edit generated JSON",
+				"generation-4 retention-renewal plan",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test generation 4 production assurance custody chain audit contract",
+				"test-production-assurance-generation-4-custody-chain-audit-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read generation-4 production assurance custody chain-audit artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("generation-4 production assurance custody chain-audit artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

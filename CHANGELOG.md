@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- A generation-4 production assurance custody chain audit that reconstructs
+  sequences 10 through the selected recurring head, verifies every exact
+  predecessor and digest without gaps or cycles, preserves the complete
+  third-renewal lineage, and fails closed on unsafe audit evidence.
 - Recurring generation-4 production assurance custody reviews that bind the
   exact latest passed predecessor, derive sequences 11 and later without gaps
   or resets, preserve the full inherited lineage, and fail closed on stale,
