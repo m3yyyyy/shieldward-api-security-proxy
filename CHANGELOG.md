@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Generation-4 production assurance retention-renewal execution evidence that
+  binds the exact approved Chapter 77 plan, proves renewal sequence 4 and the
+  generation-5 retention boundary from independent external observations, and
+  fails closed on failed, unknown, stale, insufficient, or altered evidence.
 - A generation-4 production assurance retention-renewal planning and approval
   gate that binds the exact retention-at-risk chain audit, derives baseline
   generation 5 and renewal sequence 4, and authorizes only the recorded

@@ -193,6 +193,9 @@ jobs:
       - name: Test generation 4 production assurance retention renewal planning contract
         shell: pwsh
         run: ./scripts/test-production-assurance-generation-4-retention-renewal-contract.ps1
+      - name: Test generation 4 production assurance retention renewal evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-generation-4-retention-renewal-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

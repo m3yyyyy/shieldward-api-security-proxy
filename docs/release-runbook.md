@@ -242,7 +242,11 @@ approved checkpoint, run the
 to verify the complete sequence-10-through-head chain before continuation. If
 it records retention at risk, stop and use the
 [generation-4 retention-renewal plan](production-assurance-generation-4-retention-renewal.md);
-do not treat approval as proof that the external renewal ran.
+do not treat approval as proof that the external renewal ran. After execution,
+capture and gate the independent
+[generation-4 retention-renewal evidence](production-assurance-generation-4-retention-renewal-evidence.md).
+Proceed toward the generation-5 baseline only when that exact record is fresh,
+passed, and proves the approved boundary without changing inherited lineage.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
