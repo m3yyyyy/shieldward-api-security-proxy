@@ -108,6 +108,7 @@ foreach ($requiredText in @(
     'test-production-assurance-generation-4-custody-chain-audit-contract.ps1'
     'test-production-assurance-generation-4-retention-renewal-contract.ps1'
     'test-production-assurance-generation-4-retention-renewal-evidence-contract.ps1'
+    'test-production-assurance-generation-5-custody-baseline-contract.ps1'
 )) {
     if (-not $continuousIntegration.Contains($requiredText, [StringComparison]::Ordinal)) {
         throw "Continuous Integration workflow is missing required contract '$requiredText'."
@@ -182,6 +183,7 @@ foreach ($relativePath in @(
     'docs/production-assurance-generation-4-custody-chain-audit.md'
     'docs/production-assurance-generation-4-retention-renewal.md'
     'docs/production-assurance-generation-4-retention-renewal-evidence.md'
+    'docs/production-assurance-generation-5-custody-baseline.md'
     'scripts/new-staging-overlay.ps1'
     'scripts/invoke-staging-rollout.ps1'
     'scripts/new-production-promotion-plan.ps1'
@@ -412,6 +414,10 @@ foreach ($relativePath in @(
     'scripts/test-production-assurance-generation-4-retention-renewal-evidence.ps1'
     'scripts/test-production-assurance-generation-4-retention-renewal-evidence-gate.ps1'
     'scripts/test-production-assurance-generation-4-retention-renewal-evidence-contract.ps1'
+    'scripts/new-production-assurance-generation-5-custody-baseline.ps1'
+    'scripts/test-production-assurance-generation-5-custody-baseline.ps1'
+    'scripts/test-production-assurance-generation-5-custody-baseline-gate.ps1'
+    'scripts/test-production-assurance-generation-5-custody-baseline-contract.ps1'
 )) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relativePath) -PathType Leaf)) {
         throw "Required release artifact is missing: $relativePath"
