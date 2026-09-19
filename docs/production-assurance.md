@@ -379,4 +379,8 @@ for sequence 14 and later, always binding the exact latest passed predecessor.
 At an approved checkpoint, use the
 [generation-5 custody chain audit](production-assurance-generation-5-custody-chain-audit.md)
 to reconstruct sequence 13 through the selected recurring head and verify the
-complete four-renewal lineage without scheduling or changing a review.
+complete four-renewal lineage without scheduling or changing a review. If
+that audit records retention at risk, stop and create the independently
+approved [generation-5 retention-renewal plan](production-assurance-generation-5-retention-renewal.md).
+Approval authorizes only the exact external procedure and is not execution
+evidence.
