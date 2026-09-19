@@ -376,3 +376,7 @@ checkpoint through the [generation-5 custody review](production-assurance-genera
 which must revalidate every external archive control before continuation. Use
 [recurring generation-5 custody reviews](production-assurance-generation-5-custody-recurring.md)
 for sequence 14 and later, always binding the exact latest passed predecessor.
+At an approved checkpoint, use the
+[generation-5 custody chain audit](production-assurance-generation-5-custody-chain-audit.md)
+to reconstruct sequence 13 through the selected recurring head and verify the
+complete four-renewal lineage without scheduling or changing a review.

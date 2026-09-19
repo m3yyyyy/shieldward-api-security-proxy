@@ -323,4 +323,7 @@ at that deadline; unsafe or unknown controls cannot authorize sequence 14.
 Every later sequence must use the
 [recurring generation-5 custody-review gate](production-assurance-generation-5-custody-recurring.md)
 without changing the baseline, renewal sequence, deadline, retention boundary,
-or inherited lineage.
+or inherited lineage. Require a fresh passed
+[generation-5 custody chain audit](production-assurance-generation-5-custody-chain-audit.md)
+at an approved governance checkpoint; failed, unknown, incomplete, stale, or
+altered audit evidence cannot authorize continuation.

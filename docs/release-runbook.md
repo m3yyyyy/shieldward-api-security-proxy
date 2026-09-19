@@ -254,7 +254,10 @@ the inherited deadline, record the
 [generation-5 custody review](production-assurance-generation-5-custody-review.md)
 and continue only when every archive control passes. Sequence 14 and later must
 use [recurring generation-5 custody reviews](production-assurance-generation-5-custody-recurring.md)
-with the exact latest passed predecessor and unchanged inherited lineage.
+with the exact latest passed predecessor and unchanged inherited lineage. At
+an approved checkpoint, run the
+[generation-5 custody chain audit](production-assurance-generation-5-custody-chain-audit.md)
+to verify the complete sequence-13-through-head chain before continuation.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

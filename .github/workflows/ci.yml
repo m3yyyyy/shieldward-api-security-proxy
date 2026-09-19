@@ -205,6 +205,9 @@ jobs:
       - name: Test recurring generation 5 production assurance custody review contract
         shell: pwsh
         run: ./scripts/test-production-assurance-generation-5-custody-recurring-contract.ps1
+      - name: Test generation 5 production assurance custody chain audit contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-generation-5-custody-chain-audit-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

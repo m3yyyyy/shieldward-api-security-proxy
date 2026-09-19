@@ -99,6 +99,7 @@ directory. It is for local testing only.
 - [Generation-5 production assurance custody baseline](docs/production-assurance-generation-5-custody-baseline.md)
 - [Generation-5 production assurance custody review](docs/production-assurance-generation-5-custody-review.md)
 - [Recurring generation-5 production assurance custody reviews](docs/production-assurance-generation-5-custody-recurring.md)
+- [Generation-5 production assurance custody chain audit](docs/production-assurance-generation-5-custody-chain-audit.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

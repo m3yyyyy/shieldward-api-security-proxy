@@ -29,7 +29,7 @@ change Kubernetes or traffic, or mutate production workloads.
 pwsh -NoProfile -File .\scripts\test-production-assurance-generation-5-custody-recurring-contract.ps1
 ```
 
-The contract reconstructs the complete prior chain, proves sequences 11 and 12,
+The contract reconstructs the complete prior chain, proves sequences 14 and 15,
 and verifies rejection of unsafe results, failed predecessors, stale evidence,
 wrong contexts, and tampering.
 
