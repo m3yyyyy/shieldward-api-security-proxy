@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Recurring generation-5 production assurance custody reviews that bind the
+  exact passed sequence-13 predecessor, derive sequences 14 and 15 without gaps
+  or resets, revalidate every archive control, and preserve the complete
+  four-renewal lineage.
 - Generation-5 production assurance custody-review evidence that binds the
   exact Chapter 79 baseline, records review sequence 13, revalidates every
   external archive control, and fails closed on late, missing, unsafe, unknown,

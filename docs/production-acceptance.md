@@ -320,3 +320,7 @@ which must preserve review head 12 and the complete inherited lineage while
 leaving sequence 13 unexecuted. Require fresh passed
 [generation-5 custody-review evidence](production-assurance-generation-5-custody-review.md)
 at that deadline; unsafe or unknown controls cannot authorize sequence 14.
+Every later sequence must use the
+[recurring generation-5 custody-review gate](production-assurance-generation-5-custody-recurring.md)
+without changing the baseline, renewal sequence, deadline, retention boundary,
+or inherited lineage.
