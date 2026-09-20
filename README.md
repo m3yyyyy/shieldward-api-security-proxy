@@ -103,6 +103,7 @@ directory. It is for local testing only.
 - [Generation-5 production assurance retention-renewal plan](docs/production-assurance-generation-5-retention-renewal.md)
 - [Generation-5 production assurance retention-renewal evidence](docs/production-assurance-generation-5-retention-renewal-evidence.md)
 - [Generation-6 production assurance custody baseline](docs/production-assurance-generation-6-custody-baseline.md)
+- [Generation-6 production assurance custody review](docs/production-assurance-generation-6-custody-review.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)

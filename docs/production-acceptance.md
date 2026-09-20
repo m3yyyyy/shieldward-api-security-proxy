@@ -336,4 +336,6 @@ sequence 5 reached the approved generation-6 boundary; every other state fails
 closed. Only that exact passed evidence may establish the
 [generation-6 custody baseline](production-assurance-generation-6-custody-baseline.md),
 which must preserve review head 15 and the complete inherited lineage while
-leaving sequence 16 unexecuted.
+leaving sequence 16 unexecuted. Require fresh passed
+[generation-6 custody-review evidence](production-assurance-generation-6-custody-review.md)
+at that deadline; unsafe or unknown controls cannot authorize sequence 17.

@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Generation-6 production assurance custody-review evidence that binds the
+  exact Chapter 85 baseline, records review sequence 16, revalidates every
+  external archive control, and fails closed on late, missing, unsafe, unknown,
+  stale, or altered evidence without scheduling the next review.
 - A generation-6 production assurance custody baseline that accepts only the
   exact passed Chapter 84 renewal evidence, preserves the generation-5 audit
   head at sequence 15 and the complete five-renewal lineage, and derives review
