@@ -333,4 +333,7 @@ procedure, and approval alone cannot prove execution. Require independent
 [generation-5 retention-renewal execution evidence](production-assurance-generation-5-retention-renewal-evidence.md)
 after the procedure. Only a fresh passed gate may establish that renewal
 sequence 5 reached the approved generation-6 boundary; every other state fails
-closed.
+closed. Only that exact passed evidence may establish the
+[generation-6 custody baseline](production-assurance-generation-6-custody-baseline.md),
+which must preserve review head 15 and the complete inherited lineage while
+leaving sequence 16 unexecuted.

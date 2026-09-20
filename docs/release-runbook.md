@@ -265,6 +265,9 @@ capture and gate the independent
 [generation-5 retention-renewal evidence](production-assurance-generation-5-retention-renewal-evidence.md).
 Proceed toward the generation-6 baseline only when that exact record is fresh,
 passed, and proves the approved boundary without changing inherited lineage.
+Then establish the
+[generation-6 custody baseline](production-assurance-generation-6-custody-baseline.md),
+preserving review head 15 and deriving sequence 16 without scheduling it.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

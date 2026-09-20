@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- A generation-6 production assurance custody baseline that accepts only the
+  exact passed Chapter 84 renewal evidence, preserves the generation-5 audit
+  head at sequence 15 and the complete five-renewal lineage, and derives review
+  sequence 16 without scheduling or completing that review.
 - Generation-5 production assurance retention-renewal execution evidence that
   binds the exact approved Chapter 83 plan, proves renewal sequence 5 and the
   generation-6 retention boundary from independent external observations, and
