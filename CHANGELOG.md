@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Generation-5 production assurance retention-renewal execution evidence that
+  binds the exact approved Chapter 83 plan, proves renewal sequence 5 and the
+  generation-6 retention boundary from independent external observations, and
+  fails closed on failed, unknown, stale, insufficient, or altered evidence.
 - A generation-5 production assurance retention-renewal planning and approval
   gate that binds the exact retention-at-risk chain audit, derives baseline
   generation 6 and renewal sequence 5, and authorizes only the recorded

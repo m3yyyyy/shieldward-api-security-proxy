@@ -5144,6 +5144,85 @@ func TestProductionAssuranceGeneration5RetentionRenewalContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceGeneration5RetentionRenewalEvidenceContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-5-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"production-assurance-generation-5-retention-renewal-evidence",
+				"test-production-assurance-generation-5-retention-renewal-gate.ps1",
+				"generation5BaselineSha256",
+				"establish-generation-6-custody-review-baseline",
+				"No archive",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-5-retention-renewal-evidence.ps1"),
+			expected: []string{
+				"execute-approved-external-generation-5-retention-renewal",
+				"generation5ReviewHeadSequence",
+				"retentionRenewalProven",
+				"retention-renewal evidence integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-5-retention-renewal-evidence-gate.ps1"),
+			expected: []string{
+				"MaxEvidenceAgeMinutes",
+				"observedMeetsApprovedBoundary",
+				"establish-generation-6-custody-review-baseline",
+				"does not change retention",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-5-retention-renewal-evidence-contract.ps1"),
+			expected: []string{
+				"nextBaselineGeneration -ne 6",
+				"renewalSequence -ne 5",
+				"evidenceTamperingRejected",
+				"planTamperingRejected",
+				"Generation-5 production assurance retention-renewal execution evidence contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-5-retention-renewal-evidence.md"),
+			expected: []string{
+				"exact approved Chapter 83",
+				"renewal sequence 5",
+				"baseline generation 6",
+				"Unknown states fail closed",
+				"Chapter 85",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test generation 5 production assurance retention renewal evidence contract",
+				"test-production-assurance-generation-5-retention-renewal-evidence-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read generation-5 production assurance retention-renewal evidence artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("generation-5 production assurance retention-renewal evidence artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)

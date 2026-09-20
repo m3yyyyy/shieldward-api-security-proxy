@@ -20,7 +20,7 @@ jobs:
   repository-policy:
     name: Repository policy
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -211,6 +211,9 @@ jobs:
       - name: Test generation 5 production assurance retention renewal planning contract
         shell: pwsh
         run: ./scripts/test-production-assurance-generation-5-retention-renewal-contract.ps1
+      - name: Test generation 5 production assurance retention renewal evidence contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-generation-5-retention-renewal-evidence-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

@@ -383,4 +383,8 @@ complete four-renewal lineage without scheduling or changing a review. If
 that audit records retention at risk, stop and create the independently
 approved [generation-5 retention-renewal plan](production-assurance-generation-5-retention-renewal.md).
 Approval authorizes only the exact external procedure and is not execution
-evidence.
+evidence. After that procedure runs, record
+[generation-5 retention-renewal execution evidence](production-assurance-generation-5-retention-renewal-evidence.md).
+Only a fresh passed record may prove renewal sequence 5 and hand off the exact
+generation-6 retention boundary; failed, unknown, stale, insufficient, or
+altered evidence leaves the gate closed.

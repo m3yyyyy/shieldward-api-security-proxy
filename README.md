@@ -101,6 +101,7 @@ directory. It is for local testing only.
 - [Recurring generation-5 production assurance custody reviews](docs/production-assurance-generation-5-custody-recurring.md)
 - [Generation-5 production assurance custody chain audit](docs/production-assurance-generation-5-custody-chain-audit.md)
 - [Generation-5 production assurance retention-renewal plan](docs/production-assurance-generation-5-retention-renewal.md)
+- [Generation-5 production assurance retention-renewal evidence](docs/production-assurance-generation-5-retention-renewal-evidence.md)
 - [Production promotion decision gate](docs/production-promotion.md)
 - [Production acceptance](docs/production-acceptance.md)
 - [Failure drills](docs/failure-drills.md)
