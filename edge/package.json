@@ -20,15 +20,15 @@
   "dependencies": {
     "@hono/node-server": "2.1.1",
     "@redis/client": "6.2.1",
-    "canonicalize": "4.0.0",
-    "hono": "4.13.7",
+    "canonicalize": "5.0.0",
+    "hono": "4.13.8",
     "jose": "6.2.12"
   },
   "devDependencies": {
-    "@types/node": "26.4.1",
+    "@types/node": "26.6.1",
     "tsx": "4.23.13",
     "typescript": "7.0.2",
-    "vitest": "5.0.0"
+    "vitest": "5.0.1"
   },
   "allowScripts": {
     "esbuild@0.28.2": true
