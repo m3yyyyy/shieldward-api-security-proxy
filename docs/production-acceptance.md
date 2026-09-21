@@ -339,3 +339,7 @@ which must preserve review head 15 and the complete inherited lineage while
 leaving sequence 16 unexecuted. Require fresh passed
 [generation-6 custody-review evidence](production-assurance-generation-6-custody-review.md)
 at that deadline; unsafe or unknown controls cannot authorize sequence 17.
+Every later sequence must use the
+[recurring generation-6 custody-review gate](production-assurance-generation-6-custody-recurring.md)
+without changing the baseline, renewal sequence, deadline, retention boundary,
+or inherited lineage.

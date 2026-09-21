@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Recurring generation-6 production assurance custody reviews that bind the
+  exact passed sequence-16 predecessor, derive sequences 17 and 18 without gaps
+  or resets, revalidate every archive control, and preserve the complete
+  five-renewal lineage.
 - Generation-6 production assurance custody-review evidence that binds the
   exact Chapter 85 baseline, records review sequence 16, revalidates every
   external archive control, and fails closed on late, missing, unsafe, unknown,

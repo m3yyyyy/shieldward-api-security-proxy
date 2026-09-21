@@ -5383,6 +5383,83 @@ func TestProductionAssuranceGeneration6CustodyReviewContracts(t *testing.T) {
 	}
 }
 
+func TestProductionAssuranceGeneration6CustodyRecurringContracts(t *testing.T) {
+	repositoryRoot := filepath.Join("..", "..")
+	tests := []struct {
+		path     string
+		expected []string
+	}{
+		{
+			path: filepath.Join("scripts", "new-production-assurance-generation-6-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"recurring-generation-6-production-assurance-custody-review",
+				"test-production-assurance-generation-6-custody-review-evidence.ps1",
+				"generation6BaselineSha256",
+				"continue-generation-6-custody-reviews",
+				"No review was scheduled",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-6-custody-recurring-evidence.ps1"),
+			expected: []string{
+				"exact passed predecessor",
+				"generation6CustodyBaseline",
+				"previousReviewEvidence",
+				"custody-review integrity digest is invalid",
+				"validator is read-only",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-6-custody-recurring-gate.ps1"),
+			expected: []string{
+				"review.sequence -lt 17",
+				"continue-generation-6-custody-reviews",
+				"does not schedule",
+			},
+		},
+		{
+			path: filepath.Join("scripts", "test-production-assurance-generation-6-custody-recurring-contract.ps1"),
+			expected: []string{
+				"review.sequence -ne 17",
+				"review.sequence -ne 18",
+				"evidenceTamperingRejected",
+				"previousTamperingRejected",
+				"Recurring generation-6 production assurance custody-review contract passed",
+			},
+		},
+		{
+			path: filepath.Join("docs", "production-assurance-generation-6-custody-recurring.md"),
+			expected: []string{
+				"exact passed sequence-16 artifact",
+				"Sequence 17 must follow 16",
+				"sequence 18 must follow 17",
+				"Chapter 88",
+			},
+		},
+		{
+			path: filepath.Join(".github", "workflows", "ci.yml"),
+			expected: []string{
+				"Test recurring generation 6 production assurance custody review contract",
+				"test-production-assurance-generation-6-custody-recurring-contract.ps1",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.path, func(t *testing.T) {
+			contents, err := os.ReadFile(filepath.Join(repositoryRoot, test.path))
+			if err != nil {
+				t.Fatalf("read recurring generation-6 production assurance custody-review artifact: %v", err)
+			}
+			for _, expected := range test.expected {
+				if !strings.Contains(string(contents), expected) {
+					t.Errorf("recurring generation-6 production assurance custody-review artifact does not contain %q", expected)
+				}
+			}
+		})
+	}
+}
+
 func TestContinuousIntegrationBuildsReleaseCandidate(t *testing.T) {
 	path := filepath.Join("..", "..", ".github", "workflows", "ci.yml")
 	contents, err := os.ReadFile(path)
