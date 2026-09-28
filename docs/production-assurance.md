@@ -407,4 +407,7 @@ After that procedure runs, record
 [generation-6 retention-renewal execution evidence](production-assurance-generation-6-retention-renewal-evidence.md).
 Only a fresh passed record may prove renewal sequence 6 and hand off the exact
 generation-7 retention boundary; failed, unknown, stale, insufficient, or
-altered evidence leaves the gate closed.
+altered evidence leaves the gate closed. Establish the
+[generation-7 custody baseline](production-assurance-generation-7-custody-baseline.md)
+only from that exact record. The baseline preserves review head 18 and derives
+sequence 19 without scheduling or completing a review.
