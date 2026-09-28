@@ -226,6 +226,9 @@ jobs:
       - name: Test generation 6 production assurance custody chain audit contract
         shell: pwsh
         run: ./scripts/test-production-assurance-generation-6-custody-chain-audit-contract.ps1
+      - name: Test generation 6 production assurance retention renewal planning contract
+        shell: pwsh
+        run: ./scripts/test-production-assurance-generation-6-retention-renewal-contract.ps1
 
   go:
     name: Go (${{ matrix.os }})

@@ -345,4 +345,7 @@ without changing the baseline, renewal sequence, deadline, retention boundary,
 or inherited lineage. Require a fresh passed
 [generation-6 custody chain audit](production-assurance-generation-6-custody-chain-audit.md)
 at an approved governance checkpoint; failed, unknown, incomplete, stale, or
-altered audit evidence cannot authorize continuation.
+altered audit evidence cannot authorize continuation. An eligible at-risk
+audit may create a [generation-6 retention-renewal plan](production-assurance-generation-6-retention-renewal.md),
+but only its exact independent approval can authorize the recorded external
+procedure, and approval alone cannot prove execution.
