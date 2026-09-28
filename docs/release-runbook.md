@@ -279,6 +279,10 @@ to verify the complete sequence-16-through-head chain before continuation. If
 it records retention at risk, stop and use the
 [generation-6 retention-renewal plan](production-assurance-generation-6-retention-renewal.md);
 do not treat approval as proof that the external renewal ran.
+After execution, capture and gate the independent
+[generation-6 retention-renewal evidence](production-assurance-generation-6-retention-renewal-evidence.md).
+Proceed toward the generation-7 baseline only when fresh passed evidence proves
+renewal sequence 6 and the exact approved retention boundary; otherwise stop.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its

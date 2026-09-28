@@ -403,3 +403,8 @@ that audit records retention at risk, stop and create the independently
 approved [generation-6 retention-renewal plan](production-assurance-generation-6-retention-renewal.md).
 Approval authorizes only the exact external procedure and is not execution
 evidence.
+After that procedure runs, record
+[generation-6 retention-renewal execution evidence](production-assurance-generation-6-retention-renewal-evidence.md).
+Only a fresh passed record may prove renewal sequence 6 and hand off the exact
+generation-7 retention boundary; failed, unknown, stale, insufficient, or
+altered evidence leaves the gate closed.

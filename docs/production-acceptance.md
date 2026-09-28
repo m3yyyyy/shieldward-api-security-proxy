@@ -349,3 +349,8 @@ altered audit evidence cannot authorize continuation. An eligible at-risk
 audit may create a [generation-6 retention-renewal plan](production-assurance-generation-6-retention-renewal.md),
 but only its exact independent approval can authorize the recorded external
 procedure, and approval alone cannot prove execution.
+Require independent
+[generation-6 retention-renewal execution evidence](production-assurance-generation-6-retention-renewal-evidence.md)
+after the procedure. Only a fresh passed gate may establish that renewal
+sequence 6 reached the approved generation-7 boundary; every other state fails
+closed.
