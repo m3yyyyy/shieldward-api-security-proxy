@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- A generation-6 production assurance custody chain audit that reconstructs
+  sequences 16 through the selected recurring head, verifies every exact
+  predecessor and digest without gaps or cycles, preserves the complete
+  five-renewal lineage, and fails closed on unsafe audit evidence.
 - Recurring generation-6 production assurance custody reviews that bind the
   exact passed sequence-16 predecessor, derive sequences 17 and 18 without gaps
   or resets, revalidate every archive control, and preserve the complete

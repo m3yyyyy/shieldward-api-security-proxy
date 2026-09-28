@@ -113,7 +113,7 @@ $gateArguments.MaxEvidenceAgeMinutes = 60
 & .\scripts\test-production-assurance-generation-6-custody-recurring-gate.ps1 @gateArguments
 ```
 
-Only a fresh passed gate may become the next predecessor. Chapter 88 may audit
+Only a fresh passed gate may become the next predecessor. Chapter 88 audits
 the complete generation-6 chain with the
 [generation-6 custody chain audit](production-assurance-generation-6-custody-chain-audit.md)
 at an approved governance checkpoint, but an audit must not replace or
