@@ -410,4 +410,6 @@ generation-7 retention boundary; failed, unknown, stale, insufficient, or
 altered evidence leaves the gate closed. Establish the
 [generation-7 custody baseline](production-assurance-generation-7-custody-baseline.md)
 only from that exact record. The baseline preserves review head 18 and derives
-sequence 19 without scheduling or completing a review.
+sequence 19 without scheduling or completing a review. Complete that inherited
+checkpoint through the [generation-7 custody review](production-assurance-generation-7-custody-review.md),
+which must revalidate every external archive control before continuation.

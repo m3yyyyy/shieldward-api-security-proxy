@@ -285,7 +285,10 @@ Proceed toward the generation-7 baseline only when fresh passed evidence proves
 renewal sequence 6 and the exact approved retention boundary; otherwise stop.
 Then establish the
 [generation-7 custody baseline](production-assurance-generation-7-custody-baseline.md),
-preserving review head 18 and deriving sequence 19 without scheduling it.
+preserving review head 18 and deriving sequence 19 without scheduling it. At
+the inherited deadline, record the
+[generation-7 custody review](production-assurance-generation-7-custody-review.md)
+and continue only when every archive control passes.
 
 Otherwise, create and approve the tamper-evident plan in
 `docs/production-promotion.md`, then run its
