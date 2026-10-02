@@ -7,6 +7,10 @@ versioning.
 
 ### Added
 
+- Recurring generation-7 production assurance custody reviews that bind the
+  exact passed sequence-19 predecessor, derive sequences 20 and 21 without gaps
+  or resets, revalidate every archive control, and preserve the complete
+  six-renewal lineage without scheduling the next review.
 - Generation-7 production assurance custody-review evidence that binds the
   exact Chapter 91 baseline, records review sequence 19, revalidates every
   external archive control, and fails closed on late, missing, unsafe, unknown,

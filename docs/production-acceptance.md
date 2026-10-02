@@ -359,3 +359,7 @@ which must preserve review head 18 and the complete inherited lineage while
 leaving sequence 19 unexecuted. Require fresh passed
 [generation-7 custody-review evidence](production-assurance-generation-7-custody-review.md)
 at that deadline; unsafe or unknown controls cannot authorize sequence 20.
+Every later sequence must use the
+[recurring generation-7 custody-review gate](production-assurance-generation-7-custody-recurring.md)
+without changing the baseline, renewal sequence, deadline, retention boundary,
+or inherited lineage.

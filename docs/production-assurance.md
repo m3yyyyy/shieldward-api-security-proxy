@@ -412,4 +412,6 @@ altered evidence leaves the gate closed. Establish the
 only from that exact record. The baseline preserves review head 18 and derives
 sequence 19 without scheduling or completing a review. Complete that inherited
 checkpoint through the [generation-7 custody review](production-assurance-generation-7-custody-review.md),
-which must revalidate every external archive control before continuation.
+which must revalidate every external archive control before continuation. Use
+[recurring generation-7 custody reviews](production-assurance-generation-7-custody-recurring.md)
+for sequence 20 and later, always binding the exact latest passed predecessor.
